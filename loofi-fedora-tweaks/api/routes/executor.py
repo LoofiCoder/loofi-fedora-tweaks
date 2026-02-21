@@ -9,10 +9,10 @@ Security:
 import logging
 from typing import FrozenSet, List
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, Field
 from core.executor.action_executor import ActionExecutor
 from core.executor.action_result import ActionResult
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, Field
 from services.security import AuditLogger
 from utils.auth import AuthManager
 
@@ -23,24 +23,41 @@ router = APIRouter()
 # Allowlist of executables the API may invoke.
 # Matches the commands exposed by PrivilegedCommand builders and common
 # read-only diagnostic tools.  Anything not listed is rejected with 403.
-COMMAND_ALLOWLIST: FrozenSet[str] = frozenset({
-    # Package management (via PrivilegedCommand)
-    "dnf", "rpm-ostree",
-    # Service management
-    "systemctl",
-    # Kernel tuning
-    "sysctl",
-    # Flatpak
-    "flatpak",
-    # Firmware
-    "fwupdmgr",
-    # Maintenance
-    "journalctl", "fstrim", "rpm",
-    # Read-only diagnostics
-    "hostnamectl", "uname", "lsblk", "df", "free", "uptime",
-    "sensors", "lspci", "lsusb", "ip", "ss", "nmcli",
-    "firewall-cmd", "timedatectl", "localectl",
-})
+COMMAND_ALLOWLIST: FrozenSet[str] = frozenset(
+    {
+        # Package management (via PrivilegedCommand)
+        "dnf",
+        "rpm-ostree",
+        # Service management
+        "systemctl",
+        # Kernel tuning
+        "sysctl",
+        # Flatpak
+        "flatpak",
+        # Firmware
+        "fwupdmgr",
+        # Maintenance
+        "journalctl",
+        "fstrim",
+        "rpm",
+        # Read-only diagnostics
+        "hostnamectl",
+        "uname",
+        "lsblk",
+        "df",
+        "free",
+        "uptime",
+        "sensors",
+        "lspci",
+        "lsusb",
+        "ip",
+        "ss",
+        "nmcli",
+        "firewall-cmd",
+        "timedatectl",
+        "localectl",
+    }
+)
 
 
 class ActionPayload(BaseModel):

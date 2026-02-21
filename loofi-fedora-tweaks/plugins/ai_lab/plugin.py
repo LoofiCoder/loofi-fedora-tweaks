@@ -63,6 +63,7 @@ class AILabPlugin(LoofiPlugin):
     def _cmd_ai_models() -> str:
         """List available and installed AI models."""
         from core.ai import OllamaManager
+
         if not OllamaManager.is_installed():
             return "Ollama is not installed. Install with the AI Lab tab."
         models = OllamaManager.list_models()
@@ -75,6 +76,7 @@ class AILabPlugin(LoofiPlugin):
     def _cmd_ai_status() -> str:
         """Show AI capabilities and runtime status."""
         from core.ai import AIConfigManager, OllamaManager
+
         installed = OllamaManager.is_installed()
         running = OllamaManager.is_running() if installed else False
         gpu_mem = AIConfigManager.get_gpu_memory()
@@ -89,6 +91,7 @@ class AILabPlugin(LoofiPlugin):
     def _cmd_rag_index() -> str:
         """Trigger RAG knowledge indexing."""
         from core.ai import ContextRAGManager
+
         result = ContextRAGManager.build_index()
         return result.message
 
@@ -96,11 +99,8 @@ class AILabPlugin(LoofiPlugin):
     def _cmd_rag_search() -> str:
         """Search indexed knowledge base."""
         from core.ai import ContextRAGManager
+
         if not ContextRAGManager.is_indexed():
             return "No index found. Run 'rag-index' first to build the knowledge base."
         stats = ContextRAGManager.get_index_stats()
-        return (
-            f"RAG index ready: {stats['total_files']} files, "
-            f"{stats['total_chunks']} chunks indexed.\n"
-            "Use the AI Lab tab to search interactively."
-        )
+        return f"RAG index ready: {stats['total_files']} files, {stats['total_chunks']} chunks indexed.\nUse the AI Lab tab to search interactively."

@@ -5,10 +5,10 @@ Security:
 - /info and /agents require Bearer JWT authentication.
 """
 
+from core.agents import AgentRegistry
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from services.system import SystemManager
-from core.agents import AgentRegistry
 from utils.auth import AuthManager
 from utils.monitor import SystemMonitor
 
