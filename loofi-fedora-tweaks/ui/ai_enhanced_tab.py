@@ -8,6 +8,7 @@ Provides:
 - Knowledge sub-tab: indexing status, index/clear buttons, search field
 """
 
+from core.ai import RECOMMENDED_MODELS, AIModelManager, ContextRAGManager
 from core.plugins.interface import PluginInterface
 from core.plugins.metadata import PluginMetadata
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
@@ -30,8 +31,6 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from core.ai import RECOMMENDED_MODELS, AIModelManager
-from core.ai import ContextRAGManager
 from utils.voice import WHISPER_MODELS, VoiceManager
 
 from ui.tab_utils import CONTENT_MARGINS, configure_top_tabs
@@ -43,6 +42,7 @@ from ui.tab_utils import CONTENT_MARGINS, configure_top_tabs
 
 class ModelDownloadWorker(QThread):
     """Background worker for model downloads."""
+
     progress = pyqtSignal(str)
     finished = pyqtSignal(bool, str)
 
@@ -60,6 +60,7 @@ class ModelDownloadWorker(QThread):
 
 class IndexBuildWorker(QThread):
     """Background worker for building the RAG index."""
+
     progress = pyqtSignal(str)
     finished = pyqtSignal(bool, str)
 
@@ -72,6 +73,7 @@ class IndexBuildWorker(QThread):
 
 class RecordAudioWorker(QThread):
     """Background worker for audio recording."""
+
     finished = pyqtSignal(str)
 
     def __init__(self, duration: int):
@@ -85,6 +87,7 @@ class RecordAudioWorker(QThread):
 
 class TranscribeWorker(QThread):
     """Background worker for transcription."""
+
     finished = pyqtSignal(bool, str, str)
 
     def __init__(self, audio_path: str, model: str):
@@ -101,6 +104,7 @@ class TranscribeWorker(QThread):
 # ---------------------------------------------------------------------------
 # Main enhanced tab
 # ---------------------------------------------------------------------------
+
 
 class AIEnhancedTab(QWidget, PluginInterface):
     """AI Lab enhanced tab with sub-tabs for Models, Voice, and Knowledge."""
@@ -175,18 +179,14 @@ class AIEnhancedTab(QWidget, PluginInterface):
         ram_layout = QVBoxLayout(ram_group)
 
         self.ram_label = QLabel(
-            self.tr("Total RAM: {} MB ({:.1f} GB)").format(ram_mb, ram_mb / 1024)
-            if ram_mb > 0
-            else self.tr("Unable to detect system RAM")
+            self.tr("Total RAM: {} MB ({:.1f} GB)").format(ram_mb, ram_mb / 1024) if ram_mb > 0 else self.tr("Unable to detect system RAM")
         )
         ram_layout.addWidget(self.ram_label)
 
         if ram_mb > 0:
             rec = AIModelManager.get_recommended_model(ram_mb)
             if rec:
-                rec_label = QLabel(
-                    self.tr("Recommended model: {} ({})").format(rec["name"], rec["size"])
-                )
+                rec_label = QLabel(self.tr("Recommended model: {} ({})").format(rec["name"], rec["size"]))
                 rec_label.setObjectName("aiRecLabel")
                 ram_layout.addWidget(rec_label)
 
@@ -217,11 +217,7 @@ class AIEnhancedTab(QWidget, PluginInterface):
 
         for model_id, info in RECOMMENDED_MODELS.items():
             row = QHBoxLayout()
-            label = QLabel(
-                self.tr("{} - {} | RAM: {} MB | {}").format(
-                    info["name"], info["size"], info["ram_required"], info["description"]
-                )
-            )
+            label = QLabel(self.tr("{} - {} | RAM: {} MB | {}").format(info["name"], info["size"], info["ram_required"], info["description"]))
             label.setWordWrap(True)
             row.addWidget(label, stretch=1)
 
@@ -259,11 +255,7 @@ class AIEnhancedTab(QWidget, PluginInterface):
         else:
             for model in models:
                 ram_est = AIModelManager.estimate_ram_usage(model["name"])
-                item = QListWidgetItem(
-                    self.tr("{} ({}) - Est. RAM: {} MB").format(
-                        model["name"], model["size"], ram_est
-                    )
-                )
+                item = QListWidgetItem(self.tr("{} ({}) - Est. RAM: {} MB").format(model["name"], model["size"], ram_est))
                 item.setData(Qt.ItemDataRole.UserRole, model["name"])
                 self.models_list.addItem(item)
 
@@ -306,17 +298,11 @@ class AIEnhancedTab(QWidget, PluginInterface):
         whisper_avail = VoiceManager.is_available()
         recording_avail = VoiceManager.is_recording_available()
 
-        self.whisper_status = QLabel(
-            self.tr("whisper.cpp: {}").format(
-                self.tr("Available") if whisper_avail else self.tr("Not installed")
-            )
-        )
+        self.whisper_status = QLabel(self.tr("whisper.cpp: {}").format(self.tr("Available") if whisper_avail else self.tr("Not installed")))
         status_layout.addWidget(self.whisper_status)
 
         self.recording_status = QLabel(
-            self.tr("Recording tools: {}").format(
-                self.tr("Available") if recording_avail else self.tr("Not found (arecord/parecord)")
-            )
+            self.tr("Recording tools: {}").format(self.tr("Available") if recording_avail else self.tr("Not found (arecord/parecord)"))
         )
         status_layout.addWidget(self.recording_status)
 
@@ -458,17 +444,13 @@ class AIEnhancedTab(QWidget, PluginInterface):
         indexed = ContextRAGManager.is_indexed()
 
         self.index_status_label = QLabel(
-            self.tr("Index: {} files, {} chunks ({} bytes)").format(
-                stats["total_files"], stats["total_chunks"], stats["index_size_bytes"]
-            )
+            self.tr("Index: {} files, {} chunks ({} bytes)").format(stats["total_files"], stats["total_chunks"], stats["index_size_bytes"])
             if indexed
             else self.tr("No index built yet")
         )
         status_layout.addWidget(self.index_status_label)
 
-        self.index_path_label = QLabel(
-            self.tr("Index location: {}").format(ContextRAGManager.get_index_path())
-        )
+        self.index_path_label = QLabel(self.tr("Index location: {}").format(ContextRAGManager.get_index_path()))
         self.index_path_label.setObjectName("aiIndexPath")
         status_layout.addWidget(self.index_path_label)
 
@@ -579,9 +561,7 @@ class AIEnhancedTab(QWidget, PluginInterface):
 
         if indexed:
             self.index_status_label.setText(
-                self.tr("Index: {} files, {} chunks ({} bytes)").format(
-                    stats["total_files"], stats["total_chunks"], stats["index_size_bytes"]
-                )
+                self.tr("Index: {} files, {} chunks ({} bytes)").format(stats["total_files"], stats["total_chunks"], stats["index_size_bytes"])
             )
         else:
             self.index_status_label.setText(self.tr("No index built yet"))
@@ -601,9 +581,7 @@ class AIEnhancedTab(QWidget, PluginInterface):
 
         output_lines = []
         for i, r in enumerate(results, 1):
-            output_lines.append(
-                self.tr("--- Result {} (score: {}) ---").format(i, r["relevance_score"])
-            )
+            output_lines.append(self.tr("--- Result {} (score: {}) ---").format(i, r["relevance_score"]))
             output_lines.append(self.tr("File: {}").format(r["file_path"]))
             output_lines.append(r["chunk"][:200])
             output_lines.append("")
@@ -618,14 +596,10 @@ class AIEnhancedTab(QWidget, PluginInterface):
         for f in files:
             status = self.tr("OK") if f["indexable"] else self.tr("Skipped")
             size_kb = f["size"] // 1024 if f["size"] > 0 else 0
-            item = QListWidgetItem(
-                self.tr("[{}] {} ({} KB)").format(status, f["path"], size_kb)
-            )
+            item = QListWidgetItem(self.tr("[{}] {} ({} KB)").format(status, f["path"], size_kb))
             self.files_list.addItem(item)
 
-        self._log(self.tr("Found {} files ({} indexable)").format(
-            len(files), sum(1 for f in files if f["indexable"])
-        ))
+        self._log(self.tr("Found {} files ({} indexable)").format(len(files), sum(1 for f in files if f["indexable"])))
 
     # ------------------------------------------------------------------
     # Shared helpers

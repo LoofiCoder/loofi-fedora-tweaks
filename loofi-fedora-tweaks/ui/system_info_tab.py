@@ -1,5 +1,6 @@
 import os
 
+from core.export import ReportExporter
 from core.plugins.interface import PluginInterface
 from core.plugins.metadata import PluginMetadata
 from PyQt6.QtCore import QTimer
@@ -16,7 +17,6 @@ from PyQt6.QtWidgets import (
 )
 from utils import system_info_utils
 from utils.log import get_logger
-from core.export import ReportExporter
 
 logger = get_logger(__name__)
 

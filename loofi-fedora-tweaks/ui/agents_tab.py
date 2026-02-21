@@ -220,19 +220,11 @@ class AgentsTab(BaseTab):
         goal_box = QGroupBox(self.tr("Create Agent from Goal"))
         goal_layout = QVBoxLayout(goal_box)
 
-        goal_layout.addWidget(
-            QLabel(
-                self.tr(
-                    "Describe what you want your agent to do, or pick a template below:"
-                )
-            )
-        )
+        goal_layout.addWidget(QLabel(self.tr("Describe what you want your agent to do, or pick a template below:")))
 
         self.goal_input = QLineEdit()
         self.goal_input.setAccessibleName(self.tr("Agent goal input"))
-        self.goal_input.setPlaceholderText(
-            self.tr("e.g., 'Keep my system healthy' or 'Watch for security threats'")
-        )
+        self.goal_input.setPlaceholderText(self.tr("e.g., 'Keep my system healthy' or 'Watch for security threats'"))
         goal_layout.addWidget(self.goal_input)
 
         # Template buttons
@@ -314,9 +306,7 @@ class AgentsTab(BaseTab):
         header = self.activity_table.horizontalHeader()
         if header is not None:
             header.setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
-        self.activity_table.setSelectionBehavior(
-            QTableWidget.SelectionBehavior.SelectRows
-        )
+        self.activity_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.activity_table.setProperty("maxVisibleRows", 4)
         BaseTab.configure_table(self.activity_table)
         layout.addWidget(self.activity_table)
@@ -391,9 +381,7 @@ class AgentsTab(BaseTab):
             ts = time.strftime("%H:%M:%S", time.localtime(item["timestamp"]))
             icon = "✅" if item["success"] else "❌"
             lines.append(f"{ts} {icon} [{item['agent_name']}] {item['message']}")
-        self.activity_preview.setPlainText(
-            "\n".join(lines) if lines else self.tr("No recent activity")
-        )
+        self.activity_preview.setPlainText("\n".join(lines) if lines else self.tr("No recent activity"))
 
     def _refresh_agents_table(self):
         registry = self._get_registry()
@@ -417,54 +405,34 @@ class AgentsTab(BaseTab):
 
             last_run = ""
             if state.last_run:
-                last_run = time.strftime(
-                    "%Y-%m-%d %H:%M", time.localtime(state.last_run)
-                )
+                last_run = time.strftime("%Y-%m-%d %H:%M", time.localtime(state.last_run))
             self.agent_table.setItem(row, 4, QTableWidgetItem(last_run))
 
-            self.agent_table.setItem(
-                row, 5, QTableWidgetItem("✅" if agent.enabled else "❌")
-            )
+            self.agent_table.setItem(row, 5, QTableWidgetItem("✅" if agent.enabled else "❌"))
 
             # Notification status
             notif_enabled = agent.notification_config.get("enabled", False)
-            self.agent_table.setItem(
-                row, 6, QTableWidgetItem("🔔" if notif_enabled else "🔕")
-            )
+            self.agent_table.setItem(row, 6, QTableWidgetItem("🔔" if notif_enabled else "🔕"))
 
             # Action buttons
             actions_widget = QWidget()
             actions_layout = QHBoxLayout(actions_widget)
             actions_layout.setContentsMargins(2, 2, 2, 2)
 
-            btn_toggle = QPushButton(
-                self.tr("Disable") if agent.enabled else self.tr("Enable")
-            )
-            btn_toggle.setAccessibleName(
-                self.tr("Disable agent") if agent.enabled else self.tr("Enable agent")
-            )
-            btn_toggle.clicked.connect(
-                lambda checked, aid=agent.agent_id, en=agent.enabled: (
-                    self._toggle_agent(aid, en)
-                )
-            )
+            btn_toggle = QPushButton(self.tr("Disable") if agent.enabled else self.tr("Enable"))
+            btn_toggle.setAccessibleName(self.tr("Disable agent") if agent.enabled else self.tr("Enable agent"))
+            btn_toggle.clicked.connect(lambda checked, aid=agent.agent_id, en=agent.enabled: self._toggle_agent(aid, en))
             actions_layout.addWidget(btn_toggle)
 
             btn_run = QPushButton(self.tr("Run"))
             btn_run.setAccessibleName(self.tr("Run agent"))
-            btn_run.clicked.connect(
-                lambda checked, aid=agent.agent_id: self._run_agent_now(aid)
-            )
+            btn_run.clicked.connect(lambda checked, aid=agent.agent_id: self._run_agent_now(aid))
             actions_layout.addWidget(btn_run)
 
             btn_notify = QPushButton(self.tr("🔕") if notif_enabled else self.tr("🔔"))
             btn_notify.setAccessibleName(self.tr("Toggle notifications"))
             btn_notify.setToolTip(self.tr("Toggle notifications"))
-            btn_notify.clicked.connect(
-                lambda checked, aid=agent.agent_id, ne=notif_enabled: (
-                    self._toggle_notifications(aid, ne)
-                )
-            )
+            btn_notify.clicked.connect(lambda checked, aid=agent.agent_id, ne=notif_enabled: self._toggle_notifications(aid, ne))
             actions_layout.addWidget(btn_notify)
 
             self.agent_table.setCellWidget(row, 7, actions_widget)
@@ -548,11 +516,7 @@ class AgentsTab(BaseTab):
         registry = self._get_registry()
         registered = registry.register_agent(config)
 
-        self.append_output(
-            self.tr("✅ Agent '{}' created (ID: {})\n").format(
-                registered.name, registered.agent_id
-            )
-        )
+        self.append_output(self.tr("✅ Agent '{}' created (ID: {})\n").format(registered.name, registered.agent_id))
         self._current_plan = None
         self.plan_preview.clear()
         self.goal_input.clear()
@@ -586,14 +550,10 @@ class AgentsTab(BaseTab):
             return
         if currently_enabled:
             agent.notification_config["enabled"] = False
-            self.append_output(
-                self.tr("Notifications disabled for {}\n").format(agent_id)
-            )
+            self.append_output(self.tr("Notifications disabled for {}\n").format(agent_id))
         else:
             agent.notification_config["enabled"] = True
-            self.append_output(
-                self.tr("Notifications enabled for {}\n").format(agent_id)
-            )
+            self.append_output(self.tr("Notifications enabled for {}\n").format(agent_id))
         registry.save()
         self._refresh_agents_table()
 

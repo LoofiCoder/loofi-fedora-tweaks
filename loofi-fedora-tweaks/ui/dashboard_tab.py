@@ -16,6 +16,7 @@ Features:
 import getpass
 from collections import deque
 
+from core.diagnostics import HealthScoreManager
 from core.plugins.interface import PluginInterface
 from core.plugins.metadata import PluginMetadata
 from PyQt6.QtCore import QSize, Qt, QTimer, pyqtSignal
@@ -36,7 +37,6 @@ from services.system import SystemManager
 from services.system.processes import ProcessManager
 from utils.commands import PrivilegedCommand
 from utils.focus_mode import FocusMode
-from core.diagnostics import HealthScoreManager
 from utils.history import HistoryManager
 from utils.log import get_logger
 from utils.monitor import SystemMonitor
@@ -173,9 +173,7 @@ class HealthScoreWidget(QWidget):
         bg_pen.setWidth(8)
         bg_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
         painter.setPen(bg_pen)
-        painter.drawArc(
-            cx - radius, cy - radius, radius * 2, radius * 2, 225 * 16, -270 * 16
-        )
+        painter.drawArc(cx - radius, cy - radius, radius * 2, radius * 2, 225 * 16, -270 * 16)
 
         # Score arc
         if self._score > 0:
@@ -184,9 +182,7 @@ class HealthScoreWidget(QWidget):
             score_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
             painter.setPen(score_pen)
             span = int(-270 * 16 * self._score / 100)
-            painter.drawArc(
-                cx - radius, cy - radius, radius * 2, radius * 2, 225 * 16, span
-            )
+            painter.drawArc(cx - radius, cy - radius, radius * 2, radius * 2, 225 * 16, span)
 
         # Score text — use palette foreground
         painter.setPen(self.palette().color(self.foregroundRole()))
@@ -196,17 +192,13 @@ class HealthScoreWidget(QWidget):
         font.setPixelSize(22)
         font.setBold(True)
         painter.setFont(font)
-        painter.drawText(
-            cx - 20, cy - 8, 40, 30, Qt.AlignmentFlag.AlignCenter, str(self._score)
-        )
+        painter.drawText(cx - 20, cy - 8, 40, 30, Qt.AlignmentFlag.AlignCenter, str(self._score))
 
         # Grade text
         font.setPixelSize(14)
         painter.setFont(font)
         painter.setPen(self._color)
-        painter.drawText(
-            cx - 20, cy + 18, 40, 20, Qt.AlignmentFlag.AlignCenter, self._grade
-        )
+        painter.drawText(cx - 20, cy + 18, 40, 20, Qt.AlignmentFlag.AlignCenter, self._grade)
 
         # Label — use palette mid color
         font.setPixelSize(11)
@@ -353,9 +345,7 @@ class DashboardTab(QWidget, PluginInterface):
         card_layout = QHBoxLayout(card)
 
         self._health_gauge = HealthScoreWidget()
-        self._health_gauge.setToolTip(
-            DASH_HEALTH_SCORE + "\n" + self.tr("Click for detailed breakdown")
-        )
+        self._health_gauge.setToolTip(DASH_HEALTH_SCORE + "\n" + self.tr("Click for detailed breakdown"))
         self._health_gauge.clicked.connect(self._show_health_detail)
         card_layout.addWidget(self._health_gauge)
 
@@ -493,9 +483,7 @@ class DashboardTab(QWidget, PluginInterface):
                 if i < len(top):
                     p = top[i]
                     name = p.name[:30]
-                    lbl.setText(
-                        f"  {name:<30}  CPU {p.cpu_percent:>5.1f}%  MEM {p.memory_percent:>5.1f}%  PID {p.pid}"
-                    )
+                    lbl.setText(f"  {name:<30}  CPU {p.cpu_percent:>5.1f}%  MEM {p.memory_percent:>5.1f}%  PID {p.pid}")
                 else:
                     lbl.setText("—")
         except (RuntimeError, OSError, ValueError) as e:
@@ -589,9 +577,7 @@ class DashboardTab(QWidget, PluginInterface):
                 undo_btn.setObjectName("undoBtn")
                 undo_btn.setFixedWidth(80)
                 action_id = entry.id
-                undo_btn.clicked.connect(
-                    lambda checked, aid=action_id: self._do_undo(aid)
-                )
+                undo_btn.clicked.connect(lambda checked, aid=action_id: self._do_undo(aid))
                 row.addWidget(undo_btn)
 
                 container = QWidget()
@@ -666,9 +652,7 @@ class DashboardTab(QWidget, PluginInterface):
         if mem:
             pct = mem.percent_used
             self.spark_ram.add_value(pct)
-            self.lbl_ram.setText(
-                f"RAM: {mem.used_human} / {mem.total_human} ({pct:.0f}%)"
-            )
+            self.lbl_ram.setText(f"RAM: {mem.used_human} / {mem.total_human} ({pct:.0f}%)")
 
         self._refresh_network()
 
@@ -691,9 +675,7 @@ class DashboardTab(QWidget, PluginInterface):
                 dl = (rx - self._prev_rx) / 2
                 ul = (tx - self._prev_tx) / 2
                 self.lbl_net.setText("Network")
-                self.lbl_net_detail.setText(
-                    f"↓ {self._human_speed(dl)}   ↑ {self._human_speed(ul)}"
-                )
+                self.lbl_net_detail.setText(f"↓ {self._human_speed(dl)}   ↑ {self._human_speed(ul)}")
             self._prev_rx = rx
             self._prev_tx = tx
         except (OSError, ValueError, RuntimeError) as e:
@@ -735,16 +717,10 @@ class DashboardTab(QWidget, PluginInterface):
 
     def _go_to_tab(self, tab_name: str):
         """Navigate to a named tab via MainWindow."""
-        if (
-            tab_name
-            and self.main_window is not None
-            and hasattr(self.main_window, "switch_to_tab")
-        ):
+        if tab_name and self.main_window is not None and hasattr(self.main_window, "switch_to_tab"):
             self.main_window.switch_to_tab(tab_name)
             if hasattr(self.main_window, "show_toast"):
-                self.main_window.show_toast(
-                    "Quick Action", f"Navigated to {tab_name}", "general"
-                )
+                self.main_window.show_toast("Quick Action", f"Navigated to {tab_name}", "general")
 
     def _go_maintenance(self):
         if hasattr(self.main_window, "switch_to_tab"):
@@ -766,6 +742,7 @@ class DashboardTab(QWidget, PluginInterface):
         """Open the health detail drill-down dialog (v47.0)."""
         try:
             from ui.health_detail_dialog import HealthDetailDialog
+
             dialog = HealthDetailDialog(self)
             dialog.navigate_to_tab.connect(self._navigate_to_tab)
             dialog.exec()
@@ -774,7 +751,7 @@ class DashboardTab(QWidget, PluginInterface):
 
     def _navigate_to_tab(self, tab_id: str):
         """Navigate to a tab by its plugin ID."""
-        if hasattr(self, 'main_window') and self.main_window is not None and hasattr(self.main_window, 'switch_to_tab'):
+        if hasattr(self, "main_window") and self.main_window is not None and hasattr(self.main_window, "switch_to_tab"):
             tab_name_map = {
                 "performance": "Performance",
                 "storage": "Storage",
@@ -789,9 +766,7 @@ class DashboardTab(QWidget, PluginInterface):
         """Refresh the health score gauge."""
         try:
             hs = HealthScoreManager.calculate()
-            self._health_gauge.set_score(
-                hs.score, hs.grade, hs.color, hs.recommendations
-            )
+            self._health_gauge.set_score(hs.score, hs.grade, hs.color, hs.recommendations)
             if hs.recommendations:
                 recs_text = "\n".join(f"• {r}" for r in hs.recommendations[:3])
             else:
@@ -820,7 +795,10 @@ class DashboardTab(QWidget, PluginInterface):
         color = "#a6e3a1" if is_active else "#6c7086"
 
         self._focus_mode_btn = self._action_btn(
-            status_text, "settings", color, self._toggle_focus_mode,
+            status_text,
+            "settings",
+            color,
+            self._toggle_focus_mode,
         )
         self._focus_mode_btn.setToolTip(DASH_FOCUS_MODE)
         self._inner.addWidget(self._focus_mode_btn)

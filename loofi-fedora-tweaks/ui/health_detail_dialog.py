@@ -5,6 +5,7 @@ Modal dialog showing per-component health score breakdown with
 actionable fix suggestions and navigation links to relevant tabs.
 """
 
+from core.diagnostics import HealthDetailManager, HealthScoreManager
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
     QDialog,
@@ -16,8 +17,6 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QVBoxLayout,
 )
-from core.diagnostics import HealthDetailManager
-from core.diagnostics import HealthScoreManager
 
 
 class HealthDetailDialog(QDialog):
@@ -43,9 +42,7 @@ class HealthDetailDialog(QDialog):
 
         grade_label = QLabel(health.grade)
         grade_label.setObjectName("healthGradeLabel")
-        grade_label.setStyleSheet(
-            f"font-size: 48px; font-weight: bold; color: {health.color};"
-        )
+        grade_label.setStyleSheet(f"font-size: 48px; font-weight: bold; color: {health.color};")
         header.addWidget(grade_label)
 
         score_info = QVBoxLayout()

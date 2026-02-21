@@ -10,6 +10,7 @@ Provides:
 - Output log for operation feedback
 """
 
+from core.diagnostics import HealthTimeline
 from core.plugins.interface import PluginInterface
 from core.plugins.metadata import PluginMetadata
 from PyQt6.QtWidgets import (
@@ -30,7 +31,6 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from core.diagnostics import HealthTimeline
 
 from ui.base_tab import BaseTab
 from ui.tab_utils import CONTENT_MARGINS
@@ -158,9 +158,7 @@ class HealthTimelineTab(QWidget, PluginInterface):
                 self.tr("ID"),
             ]
         )
-        self.metrics_table.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.Stretch
-        )
+        self.metrics_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.metrics_table.setMaximumHeight(250)
         self.metrics_table.setProperty("maxVisibleRows", 4)
         BaseTab.configure_table(self.metrics_table)
@@ -213,12 +211,7 @@ class HealthTimelineTab(QWidget, PluginInterface):
         """Refresh the summary section."""
         summary = self.timeline.get_summary(hours=24)
         if not summary:
-            self.summary_label.setText(
-                self.tr(
-                    "No metrics recorded in the last 24 hours. "
-                    "Click 'Record Snapshot' to capture current system state."
-                )
-            )
+            self.summary_label.setText(self.tr("No metrics recorded in the last 24 hours. Click 'Record Snapshot' to capture current system state."))
             return
 
         lines = []
@@ -231,12 +224,7 @@ class HealthTimelineTab(QWidget, PluginInterface):
 
         for metric_type, data in summary.items():
             label, unit = metric_labels.get(metric_type, (metric_type, ""))
-            lines.append(
-                f"{label}: min={data['min']:.1f}{unit}, "
-                f"max={data['max']:.1f}{unit}, "
-                f"avg={data['avg']:.1f}{unit} "
-                f"({data['count']} samples)"
-            )
+            lines.append(f"{label}: min={data['min']:.1f}{unit}, max={data['max']:.1f}{unit}, avg={data['avg']:.1f}{unit} ({data['count']} samples)")
 
         self.summary_label.setText("\n".join(lines) if lines else self.tr("No data"))
 
@@ -297,9 +285,7 @@ class HealthTimelineTab(QWidget, PluginInterface):
         reply = QMessageBox.question(
             self,
             self.tr("Prune Data"),
-            self.tr(
-                "Delete metrics older than 30 days?\nThis action cannot be undone."
-            ),
+            self.tr("Delete metrics older than 30 days?\nThis action cannot be undone."),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if reply != QMessageBox.StandardButton.Yes:
@@ -320,24 +306,13 @@ class HealthTimelineTab(QWidget, PluginInterface):
         anomalies = self.timeline.detect_anomalies(metric_type, hours)
 
         if not anomalies:
-            self.anomaly_label.setText(
-                self.tr(
-                    "No anomalies detected in {} (last {} hours).".format(
-                        metric_type, hours
-                    )
-                )
-            )
+            self.anomaly_label.setText(self.tr("No anomalies detected in {} (last {} hours).".format(metric_type, hours)))
             self.log(self.tr("No anomalies detected."))
             return
 
-        lines = [
-            self.tr("Found {} anomalies in {}:").format(len(anomalies), metric_type)
-        ]
+        lines = [self.tr("Found {} anomalies in {}:").format(len(anomalies), metric_type)]
         for a in anomalies[:10]:  # Limit display
-            lines.append(
-                f"  {a['timestamp']}: {a['value']:.2f} "
-                f"({a['deviation']:.1f} std devs from mean {a['mean']:.2f})"
-            )
+            lines.append(f"  {a['timestamp']}: {a['value']:.2f} ({a['deviation']:.1f} std devs from mean {a['mean']:.2f})")
         if len(anomalies) > 10:
             lines.append(self.tr("  ... and {} more").format(len(anomalies) - 10))
 
