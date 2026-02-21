@@ -30,7 +30,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from utils.health_timeline import HealthTimeline
+from core.diagnostics import HealthTimeline
 
 from ui.base_tab import BaseTab
 from ui.tab_utils import CONTENT_MARGINS

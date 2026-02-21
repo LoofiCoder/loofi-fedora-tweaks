@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from utils.action_result import ActionResult
+from core.executor.action_result import ActionResult
 from utils.agent_scheduler import AgentScheduler
 from utils.agents import AgentRegistry, AgentStatus
 from utils.event_bus import EventBus
@@ -45,7 +45,7 @@ class TestAgentImplementations(unittest.TestCase):
         self.scheduler.shutdown()
         self.event_bus.clear()
 
-    @patch("utils.action_executor.ActionExecutor.run")
+    @patch("core.executor.action_executor.ActionExecutor.run")
     def test_cleanup_agent_triggers_on_low_storage(self, mock_executor_run):
         """Test cleanup agent responds to system.storage.low event."""
         # Setup mock to return success for all commands
@@ -99,7 +99,7 @@ class TestAgentImplementations(unittest.TestCase):
             f"Should execute cleanup commands, got: {commands_executed}"
         )
 
-    @patch("utils.action_executor.ActionExecutor.run")
+    @patch("core.executor.action_executor.ActionExecutor.run")
     def test_security_agent_responds_to_public_wifi(self, mock_executor_run):
         """Test security agent adjusts firewall on public Wi-Fi connection."""
         # Setup mock
@@ -144,7 +144,7 @@ class TestAgentImplementations(unittest.TestCase):
             "Should execute firewall-cmd"
         )
 
-    @patch("utils.action_executor.ActionExecutor.run")
+    @patch("core.executor.action_executor.ActionExecutor.run")
     def test_security_agent_restores_on_trusted_network(self, mock_executor_run):
         """Test security agent restores normal firewall on trusted network."""
         # Setup mock
@@ -173,7 +173,7 @@ class TestAgentImplementations(unittest.TestCase):
         state = self.registry.get_state(security_agent.agent_id)
         self.assertGreater(state.run_count, 0)
 
-    @patch("utils.action_executor.ActionExecutor.run")
+    @patch("core.executor.action_executor.ActionExecutor.run")
     def test_thermal_agent_responds_to_throttling(self, mock_executor_run):
         """Test thermal agent reduces load when throttling occurs."""
         # Setup mock
@@ -216,7 +216,7 @@ class TestAgentImplementations(unittest.TestCase):
             f"Should execute thermal management commands, got: {commands_executed}"
         )
 
-    @patch("utils.action_executor.ActionExecutor.run")
+    @patch("core.executor.action_executor.ActionExecutor.run")
     def test_thermal_agent_restores_on_normal(self, mock_executor_run):
         """Test thermal agent restores performance when temperature normalizes."""
         # Setup mock
@@ -245,7 +245,7 @@ class TestAgentImplementations(unittest.TestCase):
         state = self.registry.get_state(thermal_agent.agent_id)
         self.assertGreater(state.run_count, 0)
 
-    @patch("utils.action_executor.ActionExecutor.run")
+    @patch("core.executor.action_executor.ActionExecutor.run")
     def test_agent_rate_limiting(self, mock_executor_run):
         """Test agents respect max_actions_per_hour rate limit."""
         # Setup mock
@@ -293,7 +293,7 @@ class TestAgentImplementations(unittest.TestCase):
             f"Agent should execute once (4 actions), got {state.run_count} actions recorded"
         )
 
-    @patch("utils.action_executor.ActionExecutor.run")
+    @patch("core.executor.action_executor.ActionExecutor.run")
     def test_agent_handles_command_failure(self, mock_executor_run):
         """Test agent handles command execution failures gracefully."""
         # Setup mock to return failure
@@ -320,7 +320,7 @@ class TestAgentImplementations(unittest.TestCase):
         self.assertEqual(state.status, AgentStatus.ERROR, "Agent should be in ERROR state")
         self.assertGreater(state.error_count, 0, "Error count should increase")
 
-    @patch("utils.action_executor.ActionExecutor.run")
+    @patch("core.executor.action_executor.ActionExecutor.run")
     def test_agent_publishes_completion_events(self, mock_executor_run):
         """Test agents publish success/failure events after execution."""
         # Setup mock
@@ -387,7 +387,7 @@ class TestAgentImplementations(unittest.TestCase):
                 self.assertIsNotNone(action.name)
                 self.assertIsNotNone(action.severity)
 
-    @patch("utils.action_executor.ActionExecutor.run")
+    @patch("core.executor.action_executor.ActionExecutor.run")
     def test_event_simulator_methods(self, mock_executor_run):
         """Test EventSimulator helper methods work correctly."""
         mock_executor_run.return_value = ActionResult.ok(

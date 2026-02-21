@@ -16,8 +16,8 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QVBoxLayout,
 )
-from utils.health_detail import HealthDetailManager
-from utils.health_score import HealthScoreManager
+from core.diagnostics import HealthDetailManager
+from core.diagnostics import HealthScoreManager
 
 
 class HealthDetailDialog(QDialog):

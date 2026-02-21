@@ -58,8 +58,8 @@ class TestAgentExecutorExtended(unittest.TestCase):
 
     # ==================== execute_action routing ====================
 
-    @patch("utils.agent_runner.Arbitrator.can_proceed", return_value=True)
-    @patch("utils.agent_runner.CentralExecutor.run")
+    @patch("core.agents.agent_runner.Arbitrator.can_proceed", return_value=True)
+    @patch("core.agents.agent_runner.CentralExecutor.run")
     def test_execute_action_command_path(self, mock_run, mock_can_proceed):
         """Command-based action routes through CentralExecutor."""
         mock_run.return_value = SimpleNamespace(
@@ -77,8 +77,8 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertEqual(result.action_id, "x1")
         self.assertEqual(result.data.get("exit_code"), 0)
 
-    @patch("utils.agent_runner.Arbitrator.can_proceed", return_value=True)
-    @patch("utils.agent_runner.CentralExecutor.run")
+    @patch("core.agents.agent_runner.Arbitrator.can_proceed", return_value=True)
+    @patch("core.agents.agent_runner.CentralExecutor.run")
     def test_execute_action_git_push_master_blocked(self, mock_run, mock_can_proceed):
         """Agent command policy blocks git push to protected master branch."""
         agent = self._agent()
@@ -91,8 +91,8 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertTrue(result.data.get("policy_block"))
         mock_run.assert_not_called()
 
-    @patch("utils.agent_runner.Arbitrator.can_proceed", return_value=True)
-    @patch("utils.agent_runner.CentralExecutor.run")
+    @patch("core.agents.agent_runner.Arbitrator.can_proceed", return_value=True)
+    @patch("core.agents.agent_runner.CentralExecutor.run")
     def test_execute_action_git_push_feature_allowed(self, mock_run, mock_can_proceed):
         """Agent command policy allows git push to non-protected branches."""
         mock_run.return_value = SimpleNamespace(
@@ -113,9 +113,9 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertEqual(result.data.get("exit_code"), 0)
         mock_run.assert_called_once()
 
-    @patch("utils.agent_runner.Arbitrator.can_proceed", return_value=True)
-    @patch("utils.agent_runner.CentralExecutor.run")
-    @patch("utils.agent_runner.AgentExecutor._is_on_protected_branch", return_value=True)
+    @patch("core.agents.agent_runner.Arbitrator.can_proceed", return_value=True)
+    @patch("core.agents.agent_runner.CentralExecutor.run")
+    @patch("core.agents.agent_runner.AgentExecutor._is_on_protected_branch", return_value=True)
     def test_execute_action_git_push_implicit_blocked_on_master(
         self, mock_is_protected, mock_run, mock_can_proceed
     ):
@@ -130,9 +130,9 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertTrue(result.data.get("policy_block"))
         mock_run.assert_not_called()
 
-    @patch("utils.agent_runner.Arbitrator.can_proceed", return_value=True)
-    @patch("utils.agent_runner.CentralExecutor.run")
-    @patch("utils.agent_runner.AgentExecutor._is_on_protected_branch", return_value=False)
+    @patch("core.agents.agent_runner.Arbitrator.can_proceed", return_value=True)
+    @patch("core.agents.agent_runner.CentralExecutor.run")
+    @patch("core.agents.agent_runner.AgentExecutor._is_on_protected_branch", return_value=False)
     def test_execute_action_git_push_implicit_allowed_on_feature(
         self, mock_is_protected, mock_run, mock_can_proceed
     ):
@@ -152,9 +152,9 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertEqual(result.data.get("exit_code"), 0)
         mock_run.assert_called_once()
 
-    @patch("utils.agent_runner.Arbitrator.can_proceed", return_value=True)
+    @patch("core.agents.agent_runner.Arbitrator.can_proceed", return_value=True)
     @patch(
-        "utils.agent_runner.AgentExecutor._execute_operation",
+        "core.agents.agent_runner.AgentExecutor._execute_operation",
         side_effect=RuntimeError("boom"),
     )
     def test_execute_action_operation_exception(self, mock_exec_op, mock_can_proceed):
@@ -179,7 +179,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("Rate limit", result.message)
 
-    @patch("utils.agent_runner.Arbitrator.can_proceed", return_value=True)
+    @patch("core.agents.agent_runner.Arbitrator.can_proceed", return_value=True)
     def test_execute_action_dry_run(self, mock_can_proceed):
         """Dry run mode returns success without executing action."""
         agent = self._agent(dry_run=True)
@@ -204,7 +204,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertIn("manual confirmation", result.message)
         self.assertIn("critical", result.message.lower())
 
-    @patch("utils.agent_runner.Arbitrator.can_proceed", return_value=False)
+    @patch("core.agents.agent_runner.Arbitrator.can_proceed", return_value=False)
     def test_execute_action_arbitrator_blocks(self, mock_can_proceed):
         """Arbitrator denial defers action with appropriate message."""
         agent = self._agent()
@@ -216,7 +216,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertIn("deferred by arbitrator", result.message)
         self.assertTrue(result.data.get("arbitrator_block"))
 
-    @patch("utils.agent_runner.Arbitrator.can_proceed", return_value=True)
+    @patch("core.agents.agent_runner.Arbitrator.can_proceed", return_value=True)
     def test_execute_action_no_op_path(self, mock_can_proceed):
         """Action with neither operation nor command returns no-op failure."""
         agent = self._agent()
@@ -230,7 +230,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
     # ==================== _execute_operation ====================
 
     @patch(
-        "utils.agent_runner.AgentExecutor._op_check_cpu",
+        "core.agents.agent_runner.AgentExecutor._op_check_cpu",
         return_value=AgentResult(success=True, message="ok"),
     )
     def test_execute_operation_known_handler(self, mock_check_cpu):
@@ -335,7 +335,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
 
     # ==================== _op_check_cpu ====================
 
-    @patch("utils.agent_runner.os.cpu_count", return_value=4)
+    @patch("core.agents.agent_runner.os.cpu_count", return_value=4)
     @patch("builtins.open", create=True)
     def test_op_check_cpu_above_threshold(self, mock_open, mock_cpu_count):
         """CPU load above threshold triggers alert."""
@@ -347,7 +347,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertTrue(result.data.get("alert"))
         self.assertGreater(result.data.get("cpu_percent"), 50)
 
-    @patch("utils.agent_runner.os.cpu_count", return_value=4)
+    @patch("core.agents.agent_runner.os.cpu_count", return_value=4)
     @patch("builtins.open", create=True)
     def test_op_check_cpu_below_threshold(self, mock_open, mock_cpu_count):
         """CPU load below threshold returns normal status."""
@@ -406,7 +406,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
 
     # ==================== _op_check_disk ====================
 
-    @patch("utils.agent_runner.os.statvfs")
+    @patch("core.agents.agent_runner.os.statvfs")
     def test_op_check_disk_above_threshold(self, mock_statvfs):
         """Disk usage above threshold triggers alert."""
         mock_statvfs.return_value = SimpleNamespace(
@@ -418,7 +418,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertTrue(result.data.get("alert"))
 
-    @patch("utils.agent_runner.os.statvfs")
+    @patch("core.agents.agent_runner.os.statvfs")
     def test_op_check_disk_below_threshold(self, mock_statvfs):
         """Disk usage below threshold returns normal status."""
         mock_statvfs.return_value = SimpleNamespace(
@@ -430,7 +430,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertFalse(result.data.get("alert"))
 
-    @patch("utils.agent_runner.os.statvfs", side_effect=OSError("disk error"))
+    @patch("core.agents.agent_runner.os.statvfs", side_effect=OSError("disk error"))
     def test_op_check_disk_oserror(self, mock_statvfs):
         """Disk check OSError returns failure result."""
         result = AgentExecutor._op_check_disk({})
@@ -481,14 +481,14 @@ class TestAgentExecutorExtended(unittest.TestCase):
 
     # ==================== _op_scan_ports ====================
 
-    @patch("utils.agent_runner.subprocess.run")
+    @patch("core.agents.agent_runner.subprocess.run")
     def test_op_scan_ports_nonzero(self, mock_run):
         """Port scan nonzero return code is reported as failure."""
         mock_run.return_value = MagicMock(returncode=1, stdout="")
         result = AgentExecutor._op_scan_ports({})
         self.assertFalse(result.success)
 
-    @patch("utils.agent_runner.subprocess.run")
+    @patch("core.agents.agent_runner.subprocess.run")
     def test_op_scan_ports_success(self, mock_run):
         """Port scan parses listening addresses from ss output."""
         mock_run.return_value = MagicMock(
@@ -499,7 +499,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertEqual(result.data.get("port_count"), 1)
 
-    @patch("utils.agent_runner.subprocess.run", side_effect=OSError("x"))
+    @patch("core.agents.agent_runner.subprocess.run", side_effect=OSError("x"))
     def test_op_scan_ports_exception(self, mock_run):
         """Port scan OSError branch returns failure result."""
         result = AgentExecutor._op_scan_ports({})
@@ -507,7 +507,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
 
     # ==================== _op_check_failed_logins ====================
 
-    @patch("utils.agent_runner.subprocess.run")
+    @patch("core.agents.agent_runner.subprocess.run")
     def test_op_failed_logins_alert(self, mock_run):
         """Failed login check triggers alert above configured threshold."""
         mock_run.return_value = MagicMock(returncode=0, stdout="a\nb\nc\n")
@@ -515,7 +515,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertTrue(result.data.get("alert"))
 
-    @patch("utils.agent_runner.subprocess.run")
+    @patch("core.agents.agent_runner.subprocess.run")
     def test_op_failed_logins_below_threshold(self, mock_run):
         """Failed login count below threshold returns no alert."""
         mock_run.return_value = MagicMock(returncode=0, stdout="a\n")
@@ -524,7 +524,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertFalse(result.data.get("alert"))
         self.assertEqual(result.data.get("failed_logins"), 1)
 
-    @patch("utils.agent_runner.subprocess.run", side_effect=OSError("journalctl fail"))
+    @patch("core.agents.agent_runner.subprocess.run", side_effect=OSError("journalctl fail"))
     def test_op_failed_logins_exception(self, mock_run):
         """Failed login check exception returns failure result."""
         result = AgentExecutor._op_check_failed_logins({})
@@ -533,7 +533,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
 
     # ==================== _op_check_firewall ====================
 
-    @patch("utils.agent_runner.subprocess.run")
+    @patch("core.agents.agent_runner.subprocess.run")
     def test_op_firewall_active(self, mock_run):
         """Active firewall returns success with no alert."""
         mock_run.return_value = MagicMock(returncode=0, stdout="active\n")
@@ -542,7 +542,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertTrue(result.data.get("firewall_active"))
         self.assertFalse(result.data.get("alert"))
 
-    @patch("utils.agent_runner.subprocess.run")
+    @patch("core.agents.agent_runner.subprocess.run")
     def test_op_firewall_inactive(self, mock_run):
         """Firewall inactive path is reported as alerting success."""
         mock_run.return_value = MagicMock(returncode=0, stdout="inactive\n")
@@ -550,7 +550,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertTrue(result.data.get("alert"))
 
-    @patch("utils.agent_runner.subprocess.run", side_effect=OSError("x"))
+    @patch("core.agents.agent_runner.subprocess.run", side_effect=OSError("x"))
     def test_op_firewall_exception(self, mock_run):
         """Firewall check exception path returns failure."""
         result = AgentExecutor._op_check_firewall({})
@@ -558,9 +558,9 @@ class TestAgentExecutorExtended(unittest.TestCase):
 
     # ==================== _op_check_dnf_updates ====================
 
-    @patch("utils.agent_runner.shutil.which", return_value="/usr/bin/dnf")
-    @patch("utils.agent_runner.SystemManager.is_atomic", return_value=False)
-    @patch("utils.agent_runner.subprocess.run")
+    @patch("core.agents.agent_runner.shutil.which", return_value="/usr/bin/dnf")
+    @patch("core.agents.agent_runner.SystemManager.is_atomic", return_value=False)
+    @patch("core.agents.agent_runner.subprocess.run")
     def test_op_dnf_updates_available(self, mock_run, mock_atomic, mock_which):
         """DNF check return code 100 reports available updates."""
         mock_run.return_value = MagicMock(returncode=100, stdout="pkg1\npkg2\n")
@@ -568,9 +568,9 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertEqual(result.data.get("dnf_updates"), 2)
 
-    @patch("utils.agent_runner.shutil.which", return_value="/usr/bin/dnf")
-    @patch("utils.agent_runner.SystemManager.is_atomic", return_value=False)
-    @patch("utils.agent_runner.subprocess.run")
+    @patch("core.agents.agent_runner.shutil.which", return_value="/usr/bin/dnf")
+    @patch("core.agents.agent_runner.SystemManager.is_atomic", return_value=False)
+    @patch("core.agents.agent_runner.subprocess.run")
     def test_op_dnf_updates_no_updates(self, mock_run, mock_atomic, mock_which):
         """DNF check return code 0 reports system up to date."""
         mock_run.return_value = MagicMock(returncode=0, stdout="")
@@ -580,8 +580,8 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertFalse(result.data.get("alert"))
         self.assertIn("up to date", result.message.lower())
 
-    @patch("utils.agent_runner.SystemManager.is_atomic", return_value=True)
-    @patch("utils.agent_runner.subprocess.run")
+    @patch("core.agents.agent_runner.SystemManager.is_atomic", return_value=True)
+    @patch("core.agents.agent_runner.subprocess.run")
     def test_op_dnf_updates_atomic_available(self, mock_run, mock_atomic):
         """Atomic system with available update reports rpm-ostree updates."""
         mock_run.return_value = MagicMock(
@@ -593,8 +593,8 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertIn("rpm-ostree", result.message)
         self.assertGreater(result.data.get("dnf_updates"), 0)
 
-    @patch("utils.agent_runner.SystemManager.is_atomic", return_value=True)
-    @patch("utils.agent_runner.subprocess.run")
+    @patch("core.agents.agent_runner.SystemManager.is_atomic", return_value=True)
+    @patch("core.agents.agent_runner.subprocess.run")
     def test_op_dnf_updates_atomic_no_update(self, mock_run, mock_atomic):
         """Atomic system with no updates reports up to date."""
         mock_run.return_value = MagicMock(
@@ -606,9 +606,9 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertEqual(result.data.get("dnf_updates"), 0)
         self.assertIn("up to date", result.message.lower())
 
-    @patch("utils.agent_runner.shutil.which", return_value="/usr/bin/dnf")
-    @patch("utils.agent_runner.SystemManager.is_atomic", return_value=False)
-    @patch("utils.agent_runner.subprocess.run", side_effect=OSError("x"))
+    @patch("core.agents.agent_runner.shutil.which", return_value="/usr/bin/dnf")
+    @patch("core.agents.agent_runner.SystemManager.is_atomic", return_value=False)
+    @patch("core.agents.agent_runner.subprocess.run", side_effect=OSError("x"))
     def test_op_dnf_updates_exception(self, mock_run, mock_atomic, mock_which):
         """DNF check exception path returns failure."""
         result = AgentExecutor._op_check_dnf_updates({})
@@ -616,7 +616,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
 
     # ==================== _op_check_flatpak_updates ====================
 
-    @patch("utils.agent_runner.subprocess.run")
+    @patch("core.agents.agent_runner.subprocess.run")
     def test_op_flatpak_updates_success_with_updates(self, mock_run):
         """Flatpak check with available updates reports count."""
         mock_run.return_value = MagicMock(
@@ -628,7 +628,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertEqual(result.data.get("flatpak_updates"), 3)
         self.assertTrue(result.data.get("alert"))
 
-    @patch("utils.agent_runner.subprocess.run")
+    @patch("core.agents.agent_runner.subprocess.run")
     def test_op_flatpak_updates_nonzero(self, mock_run):
         """Flatpak non-zero return path reports check complete with zero updates."""
         mock_run.return_value = MagicMock(returncode=1, stdout="")
@@ -636,14 +636,14 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertEqual(result.data.get("flatpak_updates"), 0)
 
-    @patch("utils.agent_runner.subprocess.run", side_effect=FileNotFoundError())
+    @patch("core.agents.agent_runner.subprocess.run", side_effect=FileNotFoundError())
     def test_op_flatpak_not_installed(self, mock_run):
         """Flatpak-not-installed path returns success with informative message."""
         result = AgentExecutor._op_check_flatpak_updates({})
         self.assertTrue(result.success)
         self.assertIn("not installed", result.message.lower())
 
-    @patch("utils.agent_runner.subprocess.run", side_effect=OSError("flatpak broken"))
+    @patch("core.agents.agent_runner.subprocess.run", side_effect=OSError("flatpak broken"))
     def test_op_flatpak_updates_oserror(self, mock_run):
         """Flatpak OSError (not FileNotFoundError) returns failure result."""
         result = AgentExecutor._op_check_flatpak_updates({})
@@ -652,7 +652,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
 
     # ==================== _op_clean_dnf_cache ====================
 
-    @patch("utils.agent_runner.subprocess.run")
+    @patch("core.agents.agent_runner.subprocess.run")
     def test_op_clean_dnf_cache_success_known_size(self, mock_run):
         """DNF cache with successful du reports size string."""
         mock_run.return_value = MagicMock(returncode=0, stdout="1.2G\t/var/cache/dnf")
@@ -661,7 +661,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertEqual(result.data.get("cache_size"), "1.2G")
         self.assertIn("1.2G", result.message)
 
-    @patch("utils.agent_runner.subprocess.run")
+    @patch("core.agents.agent_runner.subprocess.run")
     def test_op_clean_dnf_cache_unknown_size(self, mock_run):
         """DNF cache path with nonzero du result returns unknown size."""
         mock_run.return_value = MagicMock(returncode=1, stdout="")
@@ -669,7 +669,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertIn("unknown", result.message.lower())
 
-    @patch("utils.agent_runner.subprocess.run", side_effect=OSError("du fail"))
+    @patch("core.agents.agent_runner.subprocess.run", side_effect=OSError("du fail"))
     def test_op_clean_dnf_cache_exception(self, mock_run):
         """DNF cache check exception returns failure result."""
         result = AgentExecutor._op_clean_dnf_cache({})
@@ -678,7 +678,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
 
     # ==================== _op_vacuum_journal ====================
 
-    @patch("utils.agent_runner.subprocess.run")
+    @patch("core.agents.agent_runner.subprocess.run")
     def test_op_vacuum_journal_success(self, mock_run):
         """Journal usage with successful journalctl reports disk usage."""
         mock_run.return_value = MagicMock(
@@ -689,7 +689,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertIn("256.0M", result.message)
 
-    @patch("utils.agent_runner.subprocess.run")
+    @patch("core.agents.agent_runner.subprocess.run")
     def test_op_vacuum_journal_unknown(self, mock_run):
         """Journal usage non-zero path returns unknown usage summary."""
         mock_run.return_value = MagicMock(returncode=1, stdout="")
@@ -697,7 +697,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertIn("unknown", result.message.lower())
 
-    @patch("utils.agent_runner.subprocess.run", side_effect=OSError("journal fail"))
+    @patch("core.agents.agent_runner.subprocess.run", side_effect=OSError("journal fail"))
     def test_op_vacuum_journal_exception(self, mock_run):
         """Journal check exception returns failure result."""
         result = AgentExecutor._op_vacuum_journal({})
@@ -706,7 +706,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
 
     # ==================== _op_clean_temp_files ====================
 
-    @patch("utils.agent_runner.subprocess.run")
+    @patch("core.agents.agent_runner.subprocess.run")
     def test_op_clean_temp_files_all_success(self, mock_run):
         """Temp cleanup with all successful du calls reports sizes."""
         mock_run.return_value = MagicMock(returncode=0, stdout="500M\t/tmp")
@@ -716,7 +716,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         # Both paths should have sizes
         self.assertIn("/tmp", result.data.get("sizes", {}))
 
-    @patch("utils.agent_runner.subprocess.run")
+    @patch("core.agents.agent_runner.subprocess.run")
     def test_op_clean_temp_files_handles_one_error(self, mock_run):
         """Temp cleanup size summary handles per-path subprocess exceptions."""
         mock_run.side_effect = [
@@ -729,7 +729,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
 
     # ==================== _op_detect_workload ====================
 
-    @patch("utils.agent_runner.os.cpu_count", return_value=4)
+    @patch("core.agents.agent_runner.os.cpu_count", return_value=4)
     @patch("builtins.open", create=True)
     def test_op_detect_workload_idle(self, mock_open, mock_cpu_count):
         """Low CPU and low memory classified as idle workload."""
@@ -757,7 +757,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertEqual(result.data.get("workload"), "idle")
 
-    @patch("utils.agent_runner.os.cpu_count", return_value=4)
+    @patch("core.agents.agent_runner.os.cpu_count", return_value=4)
     @patch("builtins.open", create=True)
     def test_op_detect_workload_light(self, mock_open, mock_cpu_count):
         """Moderate CPU (10-30%) with low memory classified as light."""
@@ -784,7 +784,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertEqual(result.data.get("workload"), "light")
 
-    @patch("utils.agent_runner.os.cpu_count", return_value=4)
+    @patch("core.agents.agent_runner.os.cpu_count", return_value=4)
     @patch("builtins.open", create=True)
     def test_op_detect_workload_moderate(self, mock_open, mock_cpu_count):
         """CPU 30-70% classified as moderate workload."""
@@ -811,7 +811,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertEqual(result.data.get("workload"), "moderate")
 
-    @patch("utils.agent_runner.os.cpu_count", return_value=4)
+    @patch("core.agents.agent_runner.os.cpu_count", return_value=4)
     @patch("builtins.open", create=True)
     def test_op_detect_workload_heavy(self, mock_open, mock_cpu_count):
         """CPU 70-90% classified as heavy workload."""
@@ -838,7 +838,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertEqual(result.data.get("workload"), "heavy")
 
-    @patch("utils.agent_runner.os.cpu_count", return_value=4)
+    @patch("core.agents.agent_runner.os.cpu_count", return_value=4)
     @patch("builtins.open", create=True)
     def test_op_detect_workload_extreme(self, mock_open, mock_cpu_count):
         """CPU 90%+ classified as extreme workload."""
@@ -970,8 +970,8 @@ class TestAgentSchedulerExtended(unittest.TestCase):
 
     # ==================== _run_loop ====================
 
-    @patch("utils.agent_runner.time.time", return_value=1000)
-    @patch("utils.agent_runner.AgentRegistry.instance")
+    @patch("core.agents.agent_runner.time.time", return_value=1000)
+    @patch("core.agents.agent_runner.AgentRegistry.instance")
     def test_run_loop_executes_interval_agent(self, mock_instance, mock_time):
         """Scheduler loop executes eligible interval trigger and saves state."""
         scheduler = AgentScheduler()
@@ -991,8 +991,8 @@ class TestAgentSchedulerExtended(unittest.TestCase):
             mock_exec.assert_called_once()
             reg.save.assert_called_once()
 
-    @patch("utils.agent_runner.time.time", return_value=1000)
-    @patch("utils.agent_runner.AgentRegistry.instance")
+    @patch("core.agents.agent_runner.time.time", return_value=1000)
+    @patch("core.agents.agent_runner.AgentRegistry.instance")
     def test_run_loop_skips_non_idle_state(self, mock_instance, mock_time):
         """Scheduler loop skips agents not in idle/running state."""
         scheduler = AgentScheduler()
@@ -1013,7 +1013,7 @@ class TestAgentSchedulerExtended(unittest.TestCase):
 
     # ==================== _execute_agent ====================
 
-    @patch("utils.agent_runner.AgentExecutor.execute_action")
+    @patch("core.agents.agent_runner.AgentExecutor.execute_action")
     def test_execute_agent_callback_exception(self, mock_exec):
         """Agent execution continues when result callback raises error."""
         scheduler = AgentScheduler()
@@ -1030,7 +1030,7 @@ class TestAgentSchedulerExtended(unittest.TestCase):
             self.assertEqual(state.status, AgentStatus.IDLE)
             mock_notify.assert_called_once()
 
-    @patch("utils.agent_runner.AgentExecutor.execute_action")
+    @patch("core.agents.agent_runner.AgentExecutor.execute_action")
     def test_execute_agent_stop_event_breaks_loop(self, mock_exec):
         """Stop event during action loop breaks execution early."""
         scheduler = AgentScheduler()
@@ -1062,7 +1062,7 @@ class TestAgentSchedulerExtended(unittest.TestCase):
             # Should not have executed any actions because stop_event was set
             mock_exec.assert_not_called()
 
-    @patch("utils.agent_runner.AgentExecutor.execute_action")
+    @patch("core.agents.agent_runner.AgentExecutor.execute_action")
     def test_execute_agent_no_callback(self, mock_exec):
         """Agent execution without callback set does not raise."""
         scheduler = AgentScheduler()
@@ -1078,7 +1078,7 @@ class TestAgentSchedulerExtended(unittest.TestCase):
             scheduler._execute_agent(agent, state, reg)
             self.assertEqual(state.status, AgentStatus.IDLE)
 
-    @patch("utils.agent_runner.AgentExecutor.execute_action")
+    @patch("core.agents.agent_runner.AgentExecutor.execute_action")
     def test_execute_agent_alert_logging(self, mock_exec):
         """Agent result with alert data triggers warning log."""
         scheduler = AgentScheduler()
@@ -1091,13 +1091,13 @@ class TestAgentSchedulerExtended(unittest.TestCase):
         )
 
         with patch.object(scheduler, "_notify_result"):
-            with patch("utils.agent_runner.logger") as mock_logger:
+            with patch("core.agents.agent_runner.logger") as mock_logger:
                 scheduler._execute_agent(agent, state, reg)
                 mock_logger.warning.assert_called()
 
     # ==================== run_agent_now ====================
 
-    @patch("utils.agent_runner.AgentRegistry.instance")
+    @patch("core.agents.agent_runner.AgentRegistry.instance")
     def test_run_agent_now_agent_not_found(self, mock_instance):
         """Manual trigger for nonexistent agent returns failure result."""
         scheduler = AgentScheduler()
@@ -1110,8 +1110,8 @@ class TestAgentSchedulerExtended(unittest.TestCase):
         self.assertFalse(results[0].success)
         self.assertIn("not found", results[0].message)
 
-    @patch("utils.agent_runner.AgentExecutor.execute_action")
-    @patch("utils.agent_runner.AgentRegistry.instance")
+    @patch("core.agents.agent_runner.AgentExecutor.execute_action")
+    @patch("core.agents.agent_runner.AgentRegistry.instance")
     def test_run_agent_now_callback_exception(self, mock_instance, mock_exec):
         """Manual run continues and saves even when callback raises."""
         scheduler = AgentScheduler()
@@ -1130,8 +1130,8 @@ class TestAgentSchedulerExtended(unittest.TestCase):
             self.assertEqual(len(results), 1)
             reg.save.assert_called_once()
 
-    @patch("utils.agent_runner.AgentExecutor.execute_action")
-    @patch("utils.agent_runner.AgentRegistry.instance")
+    @patch("core.agents.agent_runner.AgentExecutor.execute_action")
+    @patch("core.agents.agent_runner.AgentRegistry.instance")
     def test_run_agent_now_success(self, mock_instance, mock_exec):
         """Successful manual run returns results and saves state."""
         scheduler = AgentScheduler()
@@ -1153,10 +1153,10 @@ class TestAgentSchedulerExtended(unittest.TestCase):
     # ==================== _notify_result ====================
 
     @patch(
-        "utils.agent_notifications.AgentNotificationConfig.from_dict",
+        "core.agents.agent_notifications.AgentNotificationConfig.from_dict",
         side_effect=RuntimeError("x"),
     )
-    @patch("utils.agent_notifications.AgentNotifier")
+    @patch("core.agents.agent_notifications.AgentNotifier")
     def test_notify_result_exception_is_swallowed(
         self, mock_notifier_cls, mock_from_dict
     ):
@@ -1168,8 +1168,8 @@ class TestAgentSchedulerExtended(unittest.TestCase):
         self.assertTrue(hasattr(scheduler, "_notifier"))
         scheduler._notifier.notify.assert_not_called()
 
-    @patch("utils.agent_notifications.AgentNotificationConfig.from_dict")
-    @patch("utils.agent_notifications.AgentNotifier")
+    @patch("core.agents.agent_notifications.AgentNotificationConfig.from_dict")
+    @patch("core.agents.agent_notifications.AgentNotifier")
     def test_notify_result_success(self, mock_notifier_cls, mock_from_dict):
         """Successful notification path creates notifier and calls notify."""
         scheduler = AgentScheduler()

@@ -16,7 +16,7 @@ from PyQt6.QtWidgets import (
 )
 from utils import system_info_utils
 from utils.log import get_logger
-from utils.report_exporter import ReportExporter
+from core.export import ReportExporter
 
 logger = get_logger(__name__)
 

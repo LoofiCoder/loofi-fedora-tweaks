@@ -13,7 +13,7 @@ except ImportError:
 pytestmark = pytest.mark.skipif(not _HAS_FASTAPI, reason="fastapi not installed")
 
 if _HAS_FASTAPI:
-    from utils.action_result import ActionResult
+    from core.executor.action_result import ActionResult
     from utils.api_server import APIServer
     from utils.auth import AuthManager
 
@@ -42,7 +42,7 @@ def valid_token(test_client, valid_api_key):
 @pytest.fixture
 def mock_action_executor():
     """Mock ActionExecutor.run to prevent actual system execution."""
-    with patch("utils.action_executor.ActionExecutor.run") as mock_run:
+    with patch("core.executor.action_executor.ActionExecutor.run") as mock_run:
         mock_run.return_value = ActionResult(
             success=True,
             message="Mock execution successful",
@@ -392,7 +392,7 @@ class TestErrorHandling:
 
     def test_allowlisted_command_failure(self, test_client, valid_token):
         """ActionExecutor should handle allowlisted command failure gracefully."""
-        with patch("utils.action_executor.ActionExecutor.run") as mock_run:
+        with patch("core.executor.action_executor.ActionExecutor.run") as mock_run:
             mock_run.return_value = ActionResult(
                 success=False,
                 message="Command failed",
@@ -417,7 +417,7 @@ class TestErrorHandling:
 
     def test_executor_exception_handling(self, test_client, valid_token):
         """ActionExecutor exceptions should propagate as 500 errors."""
-        with patch("utils.action_executor.ActionExecutor.run") as mock_run:
+        with patch("core.executor.action_executor.ActionExecutor.run") as mock_run:
             mock_run.side_effect = Exception("Unexpected executor error")
 
             # Use allowlisted command to pass the allowlist check
@@ -434,7 +434,7 @@ class TestErrorHandling:
 
     def test_action_result_serialization(self, test_client, valid_token):
         """ActionResult should serialize correctly with all fields."""
-        with patch("utils.action_executor.ActionExecutor.run") as mock_run:
+        with patch("core.executor.action_executor.ActionExecutor.run") as mock_run:
             mock_run.return_value = ActionResult(
                 success=True,
                 message="Test action completed",
@@ -466,7 +466,7 @@ class TestErrorHandling:
 
     def test_network_timeout_simulation(self, test_client, valid_token):
         """Simulate network timeout during execution."""
-        with patch("utils.action_executor.ActionExecutor.run") as mock_run:
+        with patch("core.executor.action_executor.ActionExecutor.run") as mock_run:
             import subprocess
             mock_run.side_effect = subprocess.TimeoutExpired("test", 120)
 

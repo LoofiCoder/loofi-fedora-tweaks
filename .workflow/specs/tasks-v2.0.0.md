@@ -24,7 +24,7 @@
 - **Acceptance:** services/software/flatpak.py has full implementation, utils shim re-exports with warning
 - **Docs:** none
 - **Tests:** test_flatpak_manager.py updated to import from services.software
-- **Status:** ⬜ TODO
+- **Status:** ✅ DONE
 
 ### TASK-003: Migrate services/desktop/
 
@@ -36,7 +36,7 @@
 - **Acceptance:** services/desktop/ has 4 service files + **init**.py, utils are deprecation shims
 - **Docs:** none
 - **Tests:** Related tests updated
-- **Status:** ⬜ TODO
+- **Status:** ✅ DONE
 
 ### TASK-004: Migrate services/storage/
 
@@ -48,7 +48,7 @@
 - **Acceptance:** services/storage/ populated, utils are shims
 - **Docs:** none
 - **Tests:** Related tests updated
-- **Status:** ⬜ TODO
+- **Status:** ✅ DONE
 
 ### TASK-005: Migrate services/network/
 
@@ -60,7 +60,7 @@
 - **Acceptance:** services/network/ populated, utils are shims
 - **Docs:** none
 - **Tests:** Related tests updated
-- **Status:** ⬜ TODO
+- **Status:** ✅ DONE
 
 ### TASK-006: Migrate services/virtualization/
 
@@ -72,7 +72,7 @@
 - **Acceptance:** services/virtualization/ populated, utils are shims
 - **Docs:** none
 - **Tests:** Related tests updated
-- **Status:** ⬜ TODO
+- **Status:** ✅ DONE
 
 ### TASK-007: Migrate services/security/
 
@@ -84,7 +84,7 @@
 - **Acceptance:** services/security/ populated, utils are shims, auth.py in api/
 - **Docs:** none
 - **Tests:** Related tests updated
-- **Status:** ⬜ TODO
+- **Status:** ✅ DONE
 
 ### TASK-008: Remove deprecated shims
 
@@ -95,8 +95,8 @@
 - **Description:** Remove 3 legacy deprecated shim modules, fix remaining imports
 - **Acceptance:** Shim files deleted, no imports reference them, tests updated
 - **Docs:** none
-- **Tests:** test_battery_shim.py updated, test_clarity_update.py updated
-- **Status:** ⬜ TODO
+- **Tests:** test_battery_shim.py deleted, test_clarity_update.py updated, 6 test files updated
+- **Status:** ✅ DONE
 
 ### TASK-009: Populate core stubs
 
@@ -108,7 +108,7 @@
 - **Acceptance:** All 4 core dirs have real implementations, utils originals become shims
 - **Docs:** none
 - **Tests:** Existing tests still pass
-- **Status:** ⬜ TODO
+- **Status:** ✅ DONE
 
 ### TASK-010: Update UI/CLI imports
 
@@ -120,7 +120,7 @@
 - **Acceptance:** No UI/CLI file imports from deprecated utils paths
 - **Docs:** none
 - **Tests:** All tests pass
-- **Status:** ⬜ TODO
+- **Status:** ✅ DONE
 
 ### TASK-011: Update documentation
 
@@ -132,7 +132,7 @@
 - **Acceptance:** All docs reflect v2.0.0 structure
 - **Docs:** Self
 - **Tests:** N/A
-- **Status:** ⬜ TODO
+- **Status:** ✅ DONE
 
 ### TASK-012: Full verification
 
@@ -144,4 +144,4 @@
 - **Acceptance:** 6016+ tests pass, ≥80% coverage, clean lint/typecheck
 - **Docs:** none
 - **Tests:** Full suite
-- **Status:** ⬜ TODO
+- **Status:** ✅ DONE

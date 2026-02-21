@@ -3,7 +3,7 @@
 > **Canonical architecture reference.** All agent and instruction files MUST reference this document
 > instead of duplicating architecture details. This file is updated when structure changes.
 >
-> **Version**: 48.0.0 "Sidebar Index" | **Python**: 3.12+ | **Framework**: PyQt6 | **Platform**: Fedora Linux
+> **Version**: 2.0.0 "Evolution" | **Python**: 3.12+ | **Framework**: PyQt6 | **Platform**: Fedora Linux
 
 ## Project Structure
 
@@ -23,27 +23,36 @@ loofi-fedora-tweaks/          # Application root (on PYTHONPATH)
 │   ├── confirm_dialog.py     # ConfirmActionDialog for dangerous ops
 │   ├── health_detail_dialog.py  # Health score drill-down modal (v47.0)
 │   └── tour_overlay.py       # First-run guided tour spotlight overlay (v47.0)
-├── utils/                    # Business logic — 110 modules
+├── utils/                    # Business logic — shared ops + backward-compat shims
 │   ├── commands.py           # PrivilegedCommand builder (pkexec, never sudo)
 │   ├── command_runner.py     # CommandRunner (QProcess async wrapper)
 │   ├── system.py             # SystemManager (is_atomic, get_package_manager)
 │   ├── operations.py         # Shared operations layer (API for GUI + CLI)
 │   ├── errors.py             # Error hierarchy (LoofiError, DnfLockedError, etc.)
-│   ├── safety.py             # SafetyManager — snapshot prompts before risky ops
 │   ├── history.py            # HistoryManager — action logging with undo
 │   ├── experience_level.py   # ExperienceLevelManager — beginner/intermediate/advanced mode
-│   ├── health_detail.py      # HealthDetailManager — per-component scores and fixes
 │   ├── guided_tour.py        # GuidedTourManager — first-run guided tour steps
 │   ├── quick_commands.py     # QuickCommandRegistry — command palette quick actions
 │   ├── hardware_profiles.py  # Auto-detect hardware via /sys/class/dmi/
 │   ├── daemon.py             # Background scheduler (--daemon mode)
-│   └── remote_config.py      # Remote config fetch with local fallback
+│   ├── remote_config.py      # Remote config fetch with local fallback
+│   └── ...                   # Deprecated shims re-exporting from services/ and core/
 ├── cli/
 │   └── main.py               # CLI subcommands with --json output (calls utils/)
-├── core/
+├── core/                     # Core domain modules (v2.0.0)
 │   ├── executor/             # BaseActionExecutor + ActionResult
-│   └── plugins/              # Plugin engine (LoofiPlugin ABC)
-├── services/                 # Service layer (future expansion)
+│   ├── plugins/              # Plugin engine (LoofiPlugin ABC)
+│   ├── export/               # AnsibleExporter, KickstartGenerator, ReportExporter
+│   ├── diagnostics/          # DiagnosticManager, TroubleshootManager, LogManager
+│   ├── ai/                   # AIAssistant, AISettingsManager, AIFeaturesManager
+│   └── agents/               # AgentRegistry, AgentPlanner, AgentExecutor, AgentScheduler
+├── services/                 # Service layer (v2.0.0)
+│   ├── security/             # FirewallManager, SecureBoot, USBGuard, Sandbox, Safety, Audit, Risk
+│   ├── software/             # FlatpakManager
+│   ├── desktop/              # DesktopUtils, KwinTiling, Tiling, WaylandDisplay
+│   ├── storage/              # CloudSync, StateTeleport
+│   ├── network/              # NetworkUtils, NetworkMonitor, Ports, MeshDiscovery
+│   └── virtualization/       # Virtualization, VMManager, VFIO, DisposableVM
 ├── config/                   # apps.json, polkit policy, systemd unit
 ├── assets/                   # modern.qss, icon-pack, resources
 ├── agents/                   # Agent runtime (in-app AI orchestration)
@@ -52,7 +61,7 @@ loofi-fedora-tweaks/          # Application root (on PYTHONPATH)
 ├── plugins/                  # Third-party plugin directory
 └── resources/                # Static resources
 
-tests/                        # 208 test files, 6016+ tests (82% coverage)
+tests/                        # 210+ test files, 6383+ tests (80%+ coverage)
 scripts/                      # Build, workflow, CI scripts
 config/                       # Global config templates
 docs/                         # User guide, release notes, checklists
@@ -74,12 +83,13 @@ completions/                  # Shell completions (bash, zsh)
 
 | Layer | Path | Allowed | Forbidden |
 | ------- | ------ | --------- | ----------- |
-| **UI** | `ui/*_tab.py` | PyQt6 widgets, signals, BaseTab | `subprocess`, business logic, `import utils` for ops |
-| **Utils** | `utils/*.py` | Business logic, subprocess, system calls | `import PyQt6`, UI references |
-| **CLI** | `cli/main.py` | Argument parsing, calls utils/ | `import ui`, PyQt6 |
-| **Core** | `core/executor/` | Action abstraction | Direct UI/CLI coupling |
+| **UI** | `ui/*_tab.py` | PyQt6 widgets, signals, BaseTab | `subprocess`, business logic |
+| **Services** | `services/*/` | Domain services (security, network, storage, etc.) | `import PyQt6`, UI references |
+| **Core** | `core/*/` | Domain modules (agents, ai, diagnostics, export) | `import PyQt6`, UI references |
+| **Utils** | `utils/*.py` | Shared ops, commands, errors; backward-compat shims | `import PyQt6`, UI references |
+| **CLI** | `cli/main.py` | Argument parsing, calls services/core/utils | `import ui`, PyQt6 |
 
-**Key rule**: `utils/operations.py` is the shared API. GUI and CLI are consumers only.
+**Key rule**: `services/` and `core/` hold domain logic. `utils/` retains shared infrastructure (`commands.py`, `errors.py`, `operations.py`) and backward-compatible shims. GUI and CLI are consumers only.
 
 ## Tab Layout (28 Feature Tabs)
 
@@ -262,7 +272,7 @@ for plugin in PluginRegistry.instance():
 - **Both paths**: Test success AND failure
 - **No root**: Tests run in CI without privileges
 - **Path setup**: `sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'loofi-fedora-tweaks'))`
-- **Coverage**: 82% current, 85% stretch goal
+- **Coverage**: 80%+ current, 85% stretch goal
 
 ## Adding a Feature
 

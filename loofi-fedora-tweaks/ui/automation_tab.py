@@ -31,8 +31,8 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from utils.ansible_export import AnsibleExporter
-from utils.kickstart import KickstartGenerator
+from core.export import AnsibleExporter
+from core.export import KickstartGenerator
 from utils.scheduler import ScheduledTask, TaskAction, TaskSchedule, TaskScheduler
 
 from ui.base_tab import BaseTab

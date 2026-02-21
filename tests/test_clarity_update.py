@@ -105,20 +105,6 @@ class TestCommandRunnerRename(unittest.TestCase):
         self.assertTrue(hasattr(CommandRunner, "error_occurred"))
         self.assertTrue(hasattr(CommandRunner, "progress_update"))
 
-    def test_backward_compat_shim(self):
-        """Old import path should still work but emit deprecation warning."""
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            # Force reimport
-            if "utils.process" in sys.modules:
-                del sys.modules["utils.process"]
-            from utils.process import CommandRunner  # noqa: F401
-
-            self.assertTrue(len(w) >= 1)
-            self.assertTrue(
-                any(issubclass(warning.category, DeprecationWarning) for warning in w)
-            )
-
 
 class TestOllamaStopService(unittest.TestCase):
     """Test the new stop_service method for Ollama."""

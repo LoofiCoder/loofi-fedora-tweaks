@@ -17,20 +17,20 @@ class TestActionResult:
     """Test unified ActionResult schema."""
 
     def test_ok_convenience(self):
-        from utils.action_result import ActionResult
+        from core.executor.action_result import ActionResult
         r = ActionResult.ok("All good", exit_code=0)
         assert r.success is True
         assert r.message == "All good"
         assert r.exit_code == 0
 
     def test_fail_convenience(self):
-        from utils.action_result import ActionResult
+        from core.executor.action_result import ActionResult
         r = ActionResult.fail("Broke", exit_code=1)
         assert r.success is False
         assert r.exit_code == 1
 
     def test_previewed_convenience(self):
-        from utils.action_result import ActionResult
+        from core.executor.action_result import ActionResult
         r = ActionResult.previewed("dnf", ["check-update"])
         assert r.preview is True
         assert r.success is True
@@ -39,13 +39,13 @@ class TestActionResult:
         assert r.data["args"] == ["check-update"]
 
     def test_auto_timestamp(self):
-        from utils.action_result import ActionResult
+        from core.executor.action_result import ActionResult
         before = time.time()
         r = ActionResult.ok("test")
         assert r.timestamp >= before
 
     def test_to_dict_roundtrip(self):
-        from utils.action_result import ActionResult
+        from core.executor.action_result import ActionResult
         r = ActionResult(
             success=True,
             message="hello",
@@ -72,13 +72,13 @@ class TestActionResult:
         assert r2.action_id == r.action_id
 
     def test_truncation_in_to_dict(self):
-        from utils.action_result import ActionResult
+        from core.executor.action_result import ActionResult
         r = ActionResult.ok("test", stdout="x" * 10000)
         d = r.to_dict()
         assert len(d["stdout"]) == ActionResult._MAX_OUTPUT
 
     def test_from_dict_defaults(self):
-        from utils.action_result import ActionResult
+        from core.executor.action_result import ActionResult
         r = ActionResult.from_dict({})
         assert r.success is False
         assert r.message == ""
@@ -89,7 +89,7 @@ class TestActionExecutor:
     """Test centralized executor."""
 
     def test_preview_mode(self):
-        from utils.action_executor import ActionExecutor
+        from core.executor.action_executor import ActionExecutor
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch("core.executor.action_executor._LOG_DIR", tmpdir), \
                  patch("core.executor.action_executor._ACTION_LOG_FILE", os.path.join(tmpdir, "log.jsonl")):
@@ -100,7 +100,7 @@ class TestActionExecutor:
                 assert "hello" in result.message
 
     def test_global_dry_run(self):
-        from utils.action_executor import ActionExecutor
+        from core.executor.action_executor import ActionExecutor
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch("core.executor.action_executor._LOG_DIR", tmpdir), \
                  patch("core.executor.action_executor._ACTION_LOG_FILE", os.path.join(tmpdir, "log.jsonl")):
@@ -113,7 +113,7 @@ class TestActionExecutor:
                     ActionExecutor.set_global_dry_run(False)
 
     def test_successful_execution(self):
-        from utils.action_executor import ActionExecutor
+        from core.executor.action_executor import ActionExecutor
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch("core.executor.action_executor._LOG_DIR", tmpdir), \
                  patch("core.executor.action_executor._ACTION_LOG_FILE", os.path.join(tmpdir, "log.jsonl")):
@@ -123,7 +123,7 @@ class TestActionExecutor:
                 assert "hello world" in result.stdout
 
     def test_failed_execution(self):
-        from utils.action_executor import ActionExecutor
+        from core.executor.action_executor import ActionExecutor
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch("core.executor.action_executor._LOG_DIR", tmpdir), \
                  patch("core.executor.action_executor._ACTION_LOG_FILE", os.path.join(tmpdir, "log.jsonl")):
@@ -132,7 +132,7 @@ class TestActionExecutor:
                 assert result.exit_code != 0
 
     def test_command_not_found(self):
-        from utils.action_executor import ActionExecutor
+        from core.executor.action_executor import ActionExecutor
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch("core.executor.action_executor._LOG_DIR", tmpdir), \
                  patch("core.executor.action_executor._ACTION_LOG_FILE", os.path.join(tmpdir, "log.jsonl")):
@@ -142,7 +142,7 @@ class TestActionExecutor:
                 assert "not found" in result.message.lower()
 
     def test_timeout(self):
-        from utils.action_executor import ActionExecutor
+        from core.executor.action_executor import ActionExecutor
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch("core.executor.action_executor._LOG_DIR", tmpdir), \
                  patch("core.executor.action_executor._ACTION_LOG_FILE", os.path.join(tmpdir, "log.jsonl")):
@@ -151,7 +151,7 @@ class TestActionExecutor:
                 assert "timed out" in result.message.lower()
 
     def test_pkexec_prepend(self):
-        from utils.action_executor import ActionExecutor
+        from core.executor.action_executor import ActionExecutor
         executor = ActionExecutor()
         cmd = executor._build_command("dnf", ["clean", "all"], privileged=True)
         assert cmd[0] == "pkexec"
@@ -159,7 +159,7 @@ class TestActionExecutor:
         assert cmd[2:] == ["clean", "all"]
 
     def test_flatpak_wrapping(self):
-        from utils.action_executor import ActionExecutor
+        from core.executor.action_executor import ActionExecutor
         executor = ActionExecutor()
         with patch("os.path.exists", return_value=True):
             cmd = executor._build_command("dnf", ["check-update"])
@@ -167,7 +167,7 @@ class TestActionExecutor:
             assert cmd[1] == "--host"
 
     def test_flatpak_no_double_wrap(self):
-        from utils.action_executor import ActionExecutor
+        from core.executor.action_executor import ActionExecutor
         executor = ActionExecutor()
         with patch("os.path.exists", return_value=True):
             cmd = executor._build_command("flatpak-spawn", ["--host", "echo"])
@@ -176,7 +176,7 @@ class TestActionExecutor:
             assert cmd.count("flatpak-spawn") == 1
 
     def test_action_id_propagation(self):
-        from utils.action_executor import ActionExecutor
+        from core.executor.action_executor import ActionExecutor
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch("core.executor.action_executor._LOG_DIR", tmpdir), \
                  patch("core.executor.action_executor._ACTION_LOG_FILE", os.path.join(tmpdir, "log.jsonl")):
@@ -188,7 +188,7 @@ class TestActionLog:
     """Test structured action logging."""
 
     def test_log_written(self):
-        from utils.action_executor import ActionExecutor
+        from core.executor.action_executor import ActionExecutor
         with tempfile.TemporaryDirectory() as tmpdir:
             log_path = os.path.join(tmpdir, "log.jsonl")
             with patch("core.executor.action_executor._LOG_DIR", tmpdir), \
@@ -202,7 +202,7 @@ class TestActionLog:
                 assert "echo" in entry["cmd"]
 
     def test_get_action_log(self):
-        from utils.action_executor import ActionExecutor
+        from core.executor.action_executor import ActionExecutor
         with tempfile.TemporaryDirectory() as tmpdir:
             log_path = os.path.join(tmpdir, "log.jsonl")
             with patch("core.executor.action_executor._LOG_DIR", tmpdir), \
@@ -213,7 +213,7 @@ class TestActionLog:
                 assert len(entries) == 2
 
     def test_log_trimming(self):
-        from utils.action_executor import ActionExecutor, MAX_LOG_ENTRIES
+        from core.executor.action_executor import ActionExecutor, MAX_LOG_ENTRIES
         with tempfile.TemporaryDirectory() as tmpdir:
             log_path = os.path.join(tmpdir, "log.jsonl")
             with patch("core.executor.action_executor._LOG_DIR", tmpdir), \
@@ -229,7 +229,7 @@ class TestActionLog:
                 assert len(lines) == MAX_LOG_ENTRIES
 
     def test_export_diagnostics(self):
-        from utils.action_executor import ActionExecutor
+        from core.executor.action_executor import ActionExecutor
         with tempfile.TemporaryDirectory() as tmpdir:
             log_path = os.path.join(tmpdir, "log.jsonl")
             with patch("core.executor.action_executor._LOG_DIR", tmpdir), \
@@ -241,7 +241,7 @@ class TestActionLog:
                 assert len(diag["action_log"]) >= 1
 
     def test_log_failure_does_not_crash(self):
-        from utils.action_executor import ActionExecutor
+        from core.executor.action_executor import ActionExecutor
         with patch("core.executor.action_executor._LOG_DIR", "/nonexistent/path"), \
              patch("core.executor.action_executor._ACTION_LOG_FILE", "/nonexistent/path/log.jsonl"):
             # Should not raise — logging failure is non-critical

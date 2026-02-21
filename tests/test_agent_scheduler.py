@@ -59,16 +59,16 @@ def _make_mock_action(name="test-action", command="echo", args=None, operation=N
 class TestAgentSchedulerInit(unittest.TestCase):
     """Tests for AgentScheduler initialization."""
 
-    @patch('utils.agent_scheduler.EventBus')
-    @patch('utils.agent_scheduler.AgentRegistry')
+    @patch('core.agents.agent_scheduler.EventBus')
+    @patch('core.agents.agent_scheduler.AgentRegistry')
     def test_init_with_registry(self, mock_registry_cls, mock_event_bus_cls):
         mock_registry = MagicMock()
         mock_registry.get_enabled_agents.return_value = []
         scheduler = AgentScheduler(registry=mock_registry)
         self.assertEqual(scheduler._registry, mock_registry)
 
-    @patch('utils.agent_scheduler.EventBus')
-    @patch('utils.agent_scheduler.AgentRegistry')
+    @patch('core.agents.agent_scheduler.EventBus')
+    @patch('core.agents.agent_scheduler.AgentRegistry')
     def test_init_default_registry(self, mock_registry_cls, mock_event_bus_cls):
         mock_instance = MagicMock()
         mock_instance.get_enabled_agents.return_value = []
@@ -76,8 +76,8 @@ class TestAgentSchedulerInit(unittest.TestCase):
         AgentScheduler()
         mock_registry_cls.instance.assert_called_once()
 
-    @patch('utils.agent_scheduler.EventBus')
-    @patch('utils.agent_scheduler.AgentRegistry')
+    @patch('core.agents.agent_scheduler.EventBus')
+    @patch('core.agents.agent_scheduler.AgentRegistry')
     def test_init_subscribes_enabled_agents(self, mock_registry_cls, mock_event_bus_cls):
         agent = _make_mock_agent(subscriptions=["system.boot", "system.shutdown"])
         mock_registry = MagicMock()
@@ -89,8 +89,8 @@ class TestAgentSchedulerInit(unittest.TestCase):
         self.assertIn(agent.agent_id, scheduler._subscribed_agents)
         self.assertEqual(mock_event_bus.subscribe.call_count, 2)
 
-    @patch('utils.agent_scheduler.EventBus')
-    @patch('utils.agent_scheduler.AgentRegistry')
+    @patch('core.agents.agent_scheduler.EventBus')
+    @patch('core.agents.agent_scheduler.AgentRegistry')
     def test_init_skips_agents_without_subscriptions(self, mock_registry_cls, mock_event_bus_cls):
         agent = _make_mock_agent(subscriptions=[])
         mock_registry = MagicMock()
@@ -106,8 +106,8 @@ class TestAgentSchedulerInit(unittest.TestCase):
 class TestCreateAgentCallback(unittest.TestCase):
     """Tests for AgentScheduler._create_agent_callback()."""
 
-    @patch('utils.agent_scheduler.EventBus')
-    @patch('utils.agent_scheduler.AgentRegistry')
+    @patch('core.agents.agent_scheduler.EventBus')
+    @patch('core.agents.agent_scheduler.AgentRegistry')
     def test_callback_calls_execute_agent(self, mock_registry_cls, mock_event_bus_cls):
         mock_registry = MagicMock()
         mock_registry.get_enabled_agents.return_value = []
@@ -125,8 +125,8 @@ class TestCreateAgentCallback(unittest.TestCase):
 class TestExecuteAgent(unittest.TestCase):
     """Tests for AgentScheduler._execute_agent()."""
 
-    @patch('utils.agent_scheduler.EventBus')
-    @patch('utils.agent_scheduler.AgentRegistry')
+    @patch('core.agents.agent_scheduler.EventBus')
+    @patch('core.agents.agent_scheduler.AgentRegistry')
     def _create_scheduler(self, mock_registry_cls, mock_event_bus_cls, agents=None):
         mock_registry = MagicMock()
         mock_registry.get_enabled_agents.return_value = agents or []
@@ -227,8 +227,8 @@ class TestExecuteAgent(unittest.TestCase):
 class TestExecuteAction(unittest.TestCase):
     """Tests for AgentScheduler._execute_action()."""
 
-    @patch('utils.agent_scheduler.EventBus')
-    @patch('utils.agent_scheduler.AgentRegistry')
+    @patch('core.agents.agent_scheduler.EventBus')
+    @patch('core.agents.agent_scheduler.AgentRegistry')
     def _create_scheduler(self, mock_registry_cls, mock_event_bus_cls):
         mock_registry = MagicMock()
         mock_registry.get_enabled_agents.return_value = []
@@ -245,7 +245,7 @@ class TestExecuteAction(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertIn("DRY RUN", result.message)
 
-    @patch('utils.action_executor.ActionExecutor')
+    @patch('core.executor.action_executor.ActionExecutor')
     def test_execute_action_with_command(self, mock_executor_cls):
         scheduler = self._create_scheduler()
         agent = _make_mock_agent(dry_run=False)
@@ -266,7 +266,7 @@ class TestExecuteAction(unittest.TestCase):
         self.assertTrue(result.success)
         mock_executor_cls.run.assert_called_once()
 
-    @patch('utils.action_executor.ActionExecutor')
+    @patch('core.executor.action_executor.ActionExecutor')
     def test_execute_action_privileged(self, mock_executor_cls):
         scheduler = self._create_scheduler()
         agent = _make_mock_agent(dry_run=False)
@@ -313,8 +313,8 @@ class TestExecuteAction(unittest.TestCase):
 class TestPublishAgentEvent(unittest.TestCase):
     """Tests for AgentScheduler._publish_agent_event()."""
 
-    @patch('utils.agent_scheduler.EventBus')
-    @patch('utils.agent_scheduler.AgentRegistry')
+    @patch('core.agents.agent_scheduler.EventBus')
+    @patch('core.agents.agent_scheduler.AgentRegistry')
     def test_publish_success_event(self, mock_registry_cls, mock_event_bus_cls):
         mock_registry = MagicMock()
         mock_registry.get_enabled_agents.return_value = []
@@ -332,8 +332,8 @@ class TestPublishAgentEvent(unittest.TestCase):
         call_kwargs = mock_event_bus.publish.call_args
         self.assertIn("success", call_kwargs.kwargs.get("topic", call_kwargs[1].get("topic", "")))
 
-    @patch('utils.agent_scheduler.EventBus')
-    @patch('utils.agent_scheduler.AgentRegistry')
+    @patch('core.agents.agent_scheduler.EventBus')
+    @patch('core.agents.agent_scheduler.AgentRegistry')
     def test_publish_failure_event(self, mock_registry_cls, mock_event_bus_cls):
         mock_registry = MagicMock()
         mock_registry.get_enabled_agents.return_value = []
@@ -355,8 +355,8 @@ class TestPublishAgentEvent(unittest.TestCase):
 class TestRegisterAgent(unittest.TestCase):
     """Tests for AgentScheduler.register_agent()."""
 
-    @patch('utils.agent_scheduler.EventBus')
-    @patch('utils.agent_scheduler.AgentRegistry')
+    @patch('core.agents.agent_scheduler.EventBus')
+    @patch('core.agents.agent_scheduler.AgentRegistry')
     def test_register_enabled_agent(self, mock_registry_cls, mock_event_bus_cls):
         mock_registry = MagicMock()
         mock_registry.get_enabled_agents.return_value = []
@@ -369,8 +369,8 @@ class TestRegisterAgent(unittest.TestCase):
         scheduler.register_agent(agent)
         self.assertIn(agent.agent_id, scheduler._subscribed_agents)
 
-    @patch('utils.agent_scheduler.EventBus')
-    @patch('utils.agent_scheduler.AgentRegistry')
+    @patch('core.agents.agent_scheduler.EventBus')
+    @patch('core.agents.agent_scheduler.AgentRegistry')
     def test_register_disabled_agent_ignored(self, mock_registry_cls, mock_event_bus_cls):
         mock_registry = MagicMock()
         mock_registry.get_enabled_agents.return_value = []
@@ -380,8 +380,8 @@ class TestRegisterAgent(unittest.TestCase):
         scheduler.register_agent(agent)
         self.assertNotIn(agent.agent_id, scheduler._subscribed_agents)
 
-    @patch('utils.agent_scheduler.EventBus')
-    @patch('utils.agent_scheduler.AgentRegistry')
+    @patch('core.agents.agent_scheduler.EventBus')
+    @patch('core.agents.agent_scheduler.AgentRegistry')
     def test_register_agent_no_subscriptions_ignored(self, mock_registry_cls, mock_event_bus_cls):
         mock_registry = MagicMock()
         mock_registry.get_enabled_agents.return_value = []
@@ -395,8 +395,8 @@ class TestRegisterAgent(unittest.TestCase):
 class TestUnregisterAgent(unittest.TestCase):
     """Tests for AgentScheduler.unregister_agent()."""
 
-    @patch('utils.agent_scheduler.EventBus')
-    @patch('utils.agent_scheduler.AgentRegistry')
+    @patch('core.agents.agent_scheduler.EventBus')
+    @patch('core.agents.agent_scheduler.AgentRegistry')
     def test_unregister_existing_agent(self, mock_registry_cls, mock_event_bus_cls):
         mock_registry = MagicMock()
         mock_registry.get_enabled_agents.return_value = []
@@ -408,8 +408,8 @@ class TestUnregisterAgent(unittest.TestCase):
         self.assertTrue(result)
         self.assertNotIn("agent-to-remove", scheduler._subscribed_agents)
 
-    @patch('utils.agent_scheduler.EventBus')
-    @patch('utils.agent_scheduler.AgentRegistry')
+    @patch('core.agents.agent_scheduler.EventBus')
+    @patch('core.agents.agent_scheduler.AgentRegistry')
     def test_unregister_nonexistent_agent(self, mock_registry_cls, mock_event_bus_cls):
         mock_registry = MagicMock()
         mock_registry.get_enabled_agents.return_value = []
@@ -422,16 +422,16 @@ class TestUnregisterAgent(unittest.TestCase):
 class TestGetSubscribedAgentCount(unittest.TestCase):
     """Tests for AgentScheduler.get_subscribed_agent_count()."""
 
-    @patch('utils.agent_scheduler.EventBus')
-    @patch('utils.agent_scheduler.AgentRegistry')
+    @patch('core.agents.agent_scheduler.EventBus')
+    @patch('core.agents.agent_scheduler.AgentRegistry')
     def test_count_zero(self, mock_registry_cls, mock_event_bus_cls):
         mock_registry = MagicMock()
         mock_registry.get_enabled_agents.return_value = []
         scheduler = AgentScheduler(registry=mock_registry)
         self.assertEqual(scheduler.get_subscribed_agent_count(), 0)
 
-    @patch('utils.agent_scheduler.EventBus')
-    @patch('utils.agent_scheduler.AgentRegistry')
+    @patch('core.agents.agent_scheduler.EventBus')
+    @patch('core.agents.agent_scheduler.AgentRegistry')
     def test_count_with_agents(self, mock_registry_cls, mock_event_bus_cls):
         mock_registry = MagicMock()
         mock_registry.get_enabled_agents.return_value = []
@@ -444,8 +444,8 @@ class TestGetSubscribedAgentCount(unittest.TestCase):
 class TestShutdown(unittest.TestCase):
     """Tests for AgentScheduler.shutdown()."""
 
-    @patch('utils.agent_scheduler.EventBus')
-    @patch('utils.agent_scheduler.AgentRegistry')
+    @patch('core.agents.agent_scheduler.EventBus')
+    @patch('core.agents.agent_scheduler.AgentRegistry')
     def test_shutdown_clears_subscriptions(self, mock_registry_cls, mock_event_bus_cls):
         mock_registry = MagicMock()
         mock_registry.get_enabled_agents.return_value = []

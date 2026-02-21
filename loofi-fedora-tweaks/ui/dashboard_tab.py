@@ -36,7 +36,7 @@ from services.system import SystemManager
 from services.system.processes import ProcessManager
 from utils.commands import PrivilegedCommand
 from utils.focus_mode import FocusMode
-from utils.health_score import HealthScoreManager
+from core.diagnostics import HealthScoreManager
 from utils.history import HistoryManager
 from utils.log import get_logger
 from utils.monitor import SystemMonitor

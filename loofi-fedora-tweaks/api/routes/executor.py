@@ -12,7 +12,7 @@ from typing import FrozenSet, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from core.executor.action_executor import ActionExecutor
-from utils.action_result import ActionResult
+from core.executor.action_result import ActionResult
 from services.security import AuditLogger
 from utils.auth import AuthManager
 

@@ -29,7 +29,7 @@ from services.system import (
 )
 from services.security import FirewallManager  # noqa: E402
 from utils.focus_mode import FocusMode  # noqa: E402
-from utils.health_timeline import HealthTimeline  # noqa: E402
+from core.diagnostics import HealthTimeline  # noqa: E402
 from utils.journal import JournalManager  # noqa: E402
 from utils.monitor import SystemMonitor  # noqa: E402
 from utils.operations import AdvancedOps, CleanupOps, NetworkOps, TweakOps  # noqa: E402
@@ -1264,7 +1264,7 @@ def cmd_teleport(args):
 
 def cmd_ai_models(args):
     """Handle AI models subcommand."""
-    from utils.ai_models import RECOMMENDED_MODELS, AIModelManager
+    from core.ai import RECOMMENDED_MODELS, AIModelManager
 
     if args.action == "list":
         installed = AIModelManager.get_installed_models()
@@ -2241,7 +2241,7 @@ def cmd_agent(args):
     """Handle agent subcommand."""
     import time as time_mod
 
-    from utils.agents import AgentRegistry
+    from core.agents import AgentRegistry
 
     registry = AgentRegistry.instance()
 
@@ -2308,7 +2308,7 @@ def cmd_agent(args):
         if not args.agent_id:
             _print("❌ Agent ID required")
             return 1
-        from utils.agent_runner import AgentScheduler
+        from core.agents import AgentScheduler
 
         scheduler = AgentScheduler()
         _print(f"🔄 Running agent '{args.agent_id}'...")
@@ -2326,7 +2326,7 @@ def cmd_agent(args):
         if not goal:
             _print("❌ Goal required (use --goal 'description')")
             return 1
-        from utils.agent_planner import AgentPlanner
+        from core.agents import AgentPlanner
 
         plan = AgentPlanner.plan_from_goal(goal)
         config = plan.to_agent_config()
@@ -2398,7 +2398,7 @@ def cmd_agent(args):
         return 0
 
     elif args.action == "templates":
-        from utils.agent_planner import AgentPlanner
+        from core.agents import AgentPlanner
 
         templates = AgentPlanner.list_goal_templates()
         if _json_output:
@@ -2447,7 +2447,7 @@ def cmd_agent(args):
             nc = dict(agent.notification_config)
             updated = False
             if args.webhook is not None:
-                from utils.agent_notifications import AgentNotifier
+                from core.agents import AgentNotifier
 
                 if args.webhook and not AgentNotifier.validate_webhook_url(args.webhook):
                     _print("❌ Invalid webhook URL (must start with http:// or https://)")

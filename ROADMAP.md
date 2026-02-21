@@ -40,6 +40,65 @@
 | v48.0   | Sidebar Index                   | DONE    | Tab/sidebar restructure with O(1) ID-based lookups                                |
 | v49.0   | Shield                          | DONE    | Test coverage expansion for lowest-covered modules                                |
 | v50.0   | Forge                           | DONE    | Quality hardening, exception narrowing, docstrings, coverage push                 |
+| 1.0.0   | Foundation (SemVer)             | DONE    | Version renormalization to SemVer 1.0.0                                           |
+| 2.0.0   | Evolution                       | ACTIVE  | Service layer migration, core domain extraction                                   |
+
+---
+
+## [ACTIVE] v2.0.0 "Evolution" — Service Layer Migration
+
+### Scope
+
+Structural refactoring release that migrates domain logic from the flat `utils/` namespace
+into organized `services/` and `core/` layers. Backward-compatible deprecation shims
+remain in `utils/` for external consumers. All UI, CLI, API, and plugin imports updated.
+
+### Planned Deliverables
+
+- [x] Version bump to 2.0.0 "Evolution"
+- [x] Migrate `services/software/` — FlatpakManager (1 module)
+- [x] Migrate `services/desktop/` — DesktopUtils, KwinTiling, Tiling, WaylandDisplay (4 modules)
+- [x] Migrate `services/storage/` — CloudSync, StateTeleport (2 modules)
+- [x] Migrate `services/network/` — NetworkUtils, NetworkMonitor, Ports, MeshDiscovery (4 modules)
+- [x] Migrate `services/virtualization/` — Virtualization, VMManager, VFIO, DisposableVM (4 modules)
+- [x] Migrate `services/security/` — Firewall, SecureBoot, USBGuard, Sandbox, Safety, Audit, Risk (7 modules)
+- [x] Remove 3 legacy deprecated shims (process.py, battery.py, action_executor.py)
+- [x] Populate `core/agents/`, `core/ai/`, `core/diagnostics/`, `core/export/` with extracted logic (14 modules)
+- [x] Update all UI/CLI/API/plugin imports to new service/core paths
+- [ ] Update documentation (ARCHITECTURE.md, CHANGELOG.md, ROADMAP.md)
+- [ ] Full verification (tests, lint, coverage gate)
+
+### Agent Assignment
+
+| Agent               | Task                                                         |
+| ------------------- | ------------------------------------------------------------ |
+| project-coordinator | v2.0.0 scope, task decomposition, dependency ordering        |
+| backend-builder     | Service and core module migrations (TASK-002 through TASK-009) |
+| code-implementer    | Import updates, documentation, shim removal                  |
+| test-writer         | Test path updates, verification                              |
+
+### Dependencies
+
+- v50.0 Forge (quality baseline)
+- 1.0.0 Foundation (SemVer renormalization)
+
+---
+
+## [DONE] 1.0.0 "Foundation" — SemVer Renormalization
+
+### Scope
+
+Version renormalization release. Resets version numbering from v50.0.0 to proper
+SemVer 1.0.0, marking the project's first production-stable release.
+
+### Deliverables
+
+- [x] Version files aligned to 1.0.0 (version.py, pyproject.toml, .spec)
+- [x] CHANGELOG entry for renormalization
+
+### Dependencies
+
+- v50.0 Forge (final pre-SemVer release)
 
 ---
 

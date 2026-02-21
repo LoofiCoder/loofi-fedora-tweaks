@@ -30,8 +30,8 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from utils.ai_models import RECOMMENDED_MODELS, AIModelManager
-from utils.context_rag import ContextRAGManager
+from core.ai import RECOMMENDED_MODELS, AIModelManager
+from core.ai import ContextRAGManager
 from utils.voice import WHISPER_MODELS, VoiceManager
 
 from ui.tab_utils import CONTENT_MARGINS, configure_top_tabs

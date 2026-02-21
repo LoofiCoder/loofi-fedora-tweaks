@@ -335,13 +335,13 @@ class AgentsTab(BaseTab):
     # ==================== Actions ====================
 
     def _get_registry(self):
-        from utils.agents import AgentRegistry
+        from core.agents import AgentRegistry
 
         return AgentRegistry.instance()
 
     def _get_scheduler(self):
         if self._scheduler is None:
-            from utils.agent_runner import AgentScheduler
+            from core.agents import AgentScheduler
 
             self._scheduler = AgentScheduler()
             self._scheduler.set_result_callback(self._on_agent_result)
@@ -503,7 +503,7 @@ class AgentsTab(BaseTab):
             )
             return
 
-        from utils.agent_planner import AgentPlanner
+        from core.agents import AgentPlanner
 
         plan = AgentPlanner.plan_from_goal(goal)
 

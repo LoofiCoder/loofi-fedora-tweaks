@@ -61,7 +61,7 @@ class VirtualizationPlugin(LoofiPlugin):
     @staticmethod
     def _cmd_vm_list() -> str:
         """List virtual machines."""
-        from utils.virtualization import VirtualizationManager
+        from services.virtualization import VirtualizationManager
         status = VirtualizationManager.get_full_status()
         if not status.libvirt_available:
             from utils.install_hints import build_install_hint
@@ -71,7 +71,7 @@ class VirtualizationPlugin(LoofiPlugin):
     @staticmethod
     def _cmd_vm_status() -> str:
         """Show virtualization readiness."""
-        from utils.virtualization import VirtualizationManager
+        from services.virtualization import VirtualizationManager
         status = VirtualizationManager.get_full_status()
         lines = [
             f"KVM supported: {status.kvm_supported}",
@@ -88,7 +88,7 @@ class VirtualizationPlugin(LoofiPlugin):
     @staticmethod
     def _cmd_vfio_check() -> str:
         """Check VFIO passthrough prerequisites."""
-        from utils.virtualization import VirtualizationManager
+        from services.virtualization import VirtualizationManager
         status = VirtualizationManager.get_full_status()
         checks = []
         checks.append(

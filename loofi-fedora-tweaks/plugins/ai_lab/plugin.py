@@ -62,7 +62,7 @@ class AILabPlugin(LoofiPlugin):
     @staticmethod
     def _cmd_ai_models() -> str:
         """List available and installed AI models."""
-        from utils.ai import OllamaManager
+        from core.ai import OllamaManager
         if not OllamaManager.is_installed():
             return "Ollama is not installed. Install with the AI Lab tab."
         models = OllamaManager.list_models()
@@ -74,7 +74,7 @@ class AILabPlugin(LoofiPlugin):
     @staticmethod
     def _cmd_ai_status() -> str:
         """Show AI capabilities and runtime status."""
-        from utils.ai import AIConfigManager, OllamaManager
+        from core.ai import AIConfigManager, OllamaManager
         installed = OllamaManager.is_installed()
         running = OllamaManager.is_running() if installed else False
         gpu_mem = AIConfigManager.get_gpu_memory()
@@ -88,14 +88,14 @@ class AILabPlugin(LoofiPlugin):
     @staticmethod
     def _cmd_rag_index() -> str:
         """Trigger RAG knowledge indexing."""
-        from utils.context_rag import ContextRAGManager
+        from core.ai import ContextRAGManager
         result = ContextRAGManager.build_index()
         return result.message
 
     @staticmethod
     def _cmd_rag_search() -> str:
         """Search indexed knowledge base."""
-        from utils.context_rag import ContextRAGManager
+        from core.ai import ContextRAGManager
         if not ContextRAGManager.is_indexed():
             return "No index found. Run 'rag-index' first to build the knowledge base."
         stats = ContextRAGManager.get_index_stats()

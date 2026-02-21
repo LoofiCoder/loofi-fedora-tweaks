@@ -16,7 +16,7 @@ class TestWizardHealth(unittest.TestCase):
     @patch('utils.wizard_health.subprocess.run')
     @patch('utils.wizard_health.shutil.which')
     @patch('utils.wizard_health.SystemManager.get_package_manager', return_value='dnf')
-    @patch('utils.wizard_health.os.statvfs')
+    @patch('utils.wizard_health.os.statvfs', create=True)
     def test_run_health_checks_dnf_healthy(self, mock_statvfs, _mock_pm, mock_which, mock_run):
         """DNF path should mark package state healthy when duplicates check succeeds."""
         mock_statvfs.return_value = MagicMock(
@@ -48,7 +48,7 @@ class TestWizardHealth(unittest.TestCase):
     @patch('utils.wizard_health.subprocess.run')
     @patch('utils.wizard_health.shutil.which', return_value=None)
     @patch('utils.wizard_health.SystemManager.get_package_manager', return_value='dnf')
-    @patch('utils.wizard_health.os.statvfs')
+    @patch('utils.wizard_health.os.statvfs', create=True)
     def test_run_health_checks_dnf_missing(self, mock_statvfs, _mock_pm, _mock_which, mock_run):
         """Missing dnf should produce info status instead of failure."""
         mock_statvfs.return_value = MagicMock(
@@ -66,7 +66,7 @@ class TestWizardHealth(unittest.TestCase):
     @patch('utils.wizard_health.subprocess.run')
     @patch('utils.wizard_health.shutil.which', return_value=None)
     @patch('utils.wizard_health.SystemManager.get_package_manager', return_value='rpm-ostree')
-    @patch('utils.wizard_health.os.statvfs')
+    @patch('utils.wizard_health.os.statvfs', create=True)
     def test_run_health_checks_ostree(self, mock_statvfs, _mock_pm, _mock_which, mock_run):
         """rpm-ostree path should use status check and set pkg_healthy."""
         mock_statvfs.return_value = MagicMock(
@@ -87,7 +87,7 @@ class TestWizardHealth(unittest.TestCase):
     @patch('utils.wizard_health.subprocess.run', side_effect=FileNotFoundError('getenforce'))
     @patch('utils.wizard_health.shutil.which', return_value=None)
     @patch('utils.wizard_health.SystemManager.get_package_manager', return_value='dnf')
-    @patch('utils.wizard_health.os.statvfs', side_effect=OSError('bad stat'))
+    @patch('utils.wizard_health.os.statvfs', side_effect=OSError('bad stat'), create=True)
     def test_run_health_checks_handles_disk_and_selinux_errors(
         self,
         _mock_statvfs,

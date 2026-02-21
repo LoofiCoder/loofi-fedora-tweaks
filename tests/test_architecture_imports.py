@@ -59,25 +59,23 @@ class TestCoreExecutorImports:
         assert set(core.executor.__all__) == expected
 
 
-class TestBackwardCompatUtils:
-    """Test backward-compatibility shims in utils/."""
+class TestCoreExecutorImports:
+    """Test core.executor direct imports (v2.0.0 — shims removed)."""
 
-    def test_utils_action_result_import(self):
-        """ActionResult should still work from utils/ (backward compat)."""
-        from utils.action_result import ActionResult
+    def test_core_action_result_import(self):
+        """ActionResult should be importable from core.executor."""
+        from core.executor.action_result import ActionResult
 
         assert ActionResult is not None
-        # Verify same class as core.executor
         from core.executor import ActionResult as CoreActionResult
 
         assert ActionResult is CoreActionResult
 
-    def test_utils_action_executor_import(self):
-        """ActionExecutor should still work from utils/ (backward compat)."""
-        from utils.action_executor import ActionExecutor
+    def test_core_action_executor_import(self):
+        """ActionExecutor should be importable from core.executor."""
+        from core.executor.action_executor import ActionExecutor
 
         assert ActionExecutor is not None
-        # Verify same class as core.executor
         from core.executor import ActionExecutor as CoreActionExecutor
 
         assert ActionExecutor is CoreActionExecutor
@@ -343,25 +341,23 @@ class TestCrossModuleCompatibility:
     """Test that old and new imports refer to the same objects."""
 
     def test_action_result_identity(self):
-        """ActionResult from utils and core.executor should be identical."""
-        from utils.action_result import ActionResult as UtilsActionResult
+        """ActionResult from core.executor submodule and package should be identical."""
+        from core.executor.action_result import ActionResult
         from core.executor import ActionResult as CoreActionResult
 
-        # Same class object
-        assert UtilsActionResult is CoreActionResult
+        assert ActionResult is CoreActionResult
 
-        # Same instance behavior
-        r1 = UtilsActionResult.ok("test")
+        r1 = ActionResult.ok("test")
         r2 = CoreActionResult.ok("test")
         assert type(r1) is type(r2)
         assert r1.success == r2.success
 
     def test_action_executor_identity(self):
-        """ActionExecutor from utils and core.executor should be identical."""
-        from utils.action_executor import ActionExecutor as UtilsExecutor
+        """ActionExecutor from core.executor submodule and package should be identical."""
+        from core.executor.action_executor import ActionExecutor
         from core.executor import ActionExecutor as CoreExecutor
 
-        assert UtilsExecutor is CoreExecutor
+        assert ActionExecutor is CoreExecutor
 
 
 class TestPublicAPIStability:

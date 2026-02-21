@@ -1,1 +1,73 @@
-# core/agents/ — Agent orchestration logic
+"""core/agents/ — Agent orchestration logic."""
+
+from core.agents.agents import (
+    AGENT_ID_LENGTH,
+    BUILTIN_AGENTS,
+    DEFAULT_MAX_ACTIONS_PER_HOUR,
+    HISTORY_MAX_ENTRIES,
+    ActionSeverity,
+    AgentAction,
+    AgentConfig,
+    AgentRegistry,
+    AgentResult,
+    AgentState,
+    AgentStatus,
+    AgentTrigger,
+    AgentType,
+    TriggerType,
+)
+from core.agents.agent_notifications import (
+    AgentNotificationConfig,
+    AgentNotifier,
+    DEFAULT_MIN_SEVERITY,
+    NOTIFICATION_COOLDOWN_SECONDS,
+    SEVERITY_RANKS,
+    WEBHOOK_TIMEOUT_SECONDS,
+)
+from core.agents.agent_planner import (
+    AgentPlan,
+    AgentPlanner,
+    GOAL_TEMPLATES,
+    PlanStep,
+)
+from core.agents.agent_runner import (
+    AgentExecutor,
+    AgentScheduler,
+    COMMAND_TIMEOUT_SECONDS,
+    GIT_BRANCH_TIMEOUT_SECONDS,
+    PROTECTED_GIT_BRANCHES,
+    SCHEDULER_POLL_SECONDS,
+)
+
+__all__ = [
+    "AGENT_ID_LENGTH",
+    "ActionSeverity",
+    "AgentAction",
+    "AgentConfig",
+    "AgentExecutor",
+    "AgentNotificationConfig",
+    "AgentNotifier",
+    "AgentPlan",
+    "AgentPlanner",
+    "AgentRegistry",
+    "AgentResult",
+    "AgentScheduler",
+    "AgentState",
+    "AgentStatus",
+    "AgentTrigger",
+    "AgentType",
+    "BUILTIN_AGENTS",
+    "COMMAND_TIMEOUT_SECONDS",
+    "DEFAULT_MAX_ACTIONS_PER_HOUR",
+    "DEFAULT_MIN_SEVERITY",
+    "GIT_BRANCH_TIMEOUT_SECONDS",
+    "GOAL_TEMPLATES",
+    "HISTORY_MAX_ENTRIES",
+    "NOTIFICATION_COOLDOWN_SECONDS",
+    "PlanStep",
+    "PROTECTED_GIT_BRANCHES",
+    "SCHEDULER_POLL_SECONDS",
+    "SEVERITY_RANKS",
+    "TriggerType",
+    "WEBHOOK_TIMEOUT_SECONDS",
+]

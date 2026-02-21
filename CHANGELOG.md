@@ -29,13 +29,49 @@ All notable changes to this project will be documented in this file.
 - Updated `utils/commands.py` — AuditLogger import made lazy to fix circular import
 - Updated `utils/agent_runner.py`, `utils/agent_scheduler.py`, `api/routes/executor.py` — ActionExecutor → `core.executor.action_executor`
 - Updated `core/plugins/sandbox.py` — PluginIsolationManager → `services.security`
+- Updated `ui/agents_tab.py` — 3 lazy imports (AgentRegistry, AgentScheduler, AgentPlanner) → `core.agents`
+- Updated `ui/ai_enhanced_tab.py` — ai_models, context_rag imports → `core.ai`
+- Updated `ui/automation_tab.py` — ansible_export, kickstart imports → `core.export`
+- Updated `ui/dashboard_tab.py` — health_score import → `core.diagnostics`
+- Updated `ui/health_detail_dialog.py` — health_detail, health_score imports → `core.diagnostics`
+- Updated `ui/health_timeline_tab.py` — health_timeline import → `core.diagnostics`
+- Updated `ui/system_info_tab.py` — report_exporter import → `core.export`
+- Updated `cli/main.py` — 6 lazy imports (agents, ai_models, health_timeline, agent_runner, agent_planner, agent_notifications) → `core.*`
+- Updated `api/routes/system.py` — AgentRegistry import → `core.agents`
+- Updated `plugins/ai_lab/plugin.py` — 5 lazy imports (OllamaManager, AIConfigManager, ContextRAGManager) → `core.ai`
+
+### Core Domain Module Migration
+
+- **`core/export/`** — migrated 3 modules from `utils/`:
+  - `ansible_export.py` (AnsibleExporter, Result)
+  - `kickstart.py` (KickstartGenerator)
+  - `report_exporter.py` (ReportExporter)
+- **`core/diagnostics/`** — migrated 3 modules from `utils/`:
+  - `diagnostic_manager.py` (DiagnosticManager, DiagnosticResult, DiagnosticSeverity)
+  - `troubleshoot.py` (TroubleshootManager, TroubleshootResult)
+  - `log_manager.py` (LogManager, LogEntry, LogLevel)
+- **`core/ai/`** — migrated 3 modules from `utils/`:
+  - `ai_assistant.py` (AIAssistant)
+  - `ai_settings.py` (AISettingsManager)
+  - `ai_features.py` (AIFeaturesManager)
+- **`core/agents/`** — migrated 5 modules from `utils/`:
+  - `agents.py` (AgentType, AgentStatus, AgentConfig, AgentRegistry, BUILTIN_AGENTS)
+  - `agent_notifications.py` (AgentNotifier, AgentNotificationConfig)
+  - `agent_planner.py` (AgentPlanner, AgentPlan, PlanStep)
+  - `agent_runner.py` (AgentExecutor, AgentScheduler)
+  - `agent_scheduler.py` (AgentScheduler — event-driven variant)
+- **Backward-compatible shims** in `utils/` for all 14 migrated modules — re-export from `core.*`
+- **Cross-dependency fixes** — internal imports updated to use `core.*` namespaces
 
 ### Test Updates
 
 - Updated `@patch` paths in 8 security test files to use `services.security.*` namespaces
 - Updated `test_hardware_tab.py` — battery mocks → `services.hardware`
 - Updated `test_cli_main_extended.py` — audit patch targets → `services.security`
-- **6384 tests pass** (53 pre-existing Windows-only failures, 95 skipped)
+- Updated `@patch` paths in `test_agent_runner_extended.py` (80 patches) → `core.agents.agent_runner.*`
+- Updated `@patch` paths in `test_agent_scheduler.py` (34 patches) → `core.agents.agent_scheduler.*`
+- Updated `@patch` paths in `test_agents.py` (3 patches) → `core.agents.agent_runner.*`
+- **6383 tests pass** (47 pre-existing Windows-only failures, 95 skipped)
 
 ## [1.0.0] - 2026-02-20 "Foundation"
 

@@ -307,7 +307,7 @@ class TestAgentExecutor:
         assert result.success is False
         assert "manual confirmation" in result.message
 
-    @patch("utils.agent_runner.Arbitrator.can_proceed", return_value=True)
+    @patch("core.agents.agent_runner.Arbitrator.can_proceed", return_value=True)
     def test_unknown_operation(self, _mock_can_proceed):
         from utils.agents import AgentConfig, AgentAction, AgentState, AgentType, ActionSeverity
         from utils.agent_runner import AgentExecutor
@@ -326,7 +326,7 @@ class TestAgentExecutor:
         assert result.success is False
         assert "Unknown operation" in result.message
 
-    @patch("utils.agent_runner.Arbitrator.can_proceed", return_value=True)
+    @patch("core.agents.agent_runner.Arbitrator.can_proceed", return_value=True)
     def test_no_operation_or_command(self, _mock_can_proceed):
         from utils.agents import AgentConfig, AgentAction, AgentState, AgentType, ActionSeverity
         from utils.agent_runner import AgentExecutor
@@ -359,7 +359,7 @@ class TestAgentExecutor:
         )
         state = AgentState(agent_id="test")
 
-        with patch("utils.agent_runner.Arbitrator.can_proceed", return_value=False):
+        with patch("core.agents.agent_runner.Arbitrator.can_proceed", return_value=False):
             result = AgentExecutor.execute_action(agent, action, state)
             assert result.success is False
             assert result.data and result.data.get("arbitrator_block") is True
