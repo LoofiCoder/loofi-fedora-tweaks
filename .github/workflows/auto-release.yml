@@ -481,28 +481,32 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check if release already exists
-        id: check_release
+      - name: Delete existing release if present
         run: |
           TAG="${{ needs.validate.outputs.tag }}"
           HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/releases/tags/${TAG}")
           if [ "$HTTP_CODE" = "200" ]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "Release ${TAG} already exists — skipping publish."
+            echo "::notice::Release ${TAG} already exists — deleting to recreate with latest artifacts."
+            RELEASE_ID=$(curl -s \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/tags/${TAG}" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+            curl -s -X DELETE \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/${RELEASE_ID}"
+            echo "Deleted existing release ${TAG} (id: ${RELEASE_ID})"
           else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "No existing release for ${TAG} — proceeding."
           fi
 
       - name: Download RPM artifact
-        if: steps.check_release.outputs.exists != 'true'
         uses: actions/download-artifact@v7
         with:
           name: rpm-package
           path: release-assets
 
       - name: Download Flatpak artifact
-        if: steps.check_release.outputs.exists != 'true'
         continue-on-error: true
         uses: actions/download-artifact@v7
         with:
@@ -510,7 +514,6 @@ jobs:
           path: release-assets
 
       - name: Download sdist artifact
-        if: steps.check_release.outputs.exists != 'true'
         continue-on-error: true
         uses: actions/download-artifact@v7
         with:
@@ -518,13 +521,11 @@ jobs:
           path: release-assets
 
       - name: List release assets
-        if: steps.check_release.outputs.exists != 'true'
         run: |
           echo "Release assets:"
           ls -lh release-assets/ 2>/dev/null || echo "No assets found"
 
       - name: Resolve release tag
-        if: steps.check_release.outputs.exists != 'true'
         id: release_meta
         run: |
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
@@ -552,7 +553,6 @@ jobs:
           echo "codename=${CODENAME}" >> "$GITHUB_OUTPUT"
 
       - name: Generate release body
-        if: steps.check_release.outputs.exists != 'true'
         run: |
           TAG="${{ steps.release_meta.outputs.tag }}"
           VERSION="${{ steps.release_meta.outputs.version }}"
@@ -578,8 +578,7 @@ jobs:
           EOF
           fi
 
-      - name: Publish GitHub Release (idempotent)
-        if: steps.check_release.outputs.exists != 'true'
+      - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.release_meta.outputs.tag }}
@@ -599,12 +598,8 @@ jobs:
         if: always()
         run: |
           TAG="${{ needs.validate.outputs.tag }}"
-          if [ "${{ steps.check_release.outputs.exists }}" = "true" ]; then
-            echo "::notice::Release ${TAG} already exists — no action taken."
-          else
-            ASSETS=$(ls release-assets/ 2>/dev/null | tr '\n' ', ' || echo "none")
-            echo "::notice::Published release ${TAG} with artifacts: ${ASSETS}"
-          fi
+          ASSETS=$(ls release-assets/ 2>/dev/null | tr '\n' ', ' || echo "none")
+          echo "::notice::Published release ${TAG} with artifacts: ${ASSETS}"
 
   # Publish to COPR directly after release (avoids GITHUB_TOKEN event limitation
   # where release:published events from GITHUB_TOKEN don't trigger other workflows)
