@@ -73,21 +73,21 @@ completions/                  # Shell completions (bash, zsh)
 
 ## Three Entry Modes
 
-| Mode | Flag | Module | Purpose |
-| ------ | ------ | -------- | --------- |
-| **GUI** | (default) | `main.py` → `MainWindow` | PyQt6 desktop app with 28 lazy-loaded tabs |
-| **CLI** | `--cli` | `cli/main.py` | Subcommands with `--json` output |
-| **Daemon** | `--daemon` | `utils/daemon.py` | Background scheduler |
+| Mode       | Flag       | Module                   | Purpose                                    |
+| ---------- | ---------- | ------------------------ | ------------------------------------------ |
+| **GUI**    | (default)  | `main.py` → `MainWindow` | PyQt6 desktop app with 28 lazy-loaded tabs |
+| **CLI**    | `--cli`    | `cli/main.py`            | Subcommands with `--json` output           |
+| **Daemon** | `--daemon` | `utils/daemon.py`        | Background scheduler                       |
 
 ## Layer Rules (STRICT)
 
-| Layer | Path | Allowed | Forbidden |
-| ------- | ------ | --------- | ----------- |
-| **UI** | `ui/*_tab.py` | PyQt6 widgets, signals, BaseTab | `subprocess`, business logic |
-| **Services** | `services/*/` | Domain services (security, network, storage, etc.) | `import PyQt6`, UI references |
-| **Core** | `core/*/` | Domain modules (agents, ai, diagnostics, export) | `import PyQt6`, UI references |
-| **Utils** | `utils/*.py` | Shared ops, commands, errors; backward-compat shims | `import PyQt6`, UI references |
-| **CLI** | `cli/main.py` | Argument parsing, calls services/core/utils | `import ui`, PyQt6 |
+| Layer        | Path          | Allowed                                             | Forbidden                     |
+| ------------ | ------------- | --------------------------------------------------- | ----------------------------- |
+| **UI**       | `ui/*_tab.py` | PyQt6 widgets, signals, BaseTab                     | `subprocess`, business logic  |
+| **Services** | `services/*/` | Domain services (security, network, storage, etc.)  | `import PyQt6`, UI references |
+| **Core**     | `core/*/`     | Domain modules (agents, ai, diagnostics, export)    | `import PyQt6`, UI references |
+| **Utils**    | `utils/*.py`  | Shared ops, commands, errors; backward-compat shims | `import PyQt6`, UI references |
+| **CLI**      | `cli/main.py` | Argument parsing, calls services/core/utils         | `import ui`, PyQt6            |
 
 **Key rule**: `services/` and `core/` hold domain logic. `utils/` retains shared infrastructure (`commands.py`, `errors.py`, `operations.py`) and backward-compatible shims. GUI and CLI are consumers only.
 
@@ -95,47 +95,47 @@ completions/                  # Shell completions (bash, zsh)
 
 ### Sidebar Categories
 
-| Order | Category | Icon |
-| --- | --- | --- |
-| 1 | System | `overview-dashboard` |
-| 2 | Packages | `packages-software` |
-| 3 | Hardware | `hardware-performance` |
-| 4 | Network | `network-connectivity` |
-| 5 | Security | `security-shield` |
-| 6 | Appearance | `appearance-theme` |
-| 7 | Tools | `developer-tools` |
-| 8 | Maintenance | `maintenance-health` |
+| Order | Category    | Icon                   |
+| ----- | ----------- | ---------------------- |
+| 1     | System      | `overview-dashboard`   |
+| 2     | Packages    | `packages-software`    |
+| 3     | Hardware    | `hardware-performance` |
+| 4     | Network     | `network-connectivity` |
+| 5     | Security    | `security-shield`      |
+| 6     | Appearance  | `appearance-theme`     |
+| 7     | Tools       | `developer-tools`      |
+| 8     | Maintenance | `maintenance-health`   |
 
-| # | Tab | File | Consolidates |
-| --- | ----- | ------ | ------------- |
-| 1 | Home | `dashboard_tab.py` | Dashboard |
-| 2 | System Info | `system_info_tab.py` | System details |
-| 3 | System Monitor | `monitor_tab.py` | Performance + Processes |
-| 4 | Maintenance | `maintenance_tab.py` | Updates + Cleanup + Overlays |
-| 5 | Hardware | `hardware_tab.py` | Hardware + HP Tweaks + Bluetooth |
-| 6 | Software | `software_tab.py` | Apps + Repos |
-| 7 | Security & Privacy | `security_tab.py` | Security + Privacy |
-| 8 | Network | `network_tab.py` | Connections + DNS + Privacy + Monitoring |
-| 9 | Gaming | `gaming_tab.py` | Gaming setup |
-| 10 | Desktop | `desktop_tab.py` | Director + Theming |
-| 11 | Development | `development_tab.py` | Containers + Developer tools |
-| 12 | AI Lab | `ai_enhanced_tab.py` | AI features |
-| 13 | Automation | `automation_tab.py` | Scheduler + Replicator + Pulse |
-| 14 | Community | `community_tab.py` | Presets + Marketplace |
-| 15 | Diagnostics | `diagnostics_tab.py` | Watchtower + Boot |
-| 16 | Virtualization | `virtualization_tab.py` | VMs + VFIO + Disposable |
-| 17 | Loofi Link | `mesh_tab.py` | Mesh + Clipboard + File Drop |
-| 18 | State Teleport | `teleport_tab.py` | Workspace Capture/Restore |
-| 19 | Performance | `performance_tab.py` | Auto-Tuner |
-| 20 | Snapshots | `snapshot_tab.py` | Snapshot Timeline |
-| 21 | Logs | `logs_tab.py` | Smart Log Viewer |
-| 22 | Storage | `storage_tab.py` | Disks + Mounts + SMART |
-| 23 | Health Timeline | `health_timeline_tab.py` | System health over time |
-| 24 | Profiles | `profiles_tab.py` | User profiles management |
-| 25 | Extensions | `extensions_tab.py` | GNOME/KDE extensions browser |
-| 26 | Backup | `backup_tab.py` | Backup wizard + Timeshift/Snapper |
-| 27 | Agents | `agents_tab.py` | AI agent management |
-| 28 | Settings | `settings_tab.py` | App settings |
+| #   | Tab                | File                     | Consolidates                             |
+| --- | ------------------ | ------------------------ | ---------------------------------------- |
+| 1   | Home               | `dashboard_tab.py`       | Dashboard                                |
+| 2   | System Info        | `system_info_tab.py`     | System details                           |
+| 3   | System Monitor     | `monitor_tab.py`         | Performance + Processes                  |
+| 4   | Maintenance        | `maintenance_tab.py`     | Updates + Cleanup + Overlays             |
+| 5   | Hardware           | `hardware_tab.py`        | Hardware + HP Tweaks + Bluetooth         |
+| 6   | Software           | `software_tab.py`        | Apps + Repos                             |
+| 7   | Security & Privacy | `security_tab.py`        | Security + Privacy                       |
+| 8   | Network            | `network_tab.py`         | Connections + DNS + Privacy + Monitoring |
+| 9   | Gaming             | `gaming_tab.py`          | Gaming setup                             |
+| 10  | Desktop            | `desktop_tab.py`         | Director + Theming                       |
+| 11  | Development        | `development_tab.py`     | Containers + Developer tools             |
+| 12  | AI Lab             | `ai_enhanced_tab.py`     | AI features                              |
+| 13  | Automation         | `automation_tab.py`      | Scheduler + Replicator + Pulse           |
+| 14  | Community          | `community_tab.py`       | Presets + Marketplace                    |
+| 15  | Diagnostics        | `diagnostics_tab.py`     | Watchtower + Boot                        |
+| 16  | Virtualization     | `virtualization_tab.py`  | VMs + VFIO + Disposable                  |
+| 17  | Loofi Link         | `mesh_tab.py`            | Mesh + Clipboard + File Drop             |
+| 18  | State Teleport     | `teleport_tab.py`        | Workspace Capture/Restore                |
+| 19  | Performance        | `performance_tab.py`     | Auto-Tuner                               |
+| 20  | Snapshots          | `snapshot_tab.py`        | Snapshot Timeline                        |
+| 21  | Logs               | `logs_tab.py`            | Smart Log Viewer                         |
+| 22  | Storage            | `storage_tab.py`         | Disks + Mounts + SMART                   |
+| 23  | Health Timeline    | `health_timeline_tab.py` | System health over time                  |
+| 24  | Profiles           | `profiles_tab.py`        | User profiles management                 |
+| 25  | Extensions         | `extensions_tab.py`      | GNOME/KDE extensions browser             |
+| 26  | Backup             | `backup_tab.py`          | Backup wizard + Timeshift/Snapper        |
+| 27  | Agents             | `agents_tab.py`          | AI agent management                      |
+| 28  | Settings           | `settings_tab.py`        | App settings                             |
 
 Consolidated tabs use `QTabWidget` for sub-navigation within the tab.
 

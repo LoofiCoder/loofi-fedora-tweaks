@@ -70,12 +70,12 @@ remain in `utils/` for external consumers. All UI, CLI, API, and plugin imports 
 
 ### Agent Assignment
 
-| Agent               | Task                                                         |
-| ------------------- | ------------------------------------------------------------ |
-| project-coordinator | v2.0.0 scope, task decomposition, dependency ordering        |
+| Agent               | Task                                                           |
+| ------------------- | -------------------------------------------------------------- |
+| project-coordinator | v2.0.0 scope, task decomposition, dependency ordering          |
 | backend-builder     | Service and core module migrations (TASK-002 through TASK-009) |
-| code-implementer    | Import updates, documentation, shim removal                  |
-| test-writer         | Test path updates, verification                              |
+| code-implementer    | Import updates, documentation, shim removal                    |
+| test-writer         | Test path updates, verification                                |
 
 ### Dependencies
 
@@ -120,13 +120,13 @@ docstrings for 9 utils modules, and pushing coverage above the 80% CI threshold.
 
 ### Agent Assignment
 
-| Agent               | Task                                                |
-| ------------------- | --------------------------------------------------- |
-| project-coordinator | v50 scope, workflow state, roadmap activation       |
-| backend-builder     | Exception narrowing (4 sites)                       |
-| code-implementer    | Module docstrings (9 modules)                       |
-| test-writer         | Test suites for 5 untested modules + coverage push  |
-| release-planner     | Version alignment, docs, release notes              |
+| Agent               | Task                                               |
+| ------------------- | -------------------------------------------------- |
+| project-coordinator | v50 scope, workflow state, roadmap activation      |
+| backend-builder     | Exception narrowing (4 sites)                      |
+| code-implementer    | Module docstrings (9 modules)                      |
+| test-writer         | Test suites for 5 untested modules + coverage push |
+| release-planner     | Version alignment, docs, release notes             |
 
 ### Dependencies
 
