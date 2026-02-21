@@ -15,7 +15,7 @@ from typing import Optional
 
 from services.system import SystemManager
 
-from utils.audit import AuditLogger
+from services.security import AuditLogger
 from utils.commands import PrivilegedCommand
 
 logger = logging.getLogger(__name__)
@@ -193,19 +193,13 @@ class TaskScheduler:
     @classmethod
     def get_power_trigger_tasks(cls, on_battery: bool) -> list:
         """Get tasks triggered by power state change."""
-        trigger = (
-            TaskSchedule.ON_BATTERY.value if on_battery else TaskSchedule.ON_AC.value
-        )
+        trigger = TaskSchedule.ON_BATTERY.value if on_battery else TaskSchedule.ON_AC.value
         return [t for t in cls.list_tasks() if t.enabled and t.schedule == trigger]
 
     @classmethod
     def get_boot_tasks(cls) -> list:
         """Get tasks that run on boot."""
-        return [
-            t
-            for t in cls.list_tasks()
-            if t.enabled and t.schedule == TaskSchedule.ON_BOOT.value
-        ]
+        return [t for t in cls.list_tasks() if t.enabled and t.schedule == TaskSchedule.ON_BOOT.value]
 
     @classmethod
     def execute_task(cls, task: ScheduledTask) -> tuple:
@@ -225,12 +219,12 @@ class TaskScheduler:
                 action="scheduler.execute_task",
                 param="action",
                 detail="Disallowed action: %s" % task.action,
-                params={"task_id": task.id, "task_name": task.name,
-                        "action": task.action},
+                params={"task_id": task.id, "task_name": task.name, "action": task.action},
             )
             logger.warning(
                 "Rejected task with disallowed action: %s (action=%s)",
-                task.name, task.action,
+                task.name,
+                task.action,
             )
             return (False, "Disallowed action: %s" % task.action)
 
@@ -326,11 +320,7 @@ class TaskScheduler:
                     timeout=600,
                 )
                 if result.returncode == 0 and "AvailableUpdate" in result.stdout:
-                    lines = [
-                        line
-                        for line in result.stdout.strip().split("\n")
-                        if line.strip()
-                    ]
+                    lines = [line for line in result.stdout.strip().split("\n") if line.strip()]
                     count = len(lines)
 
                     from utils.notifications import NotificationManager
@@ -354,11 +344,7 @@ class TaskScheduler:
 
                 # dnf check-update returns 100 if updates available
                 if result.returncode == 100:
-                    lines = [
-                        line
-                        for line in result.stdout.strip().split("\n")
-                        if line.strip()
-                    ]
+                    lines = [line for line in result.stdout.strip().split("\n") if line.strip()]
                     count = len(lines)
 
                     from utils.notifications import NotificationManager
@@ -377,7 +363,8 @@ class TaskScheduler:
     def _run_sync_config(cls) -> tuple:
         """Sync config to GitHub Gist."""
         try:
-            from utils.cloud_sync import CloudSyncManager
+            from services.storage import CloudSyncManager
+
             from utils.config_manager import ConfigManager
 
             config = ConfigManager.export_all()

@@ -190,7 +190,7 @@ class AgentScheduler:
         Returns:
             AgentResult with execution outcome
         """
-        from utils.action_executor import ActionExecutor
+        from core.executor.action_executor import ActionExecutor
 
         logger.info(
             "Executing agent '%s' action '%s' (triggered by: %s)",

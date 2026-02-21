@@ -26,9 +26,9 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from services.network import MeshDiscovery
 from utils.clipboard_sync import ClipboardSync
 from utils.file_drop import FileDropManager
-from utils.mesh_discovery import MeshDiscovery
 
 from ui.tab_utils import configure_top_tabs
 
@@ -221,10 +221,7 @@ class MeshTab(QWidget, PluginInterface):
         drop_layout = QVBoxLayout(drop_group)
 
         self.lbl_drop = QLabel(
-            self.tr(
-                "Drag and drop a file here, or click 'Choose File' to select one.\n"
-                "Files are transferred over your local network only."
-            )
+            self.tr("Drag and drop a file here, or click 'Choose File' to select one.\nFiles are transferred over your local network only.")
         )
         self.lbl_drop.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.lbl_drop.setMinimumHeight(80)
@@ -301,7 +298,9 @@ class MeshTab(QWidget, PluginInterface):
         for peer in self._peers:
             caps = ", ".join(peer.capabilities) if peer.capabilities else self.tr("none")
             text = self.tr("{name} ({addr}) - {caps}").format(
-                name=peer.name, addr=peer.address, caps=caps,
+                name=peer.name,
+                addr=peer.address,
+                caps=caps,
             )
             item = QListWidgetItem(text)
             item.setData(Qt.ItemDataRole.UserRole, peer.device_id)
@@ -342,12 +341,7 @@ class MeshTab(QWidget, PluginInterface):
 
         try:
             # Send clipboard to peer
-            success = ClipboardSync.send_clipboard_to_peer(
-                peer.address,
-                peer.port,
-                content.encode("utf-8"),
-                self._shared_key
-            )
+            success = ClipboardSync.send_clipboard_to_peer(peer.address, peer.port, content.encode("utf-8"), self._shared_key)
 
             if success:
                 self.log(self.tr("Clipboard synced to {} successfully.").format(peer.name))
@@ -369,9 +363,7 @@ class MeshTab(QWidget, PluginInterface):
         if path:
             metadata = FileDropManager.prepare_file_metadata(path)
             size_str = FileDropManager.format_file_size(metadata["size"])
-            self.lbl_selected_file.setText(
-                self.tr("{} ({})").format(metadata["name"], size_str)
-            )
+            self.lbl_selected_file.setText(self.tr("{} ({})").format(metadata["name"], size_str))
             self.log(self.tr("Selected file: {}").format(path))
 
     def on_accept_transfer(self):
@@ -404,9 +396,7 @@ class MeshTab(QWidget, PluginInterface):
         """Repopulate the clipboard device selector from discovered peers."""
         self.device_combo.clear()
         for peer in self._peers:
-            self.device_combo.addItem(
-                f"{peer.name} ({peer.address})", peer.device_id
-            )
+            self.device_combo.addItem(f"{peer.name} ({peer.address})", peer.device_id)
 
     def log(self, message: str):
         """Append a message to the output log."""

@@ -4,6 +4,39 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased] — v2.0.0 "Evolution" (Service Layer Migration)
+
+### Architecture — Service Layer Migration
+
+- **Security services** — migrated 7 modules from `utils/` to `services/security/`:
+  - `firewall.py` (FirewallManager, FirewallInfo, FirewallResult)
+  - `secureboot.py` (SecureBootManager, SecureBootResult, SecureBootStatus)
+  - `usbguard.py` (USBGuardManager, USBDevice)
+  - `sandbox.py` (SandboxManager, BubblewrapManager, PluginIsolationManager)
+  - `safety.py` (SafetyManager)
+  - `audit.py` (AuditLogger)
+  - `risk.py` (RiskLevel, RiskEntry, RiskRegistry)
+- **Backward-compatible deprecation shims** in `utils/` for all 7 security modules — emit `DeprecationWarning` and re-export from `services.security`
+- **`services/security/__init__.py`** re-exports 17 classes via `__all__`
+- Prior migrations (from earlier sessions): `services/software/`, `services/desktop/`, `services/storage/`, `services/network/`, `services/virtualization/`
+
+### Import Cleanup
+
+- Updated `cli/main.py` — AuditLogger, FirewallManager imports → `services.security`
+- Updated `ui/security_tab.py`, `ui/diagnostics_tab.py` — security imports → `services.security`
+- Updated `ui/hardware_tab.py` — BatteryManager import → `services.hardware`
+- Updated `ui/maintenance_tab.py` — SafetyManager import → `services.security`
+- Updated `utils/commands.py` — AuditLogger import made lazy to fix circular import
+- Updated `utils/agent_runner.py`, `utils/agent_scheduler.py`, `api/routes/executor.py` — ActionExecutor → `core.executor.action_executor`
+- Updated `core/plugins/sandbox.py` — PluginIsolationManager → `services.security`
+
+### Test Updates
+
+- Updated `@patch` paths in 8 security test files to use `services.security.*` namespaces
+- Updated `test_hardware_tab.py` — battery mocks → `services.hardware`
+- Updated `test_cli_main_extended.py` — audit patch targets → `services.security`
+- **6384 tests pass** (53 pre-existing Windows-only failures, 95 skipped)
+
 ## [1.0.0] - 2026-02-20 "Foundation"
 
 ### Version Renormalization

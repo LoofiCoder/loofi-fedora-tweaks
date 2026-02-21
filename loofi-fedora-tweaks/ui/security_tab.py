@@ -33,12 +33,12 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from services.network import PortAuditor
 from services.system import SystemManager
 from utils.command_runner import CommandRunner
 from utils.commands import PrivilegedCommand
-from utils.ports import PortAuditor
-from utils.sandbox import SandboxManager
-from utils.usbguard import USBGuardManager
+from services.security import SandboxManager
+from services.security import USBGuardManager
 
 from ui.base_tab import BaseTab
 from ui.tab_utils import CONTENT_MARGINS
@@ -209,9 +209,7 @@ class SecurityTab(QWidget, PluginInterface):
         # Port table
         self.port_table = QTableWidget()
         self.port_table.setColumnCount(5)
-        self.port_table.setHorizontalHeaderLabels(
-            ["Port", "Protocol", "Address", "Process", "Status"]
-        )
+        self.port_table.setHorizontalHeaderLabels(["Port", "Protocol", "Address", "Process", "Status"])
         self.port_table.horizontalHeader().setSectionResizeMode(  # type: ignore[union-attr]
             QHeaderView.ResizeMode.Stretch
         )
@@ -249,11 +247,7 @@ class SecurityTab(QWidget, PluginInterface):
         installed = USBGuardManager.is_installed()
         running = USBGuardManager.is_running() if installed else False
 
-        status_text = (
-            "✅ Active"
-            if running
-            else ("❌ Stopped" if installed else "📥 Not Installed")
-        )
+        status_text = "✅ Active" if running else ("❌ Stopped" if installed else "📥 Not Installed")
         self.usb_status = QLabel(f"Status: {status_text}")
         layout.addWidget(self.usb_status)
 
@@ -263,11 +257,7 @@ class SecurityTab(QWidget, PluginInterface):
             install_btn.clicked.connect(self._install_usbguard)
             layout.addWidget(install_btn)
 
-            info = QLabel(
-                self.tr(
-                    "USB Guard blocks unauthorized USB devices to prevent BadUSB attacks."
-                )
-            )
+            info = QLabel(self.tr("USB Guard blocks unauthorized USB devices to prevent BadUSB attacks."))
             info.setWordWrap(True)
             info.setObjectName("secUsbInfo")
             layout.addWidget(info)
@@ -338,9 +328,7 @@ class SecurityTab(QWidget, PluginInterface):
 
             for app, desc in list(SandboxManager.FIREJAIL_PROFILES.items())[:4]:
                 btn = QPushButton(app.capitalize())
-                btn.setAccessibleName(
-                    self.tr("Launch {} sandboxed").format(app.capitalize())
-                )
+                btn.setAccessibleName(self.tr("Launch {} sandboxed").format(app.capitalize()))
                 btn.setToolTip(f"Launch {app} in sandbox")
                 btn.clicked.connect(lambda checked, a=app: self._launch_sandboxed(a))
                 profiles_layout.addWidget(btn)
@@ -398,9 +386,7 @@ class SecurityTab(QWidget, PluginInterface):
         ports = PortAuditor.scan_ports()
 
         if not ports:
-            BaseTab.set_table_empty_state(
-                self.port_table, self.tr("No open ports detected")
-            )
+            BaseTab.set_table_empty_state(self.port_table, self.tr("No open ports detected"))
             return
 
         for port in ports:
@@ -497,20 +483,10 @@ class SecurityTab(QWidget, PluginInterface):
 
     def _launch_sandboxed(self, app: str):
         """Launch an app in sandbox."""
-        no_net = (
-            self.no_network_check.isChecked()
-            if hasattr(self, "no_network_check")
-            else False
-        )
-        private = (
-            self.private_home_check.isChecked()
-            if hasattr(self, "private_home_check")
-            else False
-        )
+        no_net = self.no_network_check.isChecked() if hasattr(self, "no_network_check") else False
+        private = self.private_home_check.isChecked() if hasattr(self, "private_home_check") else False
 
-        result = SandboxManager.run_sandboxed(
-            [app], no_network=no_net, private_home=private
-        )
+        result = SandboxManager.run_sandboxed([app], no_network=no_net, private_home=private)
         self.log(result.message)
 
     def _run_custom_sandbox(self):
@@ -523,9 +499,7 @@ class SecurityTab(QWidget, PluginInterface):
         no_net = self.no_network_check.isChecked()
         private = self.private_home_check.isChecked()
 
-        result = SandboxManager.run_sandboxed(
-            cmd.split(), no_network=no_net, private_home=private
-        )
+        result = SandboxManager.run_sandboxed(cmd.split(), no_network=no_net, private_home=private)
         self.log(result.message)
 
     # ==================== FIREWALL (from Privacy tab) ====================

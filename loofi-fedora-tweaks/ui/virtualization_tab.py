@@ -38,10 +38,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from utils.disposable_vm import DisposableVMManager
-from utils.vfio import VFIOAssistant
-from utils.virtualization import VirtualizationManager
-from utils.vm_manager import VM_FLAVORS, VMManager
+from services.virtualization import VM_FLAVORS, DisposableVMManager, VFIOAssistant, VirtualizationManager, VMManager
 
 from ui.base_tab import BaseTab
 from ui.tab_utils import CONTENT_MARGINS, configure_top_tabs
@@ -200,9 +197,7 @@ class VirtualizationTab(QWidget, PluginInterface):
         self.vm_table.setRowCount(0)
         vms = VMManager.list_vms()
         if not vms:
-            self.set_table_empty_state(
-                self.vm_table, self.tr("No virtual machines found")
-            )
+            self.set_table_empty_state(self.vm_table, self.tr("No virtual machines found"))
             self.log(self.tr("VM list refreshed (0 VMs)."))
             return
         for vm in vms:
@@ -318,9 +313,7 @@ class VirtualizationTab(QWidget, PluginInterface):
         form.addRow(self.tr("ISO:"), iso_layout)
 
         def browse_iso():
-            path, _ = QFileDialog.getOpenFileName(
-                dialog, self.tr("Select ISO"), "", self.tr("ISO Images (*.iso)")
-            )
+            path, _ = QFileDialog.getOpenFileName(dialog, self.tr("Select ISO"), "", self.tr("ISO Images (*.iso)"))
             if path:
                 iso_edit.setText(path)
 
@@ -352,15 +345,11 @@ class VirtualizationTab(QWidget, PluginInterface):
         def do_create():
             vm_name = name_edit.text().strip()
             if not vm_name:
-                QMessageBox.warning(
-                    dialog, self.tr("Error"), self.tr("Please enter a VM name.")
-                )
+                QMessageBox.warning(dialog, self.tr("Error"), self.tr("Please enter a VM name."))
                 return
             iso_path = iso_edit.text().strip()
             if not iso_path:
-                QMessageBox.warning(
-                    dialog, self.tr("Error"), self.tr("Please select an ISO file.")
-                )
+                QMessageBox.warning(dialog, self.tr("Error"), self.tr("Please select an ISO file."))
                 return
             flavor_key = flavor_combo.currentData()
             result = VMManager.create_vm(
@@ -476,9 +465,7 @@ class VirtualizationTab(QWidget, PluginInterface):
             item = QListWidgetItem(desc)
             item.setData(Qt.ItemDataRole.UserRole, gpu)
             self.gpu_list.addItem(item)
-        self.log(
-            self.tr("{} GPU candidate(s) detected.").format(len(self._gpu_candidates))
-        )
+        self.log(self.tr("{} GPU candidate(s) detected.").format(len(self._gpu_candidates)))
 
     def _generate_vfio_plan(self):
         current = self.gpu_list.currentItem()
@@ -555,9 +542,7 @@ class VirtualizationTab(QWidget, PluginInterface):
             path = DisposableVMManager.get_base_image_path()
             self.base_status_label.setText(self.tr("Base image ready: {}").format(path))
         else:
-            self.base_status_label.setText(
-                self.tr("No base image found. Create one to use disposable VMs.")
-            )
+            self.base_status_label.setText(self.tr("No base image found. Create one to use disposable VMs."))
 
     def _create_base_image(self):
         iso_path, _ = QFileDialog.getOpenFileName(

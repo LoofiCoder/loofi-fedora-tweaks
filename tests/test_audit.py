@@ -21,7 +21,7 @@ class TestAuditLogger(unittest.TestCase):
 
     def setUp(self):
         """Create a fresh AuditLogger with a temp directory."""
-        from utils.audit import AuditLogger
+        from services.security.audit import AuditLogger
 
         # Reset singleton properly (closes handlers)
         AuditLogger.reset()
@@ -35,7 +35,7 @@ class TestAuditLogger(unittest.TestCase):
 
     def tearDown(self):
         """Clean up singleton and temp directory."""
-        from utils.audit import AuditLogger
+        from services.security.audit import AuditLogger
         AuditLogger.reset()
         self.env_patch.stop()
 
@@ -44,7 +44,7 @@ class TestAuditLogger(unittest.TestCase):
 
     def test_singleton_pattern(self):
         """AuditLogger should return the same instance."""
-        from utils.audit import AuditLogger
+        from services.security.audit import AuditLogger
         a1 = AuditLogger()
         a2 = AuditLogger()
         self.assertIs(a1, a2)
@@ -156,7 +156,7 @@ class TestAuditLogger(unittest.TestCase):
 
     def test_reset(self):
         """reset() should clear singleton state."""
-        from utils.audit import AuditLogger
+        from services.security.audit import AuditLogger
         self.audit.log(action="test")
         AuditLogger.reset()
         # Re-create with same LOOFI_AUDIT_DIR
@@ -169,7 +169,7 @@ class TestAuditLoggerEdgeCases(unittest.TestCase):
     """Edge cases and error handling for AuditLogger."""
 
     def setUp(self):
-        from utils.audit import AuditLogger
+        from services.security.audit import AuditLogger
         AuditLogger.reset()
         self.tmpdir = tempfile.mkdtemp()
         self.env_patch = patch.dict(
@@ -178,7 +178,7 @@ class TestAuditLoggerEdgeCases(unittest.TestCase):
         self.audit = AuditLogger()
 
     def tearDown(self):
-        from utils.audit import AuditLogger
+        from services.security.audit import AuditLogger
         AuditLogger.reset()
         self.env_patch.stop()
         import shutil

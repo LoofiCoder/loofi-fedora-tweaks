@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, mock_open, patch
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "loofi-fedora-tweaks"))
 
-from utils.network_monitor import ConnectionInfo, InterfaceStats, NetworkMonitor
+from services.network.monitor import ConnectionInfo, InterfaceStats, NetworkMonitor
 
 
 class TestNetworkMonitorExtended(unittest.TestCase):
@@ -131,7 +131,7 @@ class TestNetworkMonitorExtended(unittest.TestCase):
     #  get_all_interfaces
     # ------------------------------------------------------------------ #
 
-    @patch("utils.network_monitor.time.monotonic")
+    @patch("services.network.monitor.time.monotonic")
     @patch.object(NetworkMonitor, "get_interface_ip", return_value="192.168.1.2")
     @patch.object(NetworkMonitor, "_is_interface_up", return_value=True)
     @patch.object(NetworkMonitor, "_classify_interface", return_value="ethernet")
@@ -178,7 +178,7 @@ class TestNetworkMonitorExtended(unittest.TestCase):
         result = NetworkMonitor.get_all_interfaces()
         self.assertEqual(result, [])
 
-    @patch("utils.network_monitor.time.monotonic", return_value=1000.0)
+    @patch("services.network.monitor.time.monotonic", return_value=1000.0)
     @patch.object(NetworkMonitor, "_is_interface_up", return_value=False)
     @patch.object(NetworkMonitor, "_classify_interface", return_value="ethernet")
     @patch.object(NetworkMonitor, "_read_proc_net_dev")
@@ -420,7 +420,7 @@ class TestNetworkMonitorExtended(unittest.TestCase):
     #  get_interface_ip
     # ------------------------------------------------------------------ #
 
-    @patch("utils.network_monitor.subprocess.run")
+    @patch("services.network.monitor.subprocess.run")
     def test_get_interface_ip_parses_inet_line(self, mock_run):
         """IPv4 parser extracts address from ip command output."""
         mock_run.return_value = MagicMock(
@@ -429,18 +429,18 @@ class TestNetworkMonitorExtended(unittest.TestCase):
         )
         self.assertEqual(NetworkMonitor.get_interface_ip("eth0"), "10.0.0.5")
 
-    @patch("utils.network_monitor.subprocess.run")
+    @patch("services.network.monitor.subprocess.run")
     def test_get_interface_ip_nonzero(self, mock_run):
         """Non-zero ip command returns empty address."""
         mock_run.return_value = MagicMock(returncode=1, stdout="")
         self.assertEqual(NetworkMonitor.get_interface_ip("eth0"), "")
 
-    @patch("utils.network_monitor.subprocess.run", side_effect=OSError("timeout"))
+    @patch("services.network.monitor.subprocess.run", side_effect=OSError("timeout"))
     def test_get_interface_ip_subprocess_exception(self, mock_run):
         """Subprocess exception in get_interface_ip returns empty string."""
         self.assertEqual(NetworkMonitor.get_interface_ip("eth0"), "")
 
-    @patch("utils.network_monitor.subprocess.run")
+    @patch("services.network.monitor.subprocess.run")
     def test_get_interface_ip_no_inet_line(self, mock_run):
         """Output without an inet line returns empty address."""
         mock_run.return_value = MagicMock(
@@ -540,13 +540,13 @@ class TestNetworkMonitorExtended(unittest.TestCase):
     #  _classify_interface — sysfs fallback
     # ------------------------------------------------------------------ #
 
-    @patch("utils.network_monitor.os.path.isdir", return_value=True)
+    @patch("services.network.monitor.os.path.isdir", return_value=True)
     @patch("builtins.open", new_callable=mock_open, read_data="1\n")
     def test_classify_interface_sysfs_wifi(self, mock_file, mock_isdir):
         """Type=1 plus wireless path classifies as wifi."""
         self.assertEqual(NetworkMonitor._classify_interface("foo0"), "wifi")
 
-    @patch("utils.network_monitor.os.path.isdir", return_value=False)
+    @patch("services.network.monitor.os.path.isdir", return_value=False)
     @patch("builtins.open", new_callable=mock_open, read_data="65534\n")
     def test_classify_interface_sysfs_vpn(self, mock_file, mock_isdir):
         """Type 65534 fallback classifies as vpn."""
@@ -557,7 +557,7 @@ class TestNetworkMonitorExtended(unittest.TestCase):
         """Type 772 in sysfs classifies as loopback."""
         self.assertEqual(NetworkMonitor._classify_interface("foo0"), "loopback")
 
-    @patch("utils.network_monitor.os.path.isdir", return_value=False)
+    @patch("services.network.monitor.os.path.isdir", return_value=False)
     @patch("builtins.open", new_callable=mock_open, read_data="1\n")
     def test_classify_interface_sysfs_ethernet(self, mock_file, mock_isdir):
         """Type=1 without wireless dir classifies as ethernet."""
@@ -568,7 +568,7 @@ class TestNetworkMonitorExtended(unittest.TestCase):
         """Sysfs read failure falls through to 'other'."""
         self.assertEqual(NetworkMonitor._classify_interface("foo0"), "other")
 
-    @patch("utils.network_monitor.os.path.isdir", return_value=False)
+    @patch("services.network.monitor.os.path.isdir", return_value=False)
     @patch("builtins.open", new_callable=mock_open, read_data="999\n")
     def test_classify_interface_sysfs_unknown_type(self, mock_file, mock_isdir):
         """Unknown sysfs type number falls through to 'other'."""
@@ -664,7 +664,7 @@ class TestNetworkMonitorExtended(unittest.TestCase):
         self.assertIn("1", addr)
         self.assertNotEqual(addr, "00000000000000000000000001000000")
 
-    @patch("utils.network_monitor.socket.inet_ntoa", side_effect=OSError("bad"))
+    @patch("services.network.monitor.socket.inet_ntoa", side_effect=OSError("bad"))
     def test_decode_address_ipv4_exception_fallback(self, mock_inet):
         """IPv4 decode exception returns raw hex as fallback."""
         addr, port = NetworkMonitor._decode_address("ZZZZZZZZ:0050", False)
@@ -675,7 +675,7 @@ class TestNetworkMonitorExtended(unittest.TestCase):
         self.assertEqual(addr, "0100007F")
         self.assertEqual(port, 80)
 
-    @patch("utils.network_monitor.socket.inet_ntop", side_effect=OSError("bad ipv6"))
+    @patch("services.network.monitor.socket.inet_ntop", side_effect=OSError("bad ipv6"))
     def test_decode_address_ipv6_inet_ntop_exception(self, mock_ntop):
         """IPv6 inet_ntop exception returns raw hex as fallback."""
         # Non-mapped IPv6 so it goes through inet_ntop path
@@ -695,10 +695,10 @@ class TestNetworkMonitorExtended(unittest.TestCase):
     # ------------------------------------------------------------------ #
 
     @patch(
-        "utils.network_monitor.NetworkMonitor._get_process_name", return_value="python"
+        "services.network.monitor.NetworkMonitor._get_process_name", return_value="python"
     )
-    @patch("utils.network_monitor.os.readlink")
-    @patch("utils.network_monitor.os.listdir")
+    @patch("services.network.monitor.os.readlink")
+    @patch("services.network.monitor.os.listdir")
     def test_build_inode_pid_map(self, mock_listdir, mock_readlink, mock_name):
         """Inode map resolves socket symlinks to pid and process name."""
         mock_listdir.side_effect = [
@@ -711,13 +711,13 @@ class TestNetworkMonitorExtended(unittest.TestCase):
         self.assertIn("999", mapping)
         self.assertEqual(mapping["999"], (1234, "python"))
 
-    @patch("utils.network_monitor.os.listdir", side_effect=OSError("x"))
+    @patch("services.network.monitor.os.listdir", side_effect=OSError("x"))
     def test_build_inode_pid_map_proc_list_error(self, mock_listdir):
         """Top-level /proc listing error returns empty mapping."""
         self.assertEqual(NetworkMonitor._build_inode_pid_map(), {})
 
-    @patch("utils.network_monitor.os.readlink", side_effect=PermissionError("denied"))
-    @patch("utils.network_monitor.os.listdir")
+    @patch("services.network.monitor.os.readlink", side_effect=PermissionError("denied"))
+    @patch("services.network.monitor.os.listdir")
     def test_build_inode_pid_map_readlink_permission_error(
         self, mock_listdir, mock_readlink
     ):
@@ -730,7 +730,7 @@ class TestNetworkMonitorExtended(unittest.TestCase):
         mapping = NetworkMonitor._build_inode_pid_map()
         self.assertEqual(mapping, {})
 
-    @patch("utils.network_monitor.os.listdir")
+    @patch("services.network.monitor.os.listdir")
     def test_build_inode_pid_map_fd_listdir_permission_error(self, mock_listdir):
         """PermissionError on fd directory listing is silently skipped."""
         mock_listdir.side_effect = [
@@ -741,7 +741,7 @@ class TestNetworkMonitorExtended(unittest.TestCase):
         mapping = NetworkMonitor._build_inode_pid_map()
         self.assertEqual(mapping, {})
 
-    @patch("utils.network_monitor.os.listdir")
+    @patch("services.network.monitor.os.listdir")
     def test_build_inode_pid_map_skips_non_numeric(self, mock_listdir):
         """Non-numeric /proc entries are skipped."""
         mock_listdir.return_value = ["self", "sys", "not_a_pid"]

@@ -10,7 +10,7 @@ import os
 # Add source path to sys.path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'loofi-fedora-tweaks'))
 
-from utils.virtualization import (
+from services.virtualization.virtualization import (
     VirtualizationManager, VirtStatus, IOMMUGroup, IOMMUDevice,
 )
 
@@ -121,10 +121,10 @@ class TestIOMMU(unittest.TestCase):
 class TestIOMMUGroups(unittest.TestCase):
     """Tests for IOMMU group and device enumeration."""
 
-    @patch("utils.virtualization.VirtualizationManager._get_lspci_description", return_value="NVIDIA GA106")
+    @patch("services.virtualization.virtualization.VirtualizationManager._get_lspci_description", return_value="NVIDIA GA106")
     @patch("os.readlink", return_value="/sys/bus/pci/drivers/nvidia")
     @patch("os.path.islink", return_value=True)
-    @patch("utils.virtualization.VirtualizationManager._read_sysfs")
+    @patch("services.virtualization.virtualization.VirtualizationManager._read_sysfs")
     @patch("os.listdir")
     @patch("os.path.isdir")
     def test_get_iommu_groups_single(self, mock_isdir, mock_listdir, mock_sysfs, mock_islink, mock_readlink, mock_lspci):
@@ -265,10 +265,10 @@ class TestTooling(unittest.TestCase):
 class TestFullStatus(unittest.TestCase):
     """Tests for the combined virtualization status report."""
 
-    @patch("utils.virtualization.VirtualizationManager.get_iommu_groups", return_value=[])
-    @patch("utils.virtualization.VirtualizationManager.is_iommu_enabled", return_value=False)
-    @patch("utils.virtualization.VirtualizationManager.is_kvm_module_loaded", return_value=True)
-    @patch("utils.virtualization.VirtualizationManager.check_cpu_virt_extensions", return_value=(True, "Intel", "vmx"))
+    @patch("services.virtualization.virtualization.VirtualizationManager.get_iommu_groups", return_value=[])
+    @patch("services.virtualization.virtualization.VirtualizationManager.is_iommu_enabled", return_value=False)
+    @patch("services.virtualization.virtualization.VirtualizationManager.is_kvm_module_loaded", return_value=True)
+    @patch("services.virtualization.virtualization.VirtualizationManager.check_cpu_virt_extensions", return_value=(True, "Intel", "vmx"))
     @patch("shutil.which", return_value=None)
     def test_full_status_basic(self, mock_which, mock_cpu, mock_kvm, mock_iommu, mock_groups):
         status = VirtualizationManager.get_full_status()
@@ -280,10 +280,10 @@ class TestFullStatus(unittest.TestCase):
         self.assertEqual(status.cpu_extension, "vmx")
         self.assertEqual(status.iommu_groups, [])
 
-    @patch("utils.virtualization.VirtualizationManager.get_iommu_groups")
-    @patch("utils.virtualization.VirtualizationManager.is_iommu_enabled", return_value=True)
-    @patch("utils.virtualization.VirtualizationManager.is_kvm_module_loaded", return_value=True)
-    @patch("utils.virtualization.VirtualizationManager.check_cpu_virt_extensions", return_value=(True, "AMD", "svm"))
+    @patch("services.virtualization.virtualization.VirtualizationManager.get_iommu_groups")
+    @patch("services.virtualization.virtualization.VirtualizationManager.is_iommu_enabled", return_value=True)
+    @patch("services.virtualization.virtualization.VirtualizationManager.is_kvm_module_loaded", return_value=True)
+    @patch("services.virtualization.virtualization.VirtualizationManager.check_cpu_virt_extensions", return_value=(True, "AMD", "svm"))
     @patch("shutil.which")
     def test_full_status_all_ready(self, mock_which, mock_cpu, mock_kvm, mock_iommu, mock_groups):
         mock_which.return_value = "/usr/bin/dummy"
@@ -306,7 +306,7 @@ class TestFullStatus(unittest.TestCase):
 class TestSummary(unittest.TestCase):
     """Tests for the summary text output."""
 
-    @patch("utils.virtualization.VirtualizationManager.get_full_status")
+    @patch("services.virtualization.virtualization.VirtualizationManager.get_full_status")
     def test_summary_all_enabled(self, mock_status):
         mock_status.return_value = VirtStatus(
             kvm_supported=True,
@@ -328,7 +328,7 @@ class TestSummary(unittest.TestCase):
         self.assertIn("Libvirt: Available", summary)
         self.assertIn("swtpm: Available", summary)
 
-    @patch("utils.virtualization.VirtualizationManager.get_full_status")
+    @patch("services.virtualization.virtualization.VirtualizationManager.get_full_status")
     def test_summary_nothing_available(self, mock_status):
         mock_status.return_value = VirtStatus()
         summary = VirtualizationManager.get_summary()

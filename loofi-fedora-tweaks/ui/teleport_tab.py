@@ -31,9 +31,9 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from services.network import MeshDiscovery
+from services.storage import StateTeleportManager
 from utils.file_drop import FileDropManager
-from utils.mesh_discovery import MeshDiscovery
-from utils.state_teleport import StateTeleportManager
 
 from ui.base_tab import BaseTab
 from ui.tab_utils import CONTENT_MARGINS
@@ -130,9 +130,7 @@ class TeleportTab(QWidget, PluginInterface):
 
         self.workspace_path_edit = QLineEdit()
         self.workspace_path_edit.setAccessibleName(self.tr("Workspace Path"))
-        self.workspace_path_edit.setPlaceholderText(
-            self.tr("Auto-detect from current directory")
-        )
+        self.workspace_path_edit.setPlaceholderText(self.tr("Auto-detect from current directory"))
         # Try to auto-detect a git repo in CWD
         cwd = os.getcwd()
         if os.path.isdir(os.path.join(cwd, ".git")):
@@ -186,9 +184,7 @@ class TeleportTab(QWidget, PluginInterface):
         if header is not None:
             header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.packages_table.setMaximumHeight(180)
-        self.packages_table.setSelectionBehavior(
-            QTableWidget.SelectionBehavior.SelectRows
-        )
+        self.packages_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.packages_table.setProperty("maxVisibleRows", 3)
         BaseTab.configure_table(self.packages_table)
         layout.addWidget(self.packages_table)
@@ -233,9 +229,7 @@ class TeleportTab(QWidget, PluginInterface):
         layout.addLayout(import_layout)
 
         # Incoming teleport preview
-        self.restore_preview = QLabel(
-            self.tr("No incoming teleport. Import a package file to begin.")
-        )
+        self.restore_preview = QLabel(self.tr("No incoming teleport. Import a package file to begin."))
         self.restore_preview.setWordWrap(True)
         self.restore_preview.setObjectName("teleportRestorePreview")
         layout.addWidget(self.restore_preview)
@@ -272,9 +266,7 @@ class TeleportTab(QWidget, PluginInterface):
 
         try:
             state = StateTeleportManager.capture_full_state(ws_path)
-            package = StateTeleportManager.create_teleport_package(
-                state, target_device="pending"
-            )
+            package = StateTeleportManager.create_teleport_package(state, target_device="pending")
             self._current_package = package
 
             # Save to package directory
@@ -286,10 +278,7 @@ class TeleportTab(QWidget, PluginInterface):
             # Update summary
             git_branch = state.git_state.get("branch", "N/A")
             git_status = state.git_state.get("status", "N/A")
-            summary = self.tr(
-                "Captured: host={host}, branch={branch} ({status}), "
-                "files={files}, size={size} bytes"
-            ).format(
+            summary = self.tr("Captured: host={host}, branch={branch} ({status}), files={files}, size={size} bytes").format(
                 host=state.hostname,
                 branch=git_branch,
                 status=git_status,
@@ -325,11 +314,7 @@ class TeleportTab(QWidget, PluginInterface):
                 QTableWidgetItem(pkg.get("source_device", "")),
             )
             created = pkg.get("created_at", 0)
-            date_str = (
-                time.strftime("%Y-%m-%d %H:%M", time.localtime(created))
-                if created
-                else "Unknown"
-            )
+            date_str = time.strftime("%Y-%m-%d %H:%M", time.localtime(created)) if created else "Unknown"
             self.packages_table.setItem(row, 2, QTableWidgetItem(date_str))
             size = pkg.get("size_bytes", 0)
             self.packages_table.setItem(row, 3, QTableWidgetItem(f"{size} B"))
@@ -350,9 +335,7 @@ class TeleportTab(QWidget, PluginInterface):
             self.tr("JSON files (*.json)"),
         )
         if path:
-            result = StateTeleportManager.save_package_to_file(
-                self._current_package, path
-            )
+            result = StateTeleportManager.save_package_to_file(self._current_package, path)
             self.log(result.message)
 
     def _send_to_device(self):
@@ -367,11 +350,7 @@ class TeleportTab(QWidget, PluginInterface):
         peers = MeshDiscovery.discover_peers(timeout=3)
 
         if not peers:
-            self.log(
-                self.tr(
-                    "No mesh devices found. Use 'Export to File' for manual transfer."
-                )
-            )
+            self.log(self.tr("No mesh devices found. Use 'Export to File' for manual transfer."))
             return
 
         # For now, use the first peer found (could add a device selector dialog)
@@ -385,9 +364,7 @@ class TeleportTab(QWidget, PluginInterface):
 
             # If the package file doesn't exist, save it first
             if not os.path.isfile(package_path):
-                StateTeleportManager.save_package_to_file(
-                    self._current_package, package_path
-                )
+                StateTeleportManager.save_package_to_file(self._current_package, package_path)
 
             # Send the file to the peer
             self.log(self.tr("Sending package to {}...").format(peer.name))
@@ -423,11 +400,7 @@ class TeleportTab(QWidget, PluginInterface):
             files_count = len(ws.open_files)
 
             preview = self.tr(
-                "Incoming teleport from {source}:\n"
-                "  Branch: {branch}\n"
-                "  Workspace: {workspace}\n"
-                "  Open files: {files}\n"
-                "  Captured: {time}"
+                "Incoming teleport from {source}:\n  Branch: {branch}\n  Workspace: {workspace}\n  Open files: {files}\n  Captured: {time}"
             ).format(
                 source=package.source_device,
                 branch=branch,
@@ -452,12 +425,7 @@ class TeleportTab(QWidget, PluginInterface):
         reply = QMessageBox.question(
             self,
             self.tr("Confirm Teleport"),
-            self.tr(
-                "This will:\n"
-                "- Checkout branch '{branch}'\n"
-                "- Open VS Code at the workspace\n\n"
-                "Continue?"
-            ).format(branch=branch),
+            self.tr("This will:\n- Checkout branch '{branch}'\n- Open VS Code at the workspace\n\nContinue?").format(branch=branch),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if reply != QMessageBox.StandardButton.Yes:

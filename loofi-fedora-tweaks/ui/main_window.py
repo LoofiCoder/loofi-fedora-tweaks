@@ -66,9 +66,9 @@ class SidebarItemDelegate(QStyledItemDelegate):
     """Custom delegate that renders status dots on sidebar tab items."""
 
     _STATUS_COLORS = {
-        "ok": QColor(76, 175, 80),       # green
-        "warning": QColor(255, 193, 7),   # amber
-        "error": QColor(244, 67, 54),     # red
+        "ok": QColor(76, 175, 80),  # green
+        "warning": QColor(255, 193, 7),  # amber
+        "error": QColor(244, 67, 54),  # red
     }
 
     def paint(self, painter: "QPainter | None", option: QStyleOptionViewItem, index) -> None:
@@ -102,9 +102,7 @@ class DisabledPluginPage(QWidget):
         super().__init__()
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        label = QLabel(
-            f"{meta.name} is not available on this system.\n\n{reason}"
-        )
+        label = QLabel(f"{meta.name} is not available on this system.\n\n{reason}")
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         label.setObjectName("disabledPluginLabel")
         layout.addWidget(label)
@@ -134,9 +132,7 @@ class MainWindow(QMainWindow):
         # appear to bleed into the top chrome when frameless/custom hints are used.
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint, False)
         self.setWindowFlag(Qt.WindowType.CustomizeWindowHint, False)
-        self.setWindowTitle(
-            self.tr("Loofi Fedora Tweaks v%1").replace("%1", __version__)
-        )
+        self.setWindowTitle(self.tr("Loofi Fedora Tweaks v%1").replace("%1", __version__))
         self.resize(1100, 700)
         self.setMinimumSize(800, 500)
 
@@ -175,15 +171,11 @@ class MainWindow(QMainWindow):
         self.sidebar_search.setPlaceholderText(self.tr("Search tabs..."))
         self.sidebar_search.setClearButtonEnabled(True)
         self.sidebar_search.setAccessibleName(self.tr("Search tabs"))
-        self.sidebar_search.setAccessibleDescription(
-            self.tr("Filter sidebar tabs by name or description")
-        )
+        self.sidebar_search.setAccessibleDescription(self.tr("Filter sidebar tabs by name or description"))
         # HiDPI: 2*line_height + padding (4+10)*2 = approx 36px at 1x DPI
         search_height = int(self._line_height * 2 + 28)
         self.sidebar_search.setFixedHeight(search_height)
-        self.sidebar_search.setStyleSheet(
-            "QLineEdit { margin: 5px 10px; border-radius: 8px; padding: 4px 10px; }"
-        )
+        self.sidebar_search.setStyleSheet("QLineEdit { margin: 5px 10px; border-radius: 8px; padding: 4px 10px; }")
         self.sidebar_search.textChanged.connect(self._filter_sidebar)
         sidebar_layout.addWidget(self.sidebar_search)
 
@@ -287,9 +279,7 @@ class MainWindow(QMainWindow):
         sb_layout.addWidget(self._undo_btn)
 
         sb_layout.addStretch()
-        shortcuts_hint = QLabel(
-            self.tr("Ctrl+K Search  |  Ctrl+Shift+K Actions  |  F1 Help")
-        )
+        shortcuts_hint = QLabel(self.tr("Ctrl+K Search  |  Ctrl+Shift+K Actions  |  F1 Help"))
         shortcuts_hint.setObjectName("statusHints")
         sb_layout.addWidget(shortcuts_hint)
         version_lbl = QLabel(f"v{__version__}")
@@ -360,10 +350,7 @@ class MainWindow(QMainWindow):
     def pages(self) -> dict[str, QWidget]:
         """Backward-compatible accessor. Returns {display_name: widget} view."""
         if self._pages_cache is None:
-            self._pages_cache = {
-                entry.display_name: entry.page_widget
-                for entry in self._sidebar_index.values()
-            }
+            self._pages_cache = {entry.display_name: entry.page_widget for entry in self._sidebar_index.values()}
         return self._pages_cache
 
     @pages.setter
@@ -486,8 +473,13 @@ class MainWindow(QMainWindow):
         """Register a plugin page in the sidebar and content area."""
         category_item = self._find_or_create_category(meta.category)
         item = self._create_tab_item(
-            category_item, meta.name, meta.icon, meta.badge,
-            meta.description, disabled=not compat.compatible, disabled_reason=compat.reason,
+            category_item,
+            meta.name,
+            meta.icon,
+            meta.badge,
+            meta.description,
+            disabled=not compat.compatible,
+            disabled_reason=compat.reason,
         )
         if not compat.compatible:
             page_widget = self._wrap_page_widget(DisabledPluginPage(meta, compat.reason))
@@ -610,8 +602,12 @@ class MainWindow(QMainWindow):
 
         if disabled:
             placeholder_meta = PluginMetadata(
-                id=name.lower().replace(" ", "_"), name=name, description=description,
-                category=category, icon=icon, badge=badge,
+                id=name.lower().replace(" ", "_"),
+                name=name,
+                description=description,
+                category=category,
+                icon=icon,
+                badge=badge,
             )
             page_widget = self._wrap_page_widget(DisabledPluginPage(placeholder_meta, disabled_reason))
         else:
@@ -622,8 +618,11 @@ class MainWindow(QMainWindow):
         plugin_id = name.lower().replace(" ", "_")
         meta = PluginMetadata(id=plugin_id, name=name, description=description, category=category, icon=icon, badge=badge)
         entry = SidebarEntry(
-            plugin_id=plugin_id, display_name=name, tree_item=item,
-            page_widget=widget, metadata=meta,
+            plugin_id=plugin_id,
+            display_name=name,
+            tree_item=item,
+            page_widget=widget,
+            metadata=meta,
         )
         self._register_in_index(plugin_id, entry, scroll_widget=page_widget)
 
@@ -768,9 +767,7 @@ class MainWindow(QMainWindow):
             self.show_status_toast(self.tr("Undo failed"), error=True)
         self._undo_btn.setVisible(False)
 
-    def show_status_toast(
-        self, message: str, error: bool = False, duration: int = 3000
-    ):
+    def show_status_toast(self, message: str, error: bool = False, duration: int = 3000):
         """Show a temporary status-bar toast notification (v38.0)."""
         self._status_label.setText(message)
         if error:
@@ -964,16 +961,14 @@ class MainWindow(QMainWindow):
         self.notif_bell.setIcon(get_qicon("notifications", size=17))
         self.notif_bell.setIconSize(QSize(17, 17))
         self.notif_bell.setStyleSheet(
-            "QToolButton { border: none; font-size: 20px; padding: 5px; }"
-            "QToolButton:hover { background-color: #1c2030; border-radius: 6px; }"
+            "QToolButton { border: none; font-size: 20px; padding: 5px; }QToolButton:hover { background-color: #1c2030; border-radius: 6px; }"
         )
         self.notif_bell.clicked.connect(self._toggle_notification_panel)
 
         # Unread count badge (overlays bell button)
         self._notif_badge = QLabel("0")
         self._notif_badge.setStyleSheet(
-            "background-color: #e8556d; color: #0b0e14; border-radius: 8px; "
-            "padding: 1px 6px; font-size: 10px; font-weight: bold;"
+            "background-color: #e8556d; color: #0b0e14; border-radius: 8px; padding: 1px 6px; font-size: 10px; font-weight: bold;"
         )
         self._notif_badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._notif_badge.setFixedHeight(16)
@@ -1010,9 +1005,7 @@ class MainWindow(QMainWindow):
             panel_w = panel.PANEL_WIDTH
             margin = panel.EDGE_MARGIN
             breadcrumb_bottom = self._breadcrumb_frame.geometry().bottom()
-            status_height = (
-                self._status_frame.height() if hasattr(self, "_status_frame") else 0
-            )
+            status_height = self._status_frame.height() if hasattr(self, "_status_frame") else 0
             window_w = self.width()
             window_h = self.height()
 
@@ -1086,13 +1079,9 @@ class MainWindow(QMainWindow):
             usage = DiskManager.get_disk_usage("/")
             if usage and hasattr(usage, "percent_used"):
                 if usage.percent_used >= 90:
-                    self._set_tab_status(
-                        "storage", "error", f"Disk {usage.percent_used:.0f}% full"
-                    )
+                    self._set_tab_status("storage", "error", f"Disk {usage.percent_used:.0f}% full")
                 elif usage.percent_used >= 75:
-                    self._set_tab_status(
-                        "storage", "warning", f"Disk {usage.percent_used:.0f}% used"
-                    )
+                    self._set_tab_status("storage", "warning", f"Disk {usage.percent_used:.0f}% used")
                 else:
                     self._set_tab_status("storage", "ok", "Healthy")
         except (RuntimeError, OSError, ValueError) as e:
@@ -1111,9 +1100,7 @@ class MainWindow(QMainWindow):
 
         if tooltip:
             desc = entry.metadata.description or ""
-            entry.tree_item.setToolTip(
-                0, f"{desc}\n[{tooltip}]" if desc else tooltip
-            )
+            entry.tree_item.setToolTip(0, f"{desc}\n[{tooltip}]" if desc else tooltip)
 
     def _setup_quick_actions(self):
         """Register Ctrl+Shift+K shortcut for Quick Actions bar."""
@@ -1141,6 +1128,7 @@ class MainWindow(QMainWindow):
         """Show/hide sidebar tabs based on experience level setting."""
         try:
             from utils.experience_level import ExperienceLevelManager
+
             if level is None:
                 level = ExperienceLevelManager.get_current_level()
             visible_tabs = ExperienceLevelManager.get_visible_tabs(level)
@@ -1175,8 +1163,10 @@ class MainWindow(QMainWindow):
         # Launch guided tour if not yet completed (v47.0)
         try:
             from utils.guided_tour import GuidedTourManager
+
             if GuidedTourManager.needs_tour():
                 from ui.tour_overlay import TourOverlay
+
                 self._tour_overlay = TourOverlay(self)
                 self._tour_overlay.tour_completed.connect(
                     lambda: self.show_toast(
@@ -1195,17 +1185,11 @@ class MainWindow(QMainWindow):
 
         if QSystemTrayIcon.isSystemTrayAvailable():
             self.tray_icon = QSystemTrayIcon(self)
-            icon_path = os.path.join(
-                os.path.dirname(__file__), "..", "assets", "loofi-fedora-tweaks.png"
-            )
+            icon_path = os.path.join(os.path.dirname(__file__), "..", "assets", "loofi-fedora-tweaks.png")
             if os.path.exists(icon_path):
                 self.tray_icon.setIcon(QIcon(icon_path))
             else:
-                self.tray_icon.setIcon(
-                    self.style().standardIcon(
-                        self.style().StandardPixmap.SP_ComputerIcon
-                    )
-                )
+                self.tray_icon.setIcon(self.style().standardIcon(self.style().StandardPixmap.SP_ComputerIcon))
 
             tray_menu = QMenu()
             show_action = QAction(self.tr("Show"), self)
@@ -1328,7 +1312,7 @@ class MainWindow(QMainWindow):
 
         Returns ``"dark"`` when detection fails.
         """
-        from utils.desktop_utils import DesktopUtils
+        from services.desktop import DesktopUtils
 
         return DesktopUtils.detect_color_scheme()
 

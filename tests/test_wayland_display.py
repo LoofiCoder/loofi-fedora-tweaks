@@ -14,7 +14,7 @@ from unittest.mock import patch, MagicMock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'loofi-fedora-tweaks'))
 
-from utils.wayland_display import WaylandDisplayManager
+from services.desktop.display import WaylandDisplayManager
 
 
 class TestSessionDetection(unittest.TestCase):
@@ -53,7 +53,7 @@ class TestGetDisplays(unittest.TestCase):
     """Tests for get_displays()."""
 
     @patch.dict(os.environ, {"XDG_SESSION_TYPE": "wayland", "XDG_CURRENT_DESKTOP": "GNOME"})
-    @patch("utils.wayland_display.subprocess.run")
+    @patch("services.desktop.display.subprocess.run")
     def test_get_displays_gnome(self, mock_run):
         mock_run.return_value = MagicMock(
             returncode=0,
@@ -68,8 +68,8 @@ class TestGetDisplays(unittest.TestCase):
         self.assertGreaterEqual(len(result), 0)
 
     @patch.dict(os.environ, {"XDG_SESSION_TYPE": "wayland", "XDG_CURRENT_DESKTOP": "KDE"})
-    @patch("utils.wayland_display.shutil.which", return_value="/usr/bin/kscreen-doctor")
-    @patch("utils.wayland_display.subprocess.run")
+    @patch("services.desktop.display.shutil.which", return_value="/usr/bin/kscreen-doctor")
+    @patch("services.desktop.display.subprocess.run")
     def test_get_displays_kde(self, mock_run, mock_which):
         mock_run.return_value = MagicMock(
             returncode=0,
@@ -87,8 +87,8 @@ class TestGetDisplays(unittest.TestCase):
         self.assertTrue(result[0].primary)
 
     @patch.dict(os.environ, {"XDG_SESSION_TYPE": "x11", "XDG_CURRENT_DESKTOP": "GNOME"})
-    @patch("utils.wayland_display.shutil.which", return_value="/usr/bin/xrandr")
-    @patch("utils.wayland_display.subprocess.run")
+    @patch("services.desktop.display.shutil.which", return_value="/usr/bin/xrandr")
+    @patch("services.desktop.display.subprocess.run")
     def test_get_displays_xrandr_fallback(self, mock_run, mock_which):
         mock_run.return_value = MagicMock(
             returncode=0,
@@ -104,7 +104,7 @@ class TestGetDisplays(unittest.TestCase):
         self.assertFalse(result[1].primary)
 
     @patch.dict(os.environ, {"XDG_SESSION_TYPE": "x11"})
-    @patch("utils.wayland_display.shutil.which", return_value=None)
+    @patch("services.desktop.display.shutil.which", return_value=None)
     def test_get_displays_no_tools(self, mock_which):
         result = WaylandDisplayManager.get_displays()
         self.assertEqual(len(result), 0)
@@ -115,7 +115,7 @@ class TestGetDisplays(unittest.TestCase):
         self.assertEqual(len(result), 0)
 
     @patch.dict(os.environ, {"XDG_SESSION_TYPE": "wayland", "XDG_CURRENT_DESKTOP": "GNOME"})
-    @patch("utils.wayland_display.subprocess.run")
+    @patch("services.desktop.display.subprocess.run")
     def test_get_displays_gnome_timeout(self, mock_run):
         import subprocess
         mock_run.side_effect = subprocess.TimeoutExpired(cmd="gnome-monitor-config", timeout=10)

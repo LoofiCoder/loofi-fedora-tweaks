@@ -94,7 +94,7 @@ class TestRunOperationDryRun(unittest.TestCase):
         with patch.dict(
             "sys.modules",
             {
-                "utils.audit": MagicMock(
+                "services.security.audit": MagicMock(
                     AuditLogger=MagicMock(side_effect=RuntimeError("no audit"))
                 )
             },
@@ -161,7 +161,7 @@ class TestCmdAuditLog(unittest.TestCase):
         mock_audit = MagicMock()
         mock_audit.get_recent.return_value = []
         mock_audit.log_path = "/var/log/loofi-audit.log"
-        with patch("utils.audit.AuditLogger", return_value=mock_audit):
+        with patch("services.security.AuditLogger", return_value=mock_audit):
             args = _make_args(count=20)
             result = cmd_audit_log(args)
         self.assertEqual(result, 0)
@@ -195,7 +195,7 @@ class TestCmdAuditLog(unittest.TestCase):
         mock_audit = MagicMock()
         mock_audit.get_recent.return_value = entries
         mock_audit.log_path = "/var/log/loofi-audit.log"
-        with patch("utils.audit.AuditLogger", return_value=mock_audit):
+        with patch("services.security.AuditLogger", return_value=mock_audit):
             args = _make_args(count=20)
             result = cmd_audit_log(args)
         self.assertEqual(result, 0)
@@ -211,7 +211,7 @@ class TestCmdAuditLog(unittest.TestCase):
         mock_audit = MagicMock()
         mock_audit.get_recent.return_value = entries
         mock_audit.log_path = "/tmp/audit.log"
-        with patch("utils.audit.AuditLogger", return_value=mock_audit):
+        with patch("services.security.AuditLogger", return_value=mock_audit):
             args = _make_args(count=10)
             result = cmd_audit_log(args)
         self.assertEqual(result, 0)

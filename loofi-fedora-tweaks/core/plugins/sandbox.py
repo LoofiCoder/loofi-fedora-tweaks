@@ -521,7 +521,7 @@ class _DefaultIsolationProvider:
     """Default isolation provider backed by utils.sandbox runtime checks."""
 
     def apply_policy(self, policy: PluginIsolationPolicy) -> bool:
-        from utils.sandbox import PluginIsolationManager
+        from services.security import PluginIsolationManager
 
         result = PluginIsolationManager.enforce_policy(policy)
         return result.success

@@ -11,10 +11,10 @@ from unittest.mock import patch, MagicMock, mock_open
 # Add source path to sys.path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'loofi-fedora-tweaks'))
 
-from utils.vm_manager import VMManager, VMInfo, VM_FLAVORS
-from utils.vfio import VFIOAssistant
-from utils.disposable_vm import DisposableVMManager
-from utils.virtualization import IOMMUGroup, IOMMUDevice
+from services.virtualization.vm_manager import VMManager, VMInfo, VM_FLAVORS
+from services.virtualization.vfio import VFIOAssistant
+from services.virtualization.disposable_vm import DisposableVMManager
+from services.virtualization.virtualization import IOMMUGroup, IOMMUDevice
 
 
 # ===================================================================
@@ -378,9 +378,9 @@ class TestVFIOPrerequisites(unittest.TestCase):
     """Tests for VFIOAssistant.check_prerequisites()."""
 
     @patch("subprocess.run")
-    @patch("utils.virtualization.VirtualizationManager.find_gpu_devices")
-    @patch("utils.virtualization.VirtualizationManager.is_iommu_enabled", return_value=True)
-    @patch("utils.virtualization.VirtualizationManager.is_kvm_module_loaded", return_value=True)
+    @patch("services.virtualization.virtualization.VirtualizationManager.find_gpu_devices")
+    @patch("services.virtualization.virtualization.VirtualizationManager.is_iommu_enabled", return_value=True)
+    @patch("services.virtualization.virtualization.VirtualizationManager.is_kvm_module_loaded", return_value=True)
     def test_all_prerequisites_met(self, mock_kvm, mock_iommu, mock_gpus, mock_run):
         # Two GPUs
         mock_gpus.return_value = [
@@ -395,9 +395,9 @@ class TestVFIOPrerequisites(unittest.TestCase):
         self.assertTrue(prereqs["vfio_module"])
 
     @patch("subprocess.run")
-    @patch("utils.virtualization.VirtualizationManager.find_gpu_devices", return_value=[])
-    @patch("utils.virtualization.VirtualizationManager.is_iommu_enabled", return_value=False)
-    @patch("utils.virtualization.VirtualizationManager.is_kvm_module_loaded", return_value=False)
+    @patch("services.virtualization.virtualization.VirtualizationManager.find_gpu_devices", return_value=[])
+    @patch("services.virtualization.virtualization.VirtualizationManager.is_iommu_enabled", return_value=False)
+    @patch("services.virtualization.virtualization.VirtualizationManager.is_kvm_module_loaded", return_value=False)
     def test_no_prerequisites_met(self, mock_kvm, mock_iommu, mock_gpus, mock_run):
         mock_run.return_value = MagicMock(returncode=1)  # modinfo fails
         prereqs = VFIOAssistant.check_prerequisites()
@@ -407,9 +407,9 @@ class TestVFIOPrerequisites(unittest.TestCase):
         self.assertFalse(prereqs["vfio_module"])
 
     @patch("subprocess.run")
-    @patch("utils.virtualization.VirtualizationManager.find_gpu_devices")
-    @patch("utils.virtualization.VirtualizationManager.is_iommu_enabled", return_value=True)
-    @patch("utils.virtualization.VirtualizationManager.is_kvm_module_loaded", return_value=True)
+    @patch("services.virtualization.virtualization.VirtualizationManager.find_gpu_devices")
+    @patch("services.virtualization.virtualization.VirtualizationManager.is_iommu_enabled", return_value=True)
+    @patch("services.virtualization.virtualization.VirtualizationManager.is_kvm_module_loaded", return_value=True)
     def test_single_gpu_fails_second_gpu_check(self, mock_kvm, mock_iommu, mock_gpus, mock_run):
         mock_gpus.return_value = [
             (IOMMUGroup(1), IOMMUDevice("0000:00:02.0", "Intel iGPU", "8086", "3e92", "i915")),
@@ -426,8 +426,8 @@ class TestVFIOPrerequisites(unittest.TestCase):
 class TestVFIOCandidates(unittest.TestCase):
     """Tests for VFIOAssistant.get_passthrough_candidates()."""
 
-    @patch("utils.vfio.VFIOAssistant._get_primary_gpu_slot", return_value="0000:00:02.0")
-    @patch("utils.virtualization.VirtualizationManager.find_gpu_devices")
+    @patch("services.virtualization.vfio.VFIOAssistant._get_primary_gpu_slot", return_value="0000:00:02.0")
+    @patch("services.virtualization.virtualization.VirtualizationManager.find_gpu_devices")
     def test_filters_primary_gpu(self, mock_gpus, mock_primary):
         mock_gpus.return_value = [
             (IOMMUGroup(1), IOMMUDevice("0000:00:02.0", "Intel iGPU", "8086", "3e92", "i915")),
@@ -437,14 +437,14 @@ class TestVFIOCandidates(unittest.TestCase):
         self.assertEqual(len(candidates), 1)
         self.assertEqual(candidates[0]["slot"], "0000:01:00.0")
 
-    @patch("utils.vfio.VFIOAssistant._get_primary_gpu_slot", return_value="0000:00:02.0")
-    @patch("utils.virtualization.VirtualizationManager.find_gpu_devices", return_value=[])
+    @patch("services.virtualization.vfio.VFIOAssistant._get_primary_gpu_slot", return_value="0000:00:02.0")
+    @patch("services.virtualization.virtualization.VirtualizationManager.find_gpu_devices", return_value=[])
     def test_no_gpus_returns_empty(self, mock_gpus, mock_primary):
         candidates = VFIOAssistant.get_passthrough_candidates()
         self.assertEqual(candidates, [])
 
-    @patch("utils.vfio.VFIOAssistant._get_primary_gpu_slot", return_value="0000:00:02.0")
-    @patch("utils.virtualization.VirtualizationManager.find_gpu_devices")
+    @patch("services.virtualization.vfio.VFIOAssistant._get_primary_gpu_slot", return_value="0000:00:02.0")
+    @patch("services.virtualization.virtualization.VirtualizationManager.find_gpu_devices")
     def test_candidate_dict_keys(self, mock_gpus, mock_primary):
         mock_gpus.return_value = [
             (IOMMUGroup(2), IOMMUDevice("0000:01:00.0", "GPU", "10de", "2503", "nvidia")),
@@ -462,7 +462,7 @@ class TestVFIOCandidates(unittest.TestCase):
 class TestVFIOKernelArgs(unittest.TestCase):
     """Tests for VFIOAssistant.generate_kernel_args()."""
 
-    @patch("utils.virtualization.VirtualizationManager.check_cpu_virt_extensions",
+    @patch("services.virtualization.virtualization.VirtualizationManager.check_cpu_virt_extensions",
            return_value=(True, "Intel", "vmx"))
     def test_intel_kernel_args(self, mock_cpu):
         result = VFIOAssistant.generate_kernel_args(["10de:2503"])
@@ -470,13 +470,13 @@ class TestVFIOKernelArgs(unittest.TestCase):
         self.assertIn("iommu=pt", result)
         self.assertIn("vfio-pci.ids=10de:2503", result)
 
-    @patch("utils.virtualization.VirtualizationManager.check_cpu_virt_extensions",
+    @patch("services.virtualization.virtualization.VirtualizationManager.check_cpu_virt_extensions",
            return_value=(True, "AMD", "svm"))
     def test_amd_kernel_args(self, mock_cpu):
         result = VFIOAssistant.generate_kernel_args(["10de:2503"])
         self.assertIn("amd_iommu=on", result)
 
-    @patch("utils.virtualization.VirtualizationManager.check_cpu_virt_extensions",
+    @patch("services.virtualization.virtualization.VirtualizationManager.check_cpu_virt_extensions",
            return_value=(True, "Intel", "vmx"))
     def test_multiple_device_ids(self, mock_cpu):
         result = VFIOAssistant.generate_kernel_args(["10de:2503", "10de:228e"])
@@ -539,14 +539,14 @@ class TestVFIOGrubCmdline(unittest.TestCase):
 class TestVFIOStepPlan(unittest.TestCase):
     """Tests for VFIOAssistant.get_step_by_step_plan()."""
 
-    @patch("utils.virtualization.VirtualizationManager.check_cpu_virt_extensions",
+    @patch("services.virtualization.virtualization.VirtualizationManager.check_cpu_virt_extensions",
            return_value=(True, "Intel", "vmx"))
     def test_plan_has_six_steps(self, mock_cpu):
         gpu = {"vendor_id": "10de", "device_id": "2503"}
         steps = VFIOAssistant.get_step_by_step_plan(gpu)
         self.assertEqual(len(steps), 6)
 
-    @patch("utils.virtualization.VirtualizationManager.check_cpu_virt_extensions",
+    @patch("services.virtualization.virtualization.VirtualizationManager.check_cpu_virt_extensions",
            return_value=(True, "Intel", "vmx"))
     def test_plan_step_keys(self, mock_cpu):
         gpu = {"vendor_id": "10de", "device_id": "2503"}
@@ -557,7 +557,7 @@ class TestVFIOStepPlan(unittest.TestCase):
             self.assertIn("command", step)
             self.assertIn("reversible", step)
 
-    @patch("utils.virtualization.VirtualizationManager.check_cpu_virt_extensions",
+    @patch("services.virtualization.virtualization.VirtualizationManager.check_cpu_virt_extensions",
            return_value=(True, "Intel", "vmx"))
     def test_plan_mentions_grub(self, mock_cpu):
         gpu = {"vendor_id": "10de", "device_id": "2503"}
@@ -739,12 +739,12 @@ class TestDisposableListActive(unittest.TestCase):
 class TestVMManagerGetState(unittest.TestCase):
     """Tests for VMManager.get_vm_state()."""
 
-    @patch("utils.vm_manager.VMManager.get_vm_info")
+    @patch("services.virtualization.vm_manager.VMManager.get_vm_info")
     def test_get_state_running(self, mock_info):
         mock_info.return_value = VMInfo(name="test", state="running")
         self.assertEqual(VMManager.get_vm_state("test"), "running")
 
-    @patch("utils.vm_manager.VMManager.get_vm_info", return_value=None)
+    @patch("services.virtualization.vm_manager.VMManager.get_vm_info", return_value=None)
     def test_get_state_unknown(self, mock_info):
         self.assertEqual(VMManager.get_vm_state("ghost"), "unknown")
 

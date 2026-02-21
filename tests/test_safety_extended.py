@@ -13,7 +13,7 @@ from unittest.mock import MagicMock, call, patch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "loofi-fedora-tweaks"))
 
-from utils.safety import SafetyManager
+from services.security.safety import SafetyManager
 
 
 # ---------------------------------------------------------------------------
@@ -26,10 +26,10 @@ class TestCheckDnfLock(unittest.TestCase):
 
     Note: ``os`` is lazily imported inside the method, so we patch
     ``os.path.exists`` at the global ``os`` module level rather than
-    ``utils.safety.os.path.exists``.
+    ``services.security.safety.os.path.exists``.
     """
 
-    @patch("utils.safety.subprocess.check_call")
+    @patch("services.security.safety.subprocess.check_call")
     @patch("os.path.exists", return_value=True)
     def test_locked_when_pid_file_exists(self, mock_exists, mock_check_call):
         """Returns True immediately when /var/run/dnf.pid exists."""
@@ -38,7 +38,7 @@ class TestCheckDnfLock(unittest.TestCase):
         mock_exists.assert_called_once_with("/var/run/dnf.pid")
         mock_check_call.assert_not_called()
 
-    @patch("utils.safety.subprocess.check_call", return_value=0)
+    @patch("services.security.safety.subprocess.check_call", return_value=0)
     @patch("os.path.exists", return_value=False)
     def test_locked_when_pgrep_finds_process(self, mock_exists, mock_check_call):
         """Returns True when pid file absent but pgrep finds dnf/yum/rpm."""
@@ -52,7 +52,7 @@ class TestCheckDnfLock(unittest.TestCase):
         )
 
     @patch(
-        "utils.safety.subprocess.check_call",
+        "services.security.safety.subprocess.check_call",
         side_effect=subprocess.CalledProcessError(1, "pgrep"),
     )
     @patch("os.path.exists", return_value=False)
@@ -62,7 +62,7 @@ class TestCheckDnfLock(unittest.TestCase):
         self.assertFalse(result)
 
     @patch(
-        "utils.safety.subprocess.check_call",
+        "services.security.safety.subprocess.check_call",
         side_effect=subprocess.CalledProcessError(2, "pgrep"),
     )
     @patch("os.path.exists", return_value=False)
@@ -71,14 +71,14 @@ class TestCheckDnfLock(unittest.TestCase):
         result = SafetyManager.check_dnf_lock()
         self.assertFalse(result)
 
-    @patch("utils.safety.subprocess.check_call")
+    @patch("services.security.safety.subprocess.check_call")
     @patch("os.path.exists", return_value=True)
     def test_pid_file_short_circuits_pgrep(self, mock_exists, mock_check_call):
         """Pgrep is never called when pid file already signals a lock."""
         SafetyManager.check_dnf_lock()
         mock_check_call.assert_not_called()
 
-    @patch("utils.safety.subprocess.check_call")
+    @patch("services.security.safety.subprocess.check_call")
     @patch("os.path.exists", return_value=False)
     def test_pgrep_called_with_correct_timeout(self, mock_exists, mock_check_call):
         """Pgrep call uses timeout=10."""
@@ -86,7 +86,7 @@ class TestCheckDnfLock(unittest.TestCase):
         _, kwargs = mock_check_call.call_args
         self.assertEqual(kwargs["timeout"], 10)
 
-    @patch("utils.safety.subprocess.check_call")
+    @patch("services.security.safety.subprocess.check_call")
     @patch("os.path.exists", return_value=False)
     def test_pgrep_stdout_stderr_devnull(self, mock_exists, mock_check_call):
         """Pgrep suppresses stdout and stderr."""
@@ -95,7 +95,7 @@ class TestCheckDnfLock(unittest.TestCase):
         self.assertEqual(kwargs["stdout"], subprocess.DEVNULL)
         self.assertEqual(kwargs["stderr"], subprocess.DEVNULL)
 
-    @patch("utils.safety.subprocess.check_call")
+    @patch("services.security.safety.subprocess.check_call")
     @patch("os.path.exists", return_value=False)
     def test_pgrep_pattern_matches_dnf_yum_rpm(self, mock_exists, mock_check_call):
         """Pgrep uses the pattern 'dnf|yum|rpm' to find processes."""
@@ -103,7 +103,7 @@ class TestCheckDnfLock(unittest.TestCase):
         cmd = mock_check_call.call_args[0][0]
         self.assertEqual(cmd, ["pgrep", "-f", "dnf|yum|rpm"])
 
-    @patch("utils.safety.subprocess.check_call", return_value=0)
+    @patch("services.security.safety.subprocess.check_call", return_value=0)
     @patch("os.path.exists", return_value=False)
     def test_return_type_is_bool(self, mock_exists, mock_check_call):
         """Return value is always a boolean."""
@@ -119,14 +119,14 @@ class TestCheckDnfLock(unittest.TestCase):
 class TestCheckSnapshotTool(unittest.TestCase):
     """Tests for SafetyManager.check_snapshot_tool."""
 
-    @patch("utils.safety.shutil.which")
+    @patch("services.security.safety.shutil.which")
     def test_timeshift_preferred_over_snapper(self, mock_which):
         """Returns 'timeshift' when both tools are available."""
         mock_which.side_effect = lambda x: f"/usr/bin/{x}"
         result = SafetyManager.check_snapshot_tool()
         self.assertEqual(result, "timeshift")
 
-    @patch("utils.safety.shutil.which")
+    @patch("services.security.safety.shutil.which")
     def test_returns_timeshift_when_only_timeshift(self, mock_which):
         """Returns 'timeshift' when only timeshift is installed."""
         mock_which.side_effect = lambda x: (
@@ -135,7 +135,7 @@ class TestCheckSnapshotTool(unittest.TestCase):
         result = SafetyManager.check_snapshot_tool()
         self.assertEqual(result, "timeshift")
 
-    @patch("utils.safety.shutil.which")
+    @patch("services.security.safety.shutil.which")
     def test_returns_snapper_when_only_snapper(self, mock_which):
         """Returns 'snapper' when only snapper is installed."""
         mock_which.side_effect = lambda x: (
@@ -144,20 +144,20 @@ class TestCheckSnapshotTool(unittest.TestCase):
         result = SafetyManager.check_snapshot_tool()
         self.assertEqual(result, "snapper")
 
-    @patch("utils.safety.shutil.which", return_value=None)
+    @patch("services.security.safety.shutil.which", return_value=None)
     def test_returns_none_when_no_tool(self, mock_which):
         """Returns None when neither tool is installed."""
         result = SafetyManager.check_snapshot_tool()
         self.assertIsNone(result)
 
-    @patch("utils.safety.shutil.which")
+    @patch("services.security.safety.shutil.which")
     def test_checks_timeshift_before_snapper(self, mock_which):
         """Checks timeshift first; does not check snapper if timeshift found."""
         mock_which.return_value = "/usr/bin/timeshift"
         SafetyManager.check_snapshot_tool()
         self.assertEqual(mock_which.call_args_list[0], call("timeshift"))
 
-    @patch("utils.safety.shutil.which")
+    @patch("services.security.safety.shutil.which")
     def test_return_type_is_string_or_none(self, mock_which):
         """Return value is always a string or None, never another type."""
         mock_which.return_value = None
@@ -177,7 +177,7 @@ class TestCheckSnapshotTool(unittest.TestCase):
 class TestCreateSnapshot(unittest.TestCase):
     """Tests for SafetyManager.create_snapshot."""
 
-    @patch("utils.safety.subprocess.run")
+    @patch("services.security.safety.subprocess.run")
     def test_timeshift_snapshot_success(self, mock_run):
         """Returns True on successful timeshift snapshot."""
         mock_run.return_value = MagicMock(returncode=0)
@@ -197,7 +197,7 @@ class TestCreateSnapshot(unittest.TestCase):
             timeout=600,
         )
 
-    @patch("utils.safety.subprocess.run")
+    @patch("services.security.safety.subprocess.run")
     def test_snapper_snapshot_success(self, mock_run):
         """Returns True on successful snapper snapshot."""
         mock_run.return_value = MagicMock(returncode=0)
@@ -209,7 +209,7 @@ class TestCreateSnapshot(unittest.TestCase):
             timeout=600,
         )
 
-    @patch("utils.safety.subprocess.run")
+    @patch("services.security.safety.subprocess.run")
     def test_timeshift_default_comment(self, mock_run):
         """Uses default comment when none provided."""
         mock_run.return_value = MagicMock(returncode=0)
@@ -217,7 +217,7 @@ class TestCreateSnapshot(unittest.TestCase):
         args, kwargs = mock_run.call_args
         self.assertIn("Loofi Auto-Snapshot", args[0])
 
-    @patch("utils.safety.subprocess.run")
+    @patch("services.security.safety.subprocess.run")
     def test_snapper_default_comment(self, mock_run):
         """Uses default comment for snapper when none provided."""
         mock_run.return_value = MagicMock(returncode=0)
@@ -226,7 +226,7 @@ class TestCreateSnapshot(unittest.TestCase):
         self.assertIn("Loofi Auto-Snapshot", cmd)
 
     @patch(
-        "utils.safety.subprocess.run",
+        "services.security.safety.subprocess.run",
         side_effect=subprocess.CalledProcessError(1, "pkexec"),
     )
     def test_timeshift_snapshot_failure(self, mock_run):
@@ -235,7 +235,7 @@ class TestCreateSnapshot(unittest.TestCase):
         self.assertFalse(result)
 
     @patch(
-        "utils.safety.subprocess.run",
+        "services.security.safety.subprocess.run",
         side_effect=subprocess.CalledProcessError(1, "pkexec"),
     )
     def test_snapper_snapshot_failure(self, mock_run):
@@ -243,28 +243,28 @@ class TestCreateSnapshot(unittest.TestCase):
         result = SafetyManager.create_snapshot("snapper", "fail")
         self.assertFalse(result)
 
-    @patch("utils.safety.subprocess.run")
+    @patch("services.security.safety.subprocess.run")
     def test_unknown_tool_returns_false(self, mock_run):
         """Returns False for an unrecognised tool name."""
         result = SafetyManager.create_snapshot("btrfs-snap", "test")
         self.assertFalse(result)
         mock_run.assert_not_called()
 
-    @patch("utils.safety.subprocess.run")
+    @patch("services.security.safety.subprocess.run")
     def test_empty_tool_returns_false(self, mock_run):
         """Returns False when tool is an empty string."""
         result = SafetyManager.create_snapshot("", "test")
         self.assertFalse(result)
         mock_run.assert_not_called()
 
-    @patch("utils.safety.subprocess.run")
+    @patch("services.security.safety.subprocess.run")
     def test_none_tool_returns_false(self, mock_run):
         """Returns False when tool is None."""
         result = SafetyManager.create_snapshot(None, "test")
         self.assertFalse(result)
         mock_run.assert_not_called()
 
-    @patch("utils.safety.subprocess.run")
+    @patch("services.security.safety.subprocess.run")
     def test_timeout_is_600_seconds(self, mock_run):
         """Snapshot commands use a 600-second timeout."""
         mock_run.return_value = MagicMock(returncode=0)
@@ -272,7 +272,7 @@ class TestCreateSnapshot(unittest.TestCase):
         _, kwargs = mock_run.call_args
         self.assertEqual(kwargs["timeout"], 600)
 
-    @patch("utils.safety.subprocess.run")
+    @patch("services.security.safety.subprocess.run")
     def test_check_true_passed(self, mock_run):
         """Snapshot commands use check=True for CalledProcessError on failure."""
         mock_run.return_value = MagicMock(returncode=0)
@@ -280,7 +280,7 @@ class TestCreateSnapshot(unittest.TestCase):
         _, kwargs = mock_run.call_args
         self.assertTrue(kwargs["check"])
 
-    @patch("utils.safety.subprocess.run")
+    @patch("services.security.safety.subprocess.run")
     def test_timeshift_uses_pkexec(self, mock_run):
         """Timeshift command starts with pkexec for privilege escalation."""
         mock_run.return_value = MagicMock(returncode=0)
@@ -288,7 +288,7 @@ class TestCreateSnapshot(unittest.TestCase):
         cmd = mock_run.call_args[0][0]
         self.assertEqual(cmd[0], "pkexec")
 
-    @patch("utils.safety.subprocess.run")
+    @patch("services.security.safety.subprocess.run")
     def test_snapper_uses_pkexec(self, mock_run):
         """Snapper command starts with pkexec for privilege escalation."""
         mock_run.return_value = MagicMock(returncode=0)
@@ -296,7 +296,7 @@ class TestCreateSnapshot(unittest.TestCase):
         cmd = mock_run.call_args[0][0]
         self.assertEqual(cmd[0], "pkexec")
 
-    @patch("utils.safety.subprocess.run")
+    @patch("services.security.safety.subprocess.run")
     def test_comment_with_special_characters(self, mock_run):
         """Comment containing special characters is passed through unchanged."""
         mock_run.return_value = MagicMock(returncode=0)
@@ -305,7 +305,7 @@ class TestCreateSnapshot(unittest.TestCase):
         cmd = mock_run.call_args[0][0]
         self.assertIn(comment, cmd)
 
-    @patch("utils.safety.subprocess.run")
+    @patch("services.security.safety.subprocess.run")
     def test_timeshift_tag_is_daily(self, mock_run):
         """Timeshift snapshots are tagged with 'D' (daily)."""
         mock_run.return_value = MagicMock(returncode=0)
@@ -314,7 +314,7 @@ class TestCreateSnapshot(unittest.TestCase):
         tag_idx = cmd.index("--tags")
         self.assertEqual(cmd[tag_idx + 1], "D")
 
-    @patch("utils.safety.subprocess.run")
+    @patch("services.security.safety.subprocess.run")
     def test_snapper_no_shell_true(self, mock_run):
         """Snapper command does not use shell=True."""
         mock_run.return_value = MagicMock(returncode=0)
@@ -342,7 +342,7 @@ class TestConfirmAction(unittest.TestCase):
         parent.setDisabled = MagicMock()
         return parent
 
-    @patch("utils.safety.SafetyManager.check_snapshot_tool", return_value=None)
+    @patch("services.security.safety.SafetyManager.check_snapshot_tool", return_value=None)
     @patch("PyQt6.QtWidgets.QMessageBox")
     def test_cancel_returns_false(self, MockQMessageBox, mock_tool):
         """Returns False when the user clicks Cancel."""
@@ -357,7 +357,7 @@ class TestConfirmAction(unittest.TestCase):
         result = SafetyManager.confirm_action(parent, "install packages")
         self.assertFalse(result)
 
-    @patch("utils.safety.SafetyManager.check_snapshot_tool", return_value=None)
+    @patch("services.security.safety.SafetyManager.check_snapshot_tool", return_value=None)
     @patch("PyQt6.QtWidgets.QMessageBox")
     def test_continue_without_snapshot_returns_true(self, MockQMessageBox, mock_tool):
         """Returns True when user clicks 'Continue Without Snapshot'."""
@@ -373,8 +373,8 @@ class TestConfirmAction(unittest.TestCase):
         result = SafetyManager.confirm_action(parent, "remove package")
         self.assertTrue(result)
 
-    @patch("utils.safety.SafetyManager.create_snapshot", return_value=True)
-    @patch("utils.safety.SafetyManager.check_snapshot_tool", return_value="timeshift")
+    @patch("services.security.safety.SafetyManager.create_snapshot", return_value=True)
+    @patch("services.security.safety.SafetyManager.check_snapshot_tool", return_value="timeshift")
     @patch("PyQt6.QtWidgets.QMessageBox")
     def test_snapshot_and_continue_success(self, MockQMessageBox, mock_tool, mock_snap):
         """Returns True and creates snapshot when user clicks snapshot button."""
@@ -393,8 +393,8 @@ class TestConfirmAction(unittest.TestCase):
         mock_snap.assert_called_once()
         MockQMessageBox.information.assert_called_once()
 
-    @patch("utils.safety.SafetyManager.create_snapshot", return_value=False)
-    @patch("utils.safety.SafetyManager.check_snapshot_tool", return_value="snapper")
+    @patch("services.security.safety.SafetyManager.create_snapshot", return_value=False)
+    @patch("services.security.safety.SafetyManager.check_snapshot_tool", return_value="snapper")
     @patch("PyQt6.QtWidgets.QMessageBox")
     def test_snapshot_failure_shows_warning(
         self, MockQMessageBox, mock_tool, mock_snap
@@ -415,8 +415,8 @@ class TestConfirmAction(unittest.TestCase):
         MockQMessageBox.warning.assert_called_once()
         MockQMessageBox.information.assert_not_called()
 
-    @patch("utils.safety.SafetyManager.create_snapshot", return_value=True)
-    @patch("utils.safety.SafetyManager.check_snapshot_tool", return_value="timeshift")
+    @patch("services.security.safety.SafetyManager.create_snapshot", return_value=True)
+    @patch("services.security.safety.SafetyManager.check_snapshot_tool", return_value="timeshift")
     @patch("PyQt6.QtWidgets.QMessageBox")
     def test_parent_disabled_during_snapshot(
         self, MockQMessageBox, mock_tool, mock_snap
@@ -437,7 +437,7 @@ class TestConfirmAction(unittest.TestCase):
         self.assertEqual(calls[0], call(True))
         self.assertEqual(calls[1], call(False))
 
-    @patch("utils.safety.SafetyManager.check_snapshot_tool", return_value=None)
+    @patch("services.security.safety.SafetyManager.check_snapshot_tool", return_value=None)
     @patch("PyQt6.QtWidgets.QMessageBox")
     def test_no_snapshot_button_when_no_tool(self, MockQMessageBox, mock_tool):
         """Snapshot button is not added when no snapshot tool is detected."""
@@ -453,7 +453,7 @@ class TestConfirmAction(unittest.TestCase):
         SafetyManager.confirm_action(parent, "test action")
         self.assertEqual(mock_msg.addButton.call_count, 2)
 
-    @patch("utils.safety.SafetyManager.check_snapshot_tool", return_value="timeshift")
+    @patch("services.security.safety.SafetyManager.check_snapshot_tool", return_value="timeshift")
     @patch("PyQt6.QtWidgets.QMessageBox")
     def test_snapshot_button_added_when_tool_available(
         self, MockQMessageBox, mock_tool
@@ -472,7 +472,7 @@ class TestConfirmAction(unittest.TestCase):
         SafetyManager.confirm_action(parent, "test action")
         self.assertEqual(mock_msg.addButton.call_count, 3)
 
-    @patch("utils.safety.SafetyManager.check_snapshot_tool", return_value=None)
+    @patch("services.security.safety.SafetyManager.check_snapshot_tool", return_value=None)
     @patch("PyQt6.QtWidgets.QMessageBox")
     def test_default_button_cancel_when_no_tool(self, MockQMessageBox, mock_tool):
         """Default button is Cancel when no snapshot tool is available."""
@@ -488,7 +488,7 @@ class TestConfirmAction(unittest.TestCase):
         SafetyManager.confirm_action(parent, "action")
         mock_msg.setDefaultButton.assert_called_once_with(btn_cancel)
 
-    @patch("utils.safety.SafetyManager.check_snapshot_tool", return_value="timeshift")
+    @patch("services.security.safety.SafetyManager.check_snapshot_tool", return_value="timeshift")
     @patch("PyQt6.QtWidgets.QMessageBox")
     def test_default_button_snapshot_when_tool_available(
         self, MockQMessageBox, mock_tool
@@ -507,7 +507,7 @@ class TestConfirmAction(unittest.TestCase):
         SafetyManager.confirm_action(parent, "action")
         mock_msg.setDefaultButton.assert_called_once_with(btn_snapshot)
 
-    @patch("utils.safety.SafetyManager.check_snapshot_tool", return_value=None)
+    @patch("services.security.safety.SafetyManager.check_snapshot_tool", return_value=None)
     @patch("PyQt6.QtWidgets.QMessageBox")
     def test_dialog_title_is_safety_check(self, MockQMessageBox, mock_tool):
         """Dialog window title is 'Safety Check'."""
@@ -523,7 +523,7 @@ class TestConfirmAction(unittest.TestCase):
         SafetyManager.confirm_action(parent, "test")
         mock_msg.setWindowTitle.assert_called_once_with("Safety Check")
 
-    @patch("utils.safety.SafetyManager.check_snapshot_tool", return_value=None)
+    @patch("services.security.safety.SafetyManager.check_snapshot_tool", return_value=None)
     @patch("PyQt6.QtWidgets.QMessageBox")
     def test_dialog_text_contains_description(self, MockQMessageBox, mock_tool):
         """Dialog text includes the action description."""
@@ -540,7 +540,7 @@ class TestConfirmAction(unittest.TestCase):
         text_arg = mock_msg.setText.call_args[0][0]
         self.assertIn("remove all packages", text_arg)
 
-    @patch("utils.safety.SafetyManager.check_snapshot_tool", return_value=None)
+    @patch("services.security.safety.SafetyManager.check_snapshot_tool", return_value=None)
     @patch("PyQt6.QtWidgets.QMessageBox")
     def test_dialog_icon_is_warning(self, MockQMessageBox, mock_tool):
         """Dialog icon is set to Warning."""
@@ -556,7 +556,7 @@ class TestConfirmAction(unittest.TestCase):
         SafetyManager.confirm_action(parent, "test")
         mock_msg.setIcon.assert_called_once_with(MockQMessageBox.Icon.Warning)
 
-    @patch("utils.safety.SafetyManager.check_snapshot_tool", return_value=None)
+    @patch("services.security.safety.SafetyManager.check_snapshot_tool", return_value=None)
     @patch("PyQt6.QtWidgets.QMessageBox")
     def test_exec_called_on_dialog(self, MockQMessageBox, mock_tool):
         """Dialog.exec() is called to show the dialog."""
@@ -572,8 +572,8 @@ class TestConfirmAction(unittest.TestCase):
         SafetyManager.confirm_action(parent, "test")
         mock_msg.exec.assert_called_once()
 
-    @patch("utils.safety.SafetyManager.create_snapshot", return_value=True)
-    @patch("utils.safety.SafetyManager.check_snapshot_tool", return_value="timeshift")
+    @patch("services.security.safety.SafetyManager.create_snapshot", return_value=True)
+    @patch("services.security.safety.SafetyManager.check_snapshot_tool", return_value="timeshift")
     @patch("PyQt6.QtWidgets.QMessageBox")
     def test_snapshot_comment_derives_from_description(
         self, MockQMessageBox, mock_tool, mock_snap
@@ -593,8 +593,8 @@ class TestConfirmAction(unittest.TestCase):
         comment = mock_snap.call_args[0][1]
         self.assertEqual(comment, "Pre-install")
 
-    @patch("utils.safety.SafetyManager.create_snapshot", return_value=False)
-    @patch("utils.safety.SafetyManager.check_snapshot_tool", return_value="snapper")
+    @patch("services.security.safety.SafetyManager.create_snapshot", return_value=False)
+    @patch("services.security.safety.SafetyManager.check_snapshot_tool", return_value="snapper")
     @patch("PyQt6.QtWidgets.QMessageBox")
     def test_snapshot_failure_still_returns_true(
         self, MockQMessageBox, mock_tool, mock_snap
@@ -613,7 +613,7 @@ class TestConfirmAction(unittest.TestCase):
         result = SafetyManager.confirm_action(parent, "update system")
         self.assertTrue(result)
 
-    @patch("utils.safety.SafetyManager.check_snapshot_tool", return_value=None)
+    @patch("services.security.safety.SafetyManager.check_snapshot_tool", return_value=None)
     @patch("PyQt6.QtWidgets.QMessageBox")
     def test_informative_text_mentions_snapshot(self, MockQMessageBox, mock_tool):
         """Informative text recommends creating a snapshot."""
@@ -630,8 +630,8 @@ class TestConfirmAction(unittest.TestCase):
         info_arg = mock_msg.setInformativeText.call_args[0][0]
         self.assertIn("snapshot", info_arg.lower())
 
-    @patch("utils.safety.SafetyManager.create_snapshot", return_value=True)
-    @patch("utils.safety.SafetyManager.check_snapshot_tool", return_value="snapper")
+    @patch("services.security.safety.SafetyManager.create_snapshot", return_value=True)
+    @patch("services.security.safety.SafetyManager.check_snapshot_tool", return_value="snapper")
     @patch("PyQt6.QtWidgets.QMessageBox")
     def test_snapshot_button_label_contains_tool_name(
         self, MockQMessageBox, mock_tool, mock_snap
@@ -653,8 +653,8 @@ class TestConfirmAction(unittest.TestCase):
         label = third_call_args[0]
         self.assertIn("Snapper", label)
 
-    @patch("utils.safety.SafetyManager.create_snapshot", return_value=True)
-    @patch("utils.safety.SafetyManager.check_snapshot_tool", return_value="timeshift")
+    @patch("services.security.safety.SafetyManager.create_snapshot", return_value=True)
+    @patch("services.security.safety.SafetyManager.check_snapshot_tool", return_value="timeshift")
     @patch("PyQt6.QtWidgets.QMessageBox")
     def test_snapshot_success_shows_information_dialog(
         self, MockQMessageBox, mock_tool, mock_snap
@@ -674,8 +674,8 @@ class TestConfirmAction(unittest.TestCase):
         MockQMessageBox.information.assert_called_once()
         MockQMessageBox.warning.assert_not_called()
 
-    @patch("utils.safety.SafetyManager.create_snapshot", return_value=True)
-    @patch("utils.safety.SafetyManager.check_snapshot_tool", return_value="timeshift")
+    @patch("services.security.safety.SafetyManager.create_snapshot", return_value=True)
+    @patch("services.security.safety.SafetyManager.check_snapshot_tool", return_value="timeshift")
     @patch("PyQt6.QtWidgets.QMessageBox")
     def test_create_snapshot_receives_correct_tool(
         self, MockQMessageBox, mock_tool, mock_snap
@@ -695,8 +695,8 @@ class TestConfirmAction(unittest.TestCase):
         tool_arg = mock_snap.call_args[0][0]
         self.assertEqual(tool_arg, "timeshift")
 
-    @patch("utils.safety.SafetyManager.create_snapshot", return_value=False)
-    @patch("utils.safety.SafetyManager.check_snapshot_tool", return_value="timeshift")
+    @patch("services.security.safety.SafetyManager.create_snapshot", return_value=False)
+    @patch("services.security.safety.SafetyManager.check_snapshot_tool", return_value="timeshift")
     @patch("PyQt6.QtWidgets.QMessageBox")
     def test_parent_reenabled_after_failed_snapshot(
         self, MockQMessageBox, mock_tool, mock_snap

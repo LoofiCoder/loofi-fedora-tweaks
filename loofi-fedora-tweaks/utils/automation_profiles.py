@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 class TriggerType(Enum):
     """Available automation triggers."""
+
     ON_BATTERY = "on_battery"
     ON_AC = "on_ac"
     ON_PUBLIC_WIFI = "on_public_wifi"
@@ -28,6 +29,7 @@ class TriggerType(Enum):
 
 class ActionType(Enum):
     """Available automation actions."""
+
     SET_POWER_PROFILE = "set_power_profile"
     SET_CPU_GOVERNOR = "set_cpu_governor"
     ENABLE_VPN = "enable_vpn"
@@ -43,10 +45,11 @@ class ActionType(Enum):
 @dataclass
 class AutomationRule:
     """A single automation rule."""
+
     id: str
     name: str
     trigger: str  # TriggerType value
-    action: str   # ActionType value
+    action: str  # ActionType value
     action_params: Dict[str, Any]
     enabled: bool = True
 
@@ -73,11 +76,7 @@ class AutomationProfiles:
         cls.CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 
         if not cls.CONFIG_FILE.exists():
-            default_config = {
-                "enabled": True,
-                "home_wifi_ssids": [],
-                "rules": []
-            }
+            default_config = {"enabled": True, "home_wifi_ssids": [], "rules": []}
             with open(cls.CONFIG_FILE, "w") as f:
                 json.dump(default_config, f, indent=2)
 
@@ -160,6 +159,7 @@ class AutomationProfiles:
             # Generate ID if not provided
             if "id" not in rule:
                 import uuid
+
                 rule["id"] = str(uuid.uuid4())[:8]
 
             config["rules"].append(rule)
@@ -233,10 +233,7 @@ class AutomationProfiles:
         Returns:
             List of matching rule dicts
         """
-        return [
-            rule for rule in cls.list_rules()
-            if rule.get("trigger") == trigger and rule.get("enabled", True)
-        ]
+        return [rule for rule in cls.list_rules() if rule.get("trigger") == trigger and rule.get("enabled", True)]
 
     @classmethod
     def set_home_wifi_ssids(cls, ssids: List[str]):
@@ -331,16 +328,14 @@ class AutomationProfiles:
         rules = cls.get_rules_for_trigger(trigger)
         results = []
         for rule in rules:
-            results.append({
-                "rule_id": rule.get("id"),
-                "rule_name": rule.get("name"),
-                "result": cls.dry_run_action(str(rule.get("action", "")), rule.get("action_params", {}))
-            })
-        return {
-            "success": True,
-            "message": f"Simulated {len(results)} rules for trigger '{trigger}'",
-            "results": results
-        }
+            results.append(
+                {
+                    "rule_id": rule.get("id"),
+                    "rule_name": rule.get("name"),
+                    "result": cls.dry_run_action(str(rule.get("action", "")), rule.get("action_params", {})),
+                }
+            )
+        return {"success": True, "message": f"Simulated {len(results)} rules for trigger '{trigger}'", "results": results}
 
     # -------------------------------------------------------------------------
     # Action Execution
@@ -366,17 +361,9 @@ class AutomationProfiles:
 
         for rule in rules:
             result = cls.execute_action(str(rule.get("action", "")), rule.get("action_params", {}))
-            results.append({
-                "rule_id": rule.get("id"),
-                "rule_name": rule.get("name"),
-                "result": result
-            })
+            results.append({"rule_id": rule.get("id"), "rule_name": rule.get("name"), "result": result})
 
-        return {
-            "success": True,
-            "message": f"Executed {len(results)} rules for trigger '{trigger}'",
-            "results": results
-        }
+        return {"success": True, "message": f"Executed {len(results)} rules for trigger '{trigger}'", "results": results}
 
     @classmethod
     def execute_action(cls, action: str, params: Dict[str, Any]) -> Dict[str, Any]:
@@ -422,10 +409,7 @@ class AutomationProfiles:
         """Set power profile (power-saver, balanced, performance)."""
         profile = params.get("profile", "balanced")
         try:
-            result = subprocess.run(
-                ["powerprofilesctl", "set", profile],
-                capture_output=True, text=True, timeout=10
-            )
+            result = subprocess.run(["powerprofilesctl", "set", profile], capture_output=True, text=True, timeout=10)
             if result.returncode == 0:
                 return {"success": True, "message": f"Power profile set to '{profile}'"}
             return {"success": False, "message": result.stderr or "Command failed"}
@@ -441,15 +425,17 @@ class AutomationProfiles:
         governor = params.get("governor", "schedutil")
         try:
             from services.hardware import HardwareManager
+
             success = HardwareManager.set_governor(governor)
             return {"success": success, "message": f"CPU governor set to '{governor}'" if success else "Failed to set governor"}
         except ImportError:
             # Fallback implementation
             try:
                 result = subprocess.run(
-                    ["pkexec", "bash", "-c",
-                     f"for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo '{governor}' > $cpu; done"],
-                    capture_output=True, text=True, timeout=30
+                    ["pkexec", "bash", "-c", f"for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo '{governor}' > $cpu; done"],
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
                 )
                 if result.returncode == 0:
                     return {"success": True, "message": f"CPU governor set to '{governor}'"}
@@ -467,10 +453,7 @@ class AutomationProfiles:
                 cmd = ["nmcli", "connection", "up", vpn_name]
             else:
                 # Try to find and connect to first VPN
-                result = subprocess.run(
-                    ["nmcli", "-t", "-f", "NAME,TYPE", "connection"],
-                    capture_output=True, text=True, timeout=10
-                )
+                result = subprocess.run(["nmcli", "-t", "-f", "NAME,TYPE", "connection"], capture_output=True, text=True, timeout=10)
                 for line in result.stdout.splitlines():
                     name, conn_type = line.split(":", 1)
                     if "vpn" in conn_type.lower():
@@ -494,18 +477,14 @@ class AutomationProfiles:
         """Disable active VPN connections."""
         try:
             result = subprocess.run(
-                ["nmcli", "-t", "-f", "NAME,TYPE,STATE", "connection", "show", "--active"],
-                capture_output=True, text=True, timeout=10
+                ["nmcli", "-t", "-f", "NAME,TYPE,STATE", "connection", "show", "--active"], capture_output=True, text=True, timeout=10
             )
             disconnected = []
             for line in result.stdout.splitlines():
                 parts = line.split(":")
                 if len(parts) >= 2 and "vpn" in parts[1].lower():
                     name = parts[0]
-                    subprocess.run(
-                        ["nmcli", "connection", "down", name],
-                        capture_output=True, timeout=10
-                    )
+                    subprocess.run(["nmcli", "connection", "down", name], capture_output=True, timeout=10)
                     disconnected.append(name)
 
             if disconnected:
@@ -520,19 +499,20 @@ class AutomationProfiles:
         """Enable tiling window manager scripts."""
         script_name = params.get("script", "polonium")
         try:
-            from utils.kwin_tiling import KWinTiling  # type: ignore[attr-defined]
+            from services.desktop.kwin import KWinTiling  # type: ignore[attr-defined]
+
             return KWinTiling.enable_script(script_name)  # type: ignore[no-any-return]
         except ImportError:
             # Fallback: try kwriteconfig5
             try:
-                subprocess.run([
-                    "kwriteconfig5", "--file", "kwinrc",
-                    "--group", "Plugins",
-                    "--key", f"{script_name}Enabled", "true"
-                ], capture_output=True, text=True, timeout=10)
+                subprocess.run(
+                    ["kwriteconfig5", "--file", "kwinrc", "--group", "Plugins", "--key", f"{script_name}Enabled", "true"],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                )
 
-                subprocess.run(["qdbus", "org.kde.KWin", "/KWin", "reconfigure"],
-                               capture_output=True, timeout=10)
+                subprocess.run(["qdbus", "org.kde.KWin", "/KWin", "reconfigure"], capture_output=True, timeout=10)
 
                 return {"success": True, "message": f"Tiling script '{script_name}' enabled"}
             except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError) as e:
@@ -544,18 +524,19 @@ class AutomationProfiles:
         """Disable tiling window manager scripts."""
         script_name = params.get("script", "polonium")
         try:
-            from utils.kwin_tiling import KWinTiling  # type: ignore[attr-defined]
+            from services.desktop.kwin import KWinTiling  # type: ignore[attr-defined]
+
             return KWinTiling.disable_script(script_name)  # type: ignore[no-any-return]
         except ImportError:
             try:
-                subprocess.run([
-                    "kwriteconfig5", "--file", "kwinrc",
-                    "--group", "Plugins",
-                    "--key", f"{script_name}Enabled", "false"
-                ], capture_output=True, text=True, timeout=10)
+                subprocess.run(
+                    ["kwriteconfig5", "--file", "kwinrc", "--group", "Plugins", "--key", f"{script_name}Enabled", "false"],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                )
 
-                subprocess.run(["qdbus", "org.kde.KWin", "/KWin", "reconfigure"],
-                               capture_output=True, timeout=10)
+                subprocess.run(["qdbus", "org.kde.KWin", "/KWin", "reconfigure"], capture_output=True, timeout=10)
 
                 return {"success": True, "message": f"Tiling script '{script_name}' disabled"}
             except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError) as e:
@@ -569,23 +550,18 @@ class AutomationProfiles:
         try:
             # Try KDE Plasma
             if theme == "dark":
-                result = subprocess.run([
-                    "plasma-apply-colorscheme", "BreezeDark"
-                ], capture_output=True, text=True, timeout=10)
+                result = subprocess.run(["plasma-apply-colorscheme", "BreezeDark"], capture_output=True, text=True, timeout=10)
             else:
-                result = subprocess.run([
-                    "plasma-apply-colorscheme", "BreezeLight"
-                ], capture_output=True, text=True, timeout=10)
+                result = subprocess.run(["plasma-apply-colorscheme", "BreezeLight"], capture_output=True, text=True, timeout=10)
 
             if result.returncode == 0:
                 return {"success": True, "message": f"Theme set to '{theme}'"}
 
             # Try GNOME
             gsettings_value = "prefer-dark" if theme == "dark" else "default"
-            result = subprocess.run([
-                "gsettings", "set", "org.gnome.desktop.interface",
-                "color-scheme", gsettings_value
-            ], capture_output=True, text=True, timeout=10)
+            result = subprocess.run(
+                ["gsettings", "set", "org.gnome.desktop.interface", "color-scheme", gsettings_value], capture_output=True, text=True, timeout=10
+            )
 
             if result.returncode == 0:
                 return {"success": True, "message": f"Theme set to '{theme}'"}
@@ -603,14 +579,11 @@ class AutomationProfiles:
             return {"success": False, "message": "No command specified"}
 
         try:
-            result = subprocess.run(
-                shlex.split(command),
-                capture_output=True, text=True, timeout=60
-            )
+            result = subprocess.run(shlex.split(command), capture_output=True, text=True, timeout=60)
             return {
                 "success": result.returncode == 0,
                 "message": result.stdout or result.stderr or "Command executed",
-                "returncode": result.returncode
+                "returncode": result.returncode,
             }
         except subprocess.TimeoutExpired:
             return {"success": False, "message": "Command timed out"}
@@ -624,6 +597,7 @@ class AutomationProfiles:
         profile = params.get("profile", "default")
         try:
             from utils.focus_mode import FocusMode
+
             return FocusMode.enable(profile)
         except ImportError:
             return {"success": False, "message": "Focus mode module not available"}
@@ -633,6 +607,7 @@ class AutomationProfiles:
         """Disable focus mode."""
         try:
             from utils.focus_mode import FocusMode
+
             return FocusMode.disable()
         except ImportError:
             return {"success": False, "message": "Focus mode module not available"}
@@ -650,15 +625,15 @@ class AutomationProfiles:
                 "trigger": TriggerType.ON_BATTERY.value,
                 "action": ActionType.SET_POWER_PROFILE.value,
                 "action_params": {"profile": "power-saver"},
-                "enabled": True
+                "enabled": True,
             },
             {
                 "name": "AC Performance Mode",
                 "trigger": TriggerType.ON_AC.value,
                 "action": ActionType.SET_POWER_PROFILE.value,
                 "action_params": {"profile": "balanced"},
-                "enabled": True
-            }
+                "enabled": True,
+            },
         ]
 
         for rule in rules:
@@ -675,15 +650,15 @@ class AutomationProfiles:
                 "trigger": TriggerType.ON_ULTRAWIDE.value,
                 "action": ActionType.ENABLE_TILING.value,
                 "action_params": {"script": "polonium"},
-                "enabled": True
+                "enabled": True,
             },
             {
                 "name": "Laptop No Tiling",
                 "trigger": TriggerType.ON_LAPTOP_ONLY.value,
                 "action": ActionType.DISABLE_TILING.value,
                 "action_params": {"script": "polonium"},
-                "enabled": True
-            }
+                "enabled": True,
+            },
         ]
 
         for rule in rules:

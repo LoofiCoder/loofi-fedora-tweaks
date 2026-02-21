@@ -12,7 +12,7 @@ from unittest.mock import patch, MagicMock, mock_open
 # Add source path to sys.path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'loofi-fedora-tweaks'))
 
-from utils.sandbox import SandboxManager, BubblewrapManager, PluginIsolationManager
+from services.security.sandbox import SandboxManager, BubblewrapManager, PluginIsolationManager
 
 
 # ---------------------------------------------------------------------------
@@ -22,22 +22,22 @@ from utils.sandbox import SandboxManager, BubblewrapManager, PluginIsolationMana
 class TestDetection(unittest.TestCase):
     """Tests for sandbox tool availability detection."""
 
-    @patch('utils.sandbox.shutil.which', return_value='/usr/bin/firejail')
+    @patch('services.security.sandbox.shutil.which', return_value='/usr/bin/firejail')
     def test_firejail_installed(self, mock_which):
         """is_firejail_installed returns True when firejail found."""
         self.assertTrue(SandboxManager.is_firejail_installed())
 
-    @patch('utils.sandbox.shutil.which', return_value=None)
+    @patch('services.security.sandbox.shutil.which', return_value=None)
     def test_firejail_not_installed(self, mock_which):
         """is_firejail_installed returns False when firejail missing."""
         self.assertFalse(SandboxManager.is_firejail_installed())
 
-    @patch('utils.sandbox.shutil.which', return_value='/usr/bin/bwrap')
+    @patch('services.security.sandbox.shutil.which', return_value='/usr/bin/bwrap')
     def test_bubblewrap_installed(self, mock_which):
         """is_bubblewrap_installed returns True when bwrap found."""
         self.assertTrue(SandboxManager.is_bubblewrap_installed())
 
-    @patch('utils.sandbox.shutil.which', return_value=None)
+    @patch('services.security.sandbox.shutil.which', return_value=None)
     def test_bubblewrap_not_installed(self, mock_which):
         """is_bubblewrap_installed returns False when bwrap missing."""
         self.assertFalse(SandboxManager.is_bubblewrap_installed())
@@ -50,7 +50,7 @@ class TestDetection(unittest.TestCase):
 class TestRunSandboxed(unittest.TestCase):
     """Tests for run_sandboxed with mocked Popen."""
 
-    @patch('utils.sandbox.subprocess.Popen')
+    @patch('services.security.sandbox.subprocess.Popen')
     @patch.object(SandboxManager, 'is_firejail_installed', return_value=True)
     def test_run_sandboxed_basic(self, mock_installed, mock_popen):
         """run_sandboxed starts a basic firejail process."""
@@ -61,7 +61,7 @@ class TestRunSandboxed(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertEqual(result.data["pid"], 12345)
 
-    @patch('utils.sandbox.subprocess.Popen')
+    @patch('services.security.sandbox.subprocess.Popen')
     @patch.object(SandboxManager, 'is_firejail_installed', return_value=True)
     def test_run_sandboxed_no_network(self, mock_installed, mock_popen):
         """run_sandboxed passes --net=none when no_network is True."""
@@ -72,7 +72,7 @@ class TestRunSandboxed(unittest.TestCase):
         call_args = mock_popen.call_args[0][0]
         self.assertIn("--net=none", call_args)
 
-    @patch('utils.sandbox.subprocess.Popen')
+    @patch('services.security.sandbox.subprocess.Popen')
     @patch.object(SandboxManager, 'is_firejail_installed', return_value=True)
     def test_run_sandboxed_private_home(self, mock_installed, mock_popen):
         """run_sandboxed passes --private when private_home is True."""
@@ -90,7 +90,7 @@ class TestRunSandboxed(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("not installed", result.message)
 
-    @patch('utils.sandbox.subprocess.Popen', side_effect=OSError("exec failed"))
+    @patch('services.security.sandbox.subprocess.Popen', side_effect=OSError("exec failed"))
     @patch.object(SandboxManager, 'is_firejail_installed', return_value=True)
     def test_run_sandboxed_exception(self, mock_installed, mock_popen):
         """run_sandboxed handles exception gracefully."""
@@ -105,8 +105,8 @@ class TestRunSandboxed(unittest.TestCase):
 class TestListProfiles(unittest.TestCase):
     """Tests for list_profiles with mocked filesystem."""
 
-    @patch('utils.sandbox.os.listdir', return_value=["firefox.profile", "vlc.profile", "other.txt"])
-    @patch('utils.sandbox.os.path.exists', return_value=True)
+    @patch('services.security.sandbox.os.listdir', return_value=["firefox.profile", "vlc.profile", "other.txt"])
+    @patch('services.security.sandbox.os.path.exists', return_value=True)
     @patch.object(SandboxManager, 'is_firejail_installed', return_value=True)
     def test_list_profiles_filters_profiles(self, mock_installed, mock_exists, mock_listdir):
         """list_profiles returns only .profile files without extension."""
@@ -129,9 +129,9 @@ class TestListProfiles(unittest.TestCase):
 class TestCreateDesktopEntry(unittest.TestCase):
     """Tests for create_desktop_entry with mocked file write."""
 
-    @patch('utils.sandbox.os.chmod')
+    @patch('services.security.sandbox.os.chmod')
     @patch('builtins.open', new_callable=mock_open)
-    @patch('utils.sandbox.Path.mkdir')
+    @patch('services.security.sandbox.Path.mkdir')
     @patch.object(SandboxManager, 'is_firejail_installed', return_value=True)
     def test_create_desktop_entry_success(self, mock_installed, mock_mkdir, mock_file, mock_chmod):
         """create_desktop_entry creates desktop file."""
@@ -153,8 +153,8 @@ class TestCreateDesktopEntry(unittest.TestCase):
 class TestGetSandboxStatus(unittest.TestCase):
     """Tests for get_sandbox_status with mocked /proc."""
 
-    @patch('utils.sandbox.os.kill')
-    @patch('utils.sandbox.os.path.exists', return_value=True)
+    @patch('services.security.sandbox.os.kill')
+    @patch('services.security.sandbox.os.path.exists', return_value=True)
     @patch('builtins.open', mock_open(read_data=b'firejail\x00--net=none\x00firefox'))
     def test_sandbox_status_firejail_detected(self, mock_exists, mock_kill):
         """get_sandbox_status detects firejail sandbox."""
@@ -163,7 +163,7 @@ class TestGetSandboxStatus(unittest.TestCase):
         self.assertTrue(status["sandboxed"])
         self.assertIn("no_network", status["restrictions"])
 
-    @patch('utils.sandbox.os.kill', side_effect=OSError("No such process"))
+    @patch('services.security.sandbox.os.kill', side_effect=OSError("No such process"))
     def test_sandbox_status_process_not_running(self, mock_kill):
         """get_sandbox_status returns not running for dead process."""
         status = SandboxManager.get_sandbox_status(99999)
@@ -178,12 +178,12 @@ class TestGetSandboxStatus(unittest.TestCase):
 class TestBubblewrapManager(unittest.TestCase):
     """Tests for BubblewrapManager."""
 
-    @patch('utils.sandbox.shutil.which', return_value='/usr/bin/bwrap')
+    @patch('services.security.sandbox.shutil.which', return_value='/usr/bin/bwrap')
     def test_is_installed(self, mock_which):
         """is_installed returns True when bwrap found."""
         self.assertTrue(BubblewrapManager.is_installed())
 
-    @patch('utils.sandbox.subprocess.Popen')
+    @patch('services.security.sandbox.subprocess.Popen')
     @patch.object(BubblewrapManager, 'is_installed', return_value=True)
     def test_run_minimal_sandbox_success(self, mock_installed, mock_popen):
         """run_minimal_sandbox starts a bwrap process."""

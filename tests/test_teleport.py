@@ -14,7 +14,7 @@ from unittest.mock import patch, MagicMock, mock_open
 # Add source path to sys.path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'loofi-fedora-tweaks'))
 
-from utils.state_teleport import (
+from services.storage.teleport import (
     StateTeleportManager,
     WorkspaceState,
     TeleportPackage,
@@ -61,11 +61,11 @@ def _make_workspace_state(**overrides) -> WorkspaceState:
 class TestCaptureVSCode(unittest.TestCase):
     """Tests for VS Code state capture."""
 
-    @patch('utils.state_teleport.shutil.which', return_value='/usr/bin/code')
-    @patch('utils.state_teleport.subprocess.run')
-    @patch('utils.state_teleport.os.path.isfile', return_value=False)
-    @patch('utils.state_teleport.os.listdir', return_value=['app.py', 'test.py'])
-    @patch('utils.state_teleport.os.path.isfile')
+    @patch('services.storage.teleport.shutil.which', return_value='/usr/bin/code')
+    @patch('services.storage.teleport.subprocess.run')
+    @patch('services.storage.teleport.os.path.isfile', return_value=False)
+    @patch('services.storage.teleport.os.listdir', return_value=['app.py', 'test.py'])
+    @patch('services.storage.teleport.os.path.isfile')
     def test_capture_vscode_with_extensions(self, mock_isfile2, mock_listdir,
                                              mock_isfile, mock_run, mock_which):
         """Extensions are captured when VS Code is installed."""
@@ -82,9 +82,9 @@ class TestCaptureVSCode(unittest.TestCase):
         self.assertIn("ms-vscode.cpptools", state["extensions"])
         self.assertEqual(state["workspace_path"], "/tmp/project")
 
-    @patch('utils.state_teleport.shutil.which', return_value=None)
-    @patch('utils.state_teleport.os.path.isfile', return_value=False)
-    @patch('utils.state_teleport.os.listdir', return_value=[])
+    @patch('services.storage.teleport.shutil.which', return_value=None)
+    @patch('services.storage.teleport.os.path.isfile', return_value=False)
+    @patch('services.storage.teleport.os.listdir', return_value=[])
     def test_capture_vscode_not_installed(self, mock_listdir, mock_isfile,
                                           mock_which):
         """Falls back gracefully if VS Code not installed."""
@@ -93,11 +93,11 @@ class TestCaptureVSCode(unittest.TestCase):
         self.assertEqual(state["extensions"], [])
         self.assertEqual(state["workspace_path"], "/tmp/project")
 
-    @patch('utils.state_teleport.shutil.which', return_value='/usr/bin/code')
-    @patch('utils.state_teleport.subprocess.run')
-    @patch('utils.state_teleport.os.path.isfile', return_value=True)
+    @patch('services.storage.teleport.shutil.which', return_value='/usr/bin/code')
+    @patch('services.storage.teleport.subprocess.run')
+    @patch('services.storage.teleport.os.path.isfile', return_value=True)
     @patch('builtins.open', mock_open(read_data='{"editor.fontSize": 16}'))
-    @patch('utils.state_teleport.os.listdir', return_value=[])
+    @patch('services.storage.teleport.os.listdir', return_value=[])
     def test_capture_vscode_reads_settings(self, mock_listdir, mock_isfile,
                                             mock_run, mock_which):
         """Settings from .vscode/settings.json are read."""
@@ -107,11 +107,11 @@ class TestCaptureVSCode(unittest.TestCase):
 
         self.assertEqual(state["settings_json"]["editor.fontSize"], 16)
 
-    @patch('utils.state_teleport.shutil.which', return_value='/usr/bin/code')
-    @patch('utils.state_teleport.subprocess.run',
+    @patch('services.storage.teleport.shutil.which', return_value='/usr/bin/code')
+    @patch('services.storage.teleport.subprocess.run',
            side_effect=OSError("command failed"))
-    @patch('utils.state_teleport.os.path.isfile', return_value=False)
-    @patch('utils.state_teleport.os.listdir', return_value=[])
+    @patch('services.storage.teleport.os.path.isfile', return_value=False)
+    @patch('services.storage.teleport.os.listdir', return_value=[])
     def test_capture_vscode_command_failure(self, mock_listdir, mock_isfile,
                                             mock_run, mock_which):
         """Handles VS Code command failure gracefully."""
@@ -119,10 +119,10 @@ class TestCaptureVSCode(unittest.TestCase):
 
         self.assertEqual(state["extensions"], [])
 
-    @patch('utils.state_teleport.shutil.which', return_value=None)
-    @patch('utils.state_teleport.os.path.isfile', return_value=False)
-    @patch('utils.state_teleport.os.listdir', return_value=[])
-    @patch('utils.state_teleport.os.getcwd', return_value="/home/user/auto")
+    @patch('services.storage.teleport.shutil.which', return_value=None)
+    @patch('services.storage.teleport.os.path.isfile', return_value=False)
+    @patch('services.storage.teleport.os.listdir', return_value=[])
+    @patch('services.storage.teleport.os.getcwd', return_value="/home/user/auto")
     def test_capture_vscode_defaults_to_cwd(self, mock_getcwd, mock_listdir,
                                              mock_isfile, mock_which):
         """Uses CWD when no workspace_path is provided."""
@@ -138,8 +138,8 @@ class TestCaptureVSCode(unittest.TestCase):
 class TestCaptureGit(unittest.TestCase):
     """Tests for git repository state capture."""
 
-    @patch('utils.state_teleport.shutil.which', return_value='/usr/bin/git')
-    @patch('utils.state_teleport.subprocess.run')
+    @patch('services.storage.teleport.shutil.which', return_value='/usr/bin/git')
+    @patch('services.storage.teleport.subprocess.run')
     def test_capture_git_clean_repo(self, mock_run, mock_which):
         """Captures correct state for a clean git repository."""
         def side_effect(args, **kwargs):
@@ -171,8 +171,8 @@ class TestCaptureGit(unittest.TestCase):
         self.assertEqual(state["last_commit_hash"], "abc123")
         self.assertEqual(state["stash_count"], 0)
 
-    @patch('utils.state_teleport.shutil.which', return_value='/usr/bin/git')
-    @patch('utils.state_teleport.subprocess.run')
+    @patch('services.storage.teleport.shutil.which', return_value='/usr/bin/git')
+    @patch('services.storage.teleport.subprocess.run')
     def test_capture_git_dirty_repo(self, mock_run, mock_which):
         """Detects dirty working tree correctly."""
         def side_effect(args, **kwargs):
@@ -192,7 +192,7 @@ class TestCaptureGit(unittest.TestCase):
 
         self.assertEqual(state["status"], "dirty")
 
-    @patch('utils.state_teleport.shutil.which', return_value=None)
+    @patch('services.storage.teleport.shutil.which', return_value=None)
     def test_capture_git_not_installed(self, mock_which):
         """Returns empty state when git is not installed."""
         state = StateTeleportManager.capture_git_state("/tmp/repo")
@@ -200,8 +200,8 @@ class TestCaptureGit(unittest.TestCase):
         self.assertEqual(state["branch"], "")
         self.assertEqual(state["status"], "unknown")
 
-    @patch('utils.state_teleport.shutil.which', return_value='/usr/bin/git')
-    @patch('utils.state_teleport.subprocess.run')
+    @patch('services.storage.teleport.shutil.which', return_value='/usr/bin/git')
+    @patch('services.storage.teleport.subprocess.run')
     def test_capture_git_with_stashes(self, mock_run, mock_which):
         """Counts stashes correctly."""
         def side_effect(args, **kwargs):
@@ -221,8 +221,8 @@ class TestCaptureGit(unittest.TestCase):
 
         self.assertEqual(state["stash_count"], 2)
 
-    @patch('utils.state_teleport.shutil.which', return_value='/usr/bin/git')
-    @patch('utils.state_teleport.subprocess.run')
+    @patch('services.storage.teleport.shutil.which', return_value='/usr/bin/git')
+    @patch('services.storage.teleport.subprocess.run')
     def test_capture_git_with_unpushed(self, mock_run, mock_which):
         """Counts unpushed commits."""
         def side_effect(args, **kwargs):
@@ -244,8 +244,8 @@ class TestCaptureGit(unittest.TestCase):
 
         self.assertEqual(state["unpushed_count"], 3)
 
-    @patch('utils.state_teleport.shutil.which', return_value='/usr/bin/git')
-    @patch('utils.state_teleport.subprocess.run',
+    @patch('services.storage.teleport.shutil.which', return_value='/usr/bin/git')
+    @patch('services.storage.teleport.subprocess.run',
            side_effect=OSError("git failed"))
     def test_capture_git_subprocess_error(self, mock_run, mock_which):
         """Handles subprocess errors gracefully."""
@@ -262,10 +262,10 @@ class TestCaptureGit(unittest.TestCase):
 class TestCaptureTerminal(unittest.TestCase):
     """Tests for terminal state capture."""
 
-    @patch('utils.state_teleport.os.getcwd', return_value='/home/user/project')
-    @patch('utils.state_teleport.os.environ',
+    @patch('services.storage.teleport.os.getcwd', return_value='/home/user/project')
+    @patch('services.storage.teleport.os.environ',
            {"SHELL": "/bin/bash"})
-    @patch('utils.state_teleport.os.path.isfile', return_value=True)
+    @patch('services.storage.teleport.os.path.isfile', return_value=True)
     @patch('builtins.open',
            mock_open(read_data="git status\npython main.py\nls -la\n"))
     def test_capture_terminal_bash(self, mock_isfile, mock_getcwd):
@@ -276,10 +276,10 @@ class TestCaptureTerminal(unittest.TestCase):
         self.assertEqual(state["shell"], "bash")
         self.assertIn("git status", state["recent_history"])
 
-    @patch('utils.state_teleport.os.getcwd', return_value='/home/user')
-    @patch('utils.state_teleport.os.environ',
+    @patch('services.storage.teleport.os.getcwd', return_value='/home/user')
+    @patch('services.storage.teleport.os.environ',
            {"SHELL": "/bin/zsh"})
-    @patch('utils.state_teleport.os.path.isfile', return_value=False)
+    @patch('services.storage.teleport.os.path.isfile', return_value=False)
     def test_capture_terminal_zsh_no_history(self, mock_isfile, mock_getcwd):
         """Handles missing history file gracefully."""
         state = StateTeleportManager.capture_terminal_state()
@@ -287,19 +287,19 @@ class TestCaptureTerminal(unittest.TestCase):
         self.assertEqual(state["shell"], "zsh")
         self.assertEqual(state["recent_history"], [])
 
-    @patch('utils.state_teleport.os.getcwd', return_value='/home/user')
-    @patch('utils.state_teleport.os.environ',
+    @patch('services.storage.teleport.os.getcwd', return_value='/home/user')
+    @patch('services.storage.teleport.os.environ',
            {"SHELL": "/usr/bin/fish"})
-    @patch('utils.state_teleport.os.path.isfile', return_value=False)
+    @patch('services.storage.teleport.os.path.isfile', return_value=False)
     def test_capture_terminal_fish_detection(self, mock_isfile, mock_getcwd):
         """Detects fish shell correctly."""
         state = StateTeleportManager.capture_terminal_state()
 
         self.assertEqual(state["shell"], "fish")
 
-    @patch('utils.state_teleport.os.getcwd', return_value='/tmp')
-    @patch('utils.state_teleport.os.environ', {})
-    @patch('utils.state_teleport.os.path.isfile', return_value=False)
+    @patch('services.storage.teleport.os.getcwd', return_value='/tmp')
+    @patch('services.storage.teleport.os.environ', {})
+    @patch('services.storage.teleport.os.path.isfile', return_value=False)
     def test_capture_terminal_unknown_shell(self, mock_isfile, mock_getcwd):
         """Falls back to bash for unknown shell."""
         state = StateTeleportManager.capture_terminal_state()
@@ -314,7 +314,7 @@ class TestCaptureTerminal(unittest.TestCase):
 class TestSecurityFiltering(unittest.TestCase):
     """Tests for security: env var and file filtering."""
 
-    @patch('utils.state_teleport.os.environ', {
+    @patch('services.storage.teleport.os.environ', {
         "EDITOR": "vim",
         "AWS_SECRET_KEY": "supersecret",
         "API_TOKEN": "tok123",
@@ -337,7 +337,7 @@ class TestSecurityFiltering(unittest.TestCase):
         self.assertNotIn("GIT_CREDENTIAL_HELPER", filtered)
         self.assertNotIn("PATH", filtered)
 
-    @patch('utils.state_teleport.os.environ', {
+    @patch('services.storage.teleport.os.environ', {
         "MY_KEY": "value",
         "SECRET_SAUCE": "hidden",
         "CREDENTIAL_FILE": "/path",
@@ -389,7 +389,7 @@ class TestFullCapture(unittest.TestCase):
     @patch.object(StateTeleportManager, 'capture_git_state')
     @patch.object(StateTeleportManager, 'capture_terminal_state')
     @patch.object(StateTeleportManager, '_filter_environment')
-    @patch('utils.state_teleport.platform.node', return_value='test-host')
+    @patch('services.storage.teleport.platform.node', return_value='test-host')
     def test_capture_full_state_combines_all(self, mock_node, mock_env,
                                               mock_term, mock_git, mock_vscode):
         """Full capture combines all sub-captures into a WorkspaceState."""
@@ -581,8 +581,8 @@ class TestFileIO(unittest.TestCase):
 class TestRestore(unittest.TestCase):
     """Tests for workspace restore operations."""
 
-    @patch('utils.state_teleport.shutil.which', return_value='/usr/bin/code')
-    @patch('utils.state_teleport.subprocess.run')
+    @patch('services.storage.teleport.shutil.which', return_value='/usr/bin/code')
+    @patch('services.storage.teleport.subprocess.run')
     def test_restore_vscode_success(self, mock_run, mock_which):
         """VS Code restore opens workspace and returns success."""
         mock_run.return_value = MagicMock(returncode=0)
@@ -597,7 +597,7 @@ class TestRestore(unittest.TestCase):
         self.assertIn("code", call_args)
         self.assertIn("/tmp/project", call_args)
 
-    @patch('utils.state_teleport.shutil.which', return_value=None)
+    @patch('services.storage.teleport.shutil.which', return_value=None)
     def test_restore_vscode_not_installed(self, mock_which):
         """Returns failure when VS Code is not installed."""
         result = StateTeleportManager.restore_vscode_state(
@@ -615,8 +615,8 @@ class TestRestore(unittest.TestCase):
 
         self.assertFalse(result.success)
 
-    @patch('utils.state_teleport.shutil.which', return_value='/usr/bin/git')
-    @patch('utils.state_teleport.subprocess.run')
+    @patch('services.storage.teleport.shutil.which', return_value='/usr/bin/git')
+    @patch('services.storage.teleport.subprocess.run')
     def test_restore_git_success(self, mock_run, mock_which):
         """Git restore checks out branch and returns success."""
         mock_run.side_effect = [
@@ -631,8 +631,8 @@ class TestRestore(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertIn("feature/test", result.message)
 
-    @patch('utils.state_teleport.shutil.which', return_value='/usr/bin/git')
-    @patch('utils.state_teleport.subprocess.run')
+    @patch('services.storage.teleport.shutil.which', return_value='/usr/bin/git')
+    @patch('services.storage.teleport.subprocess.run')
     def test_restore_git_dirty_warns(self, mock_run, mock_which):
         """Warns about dirty working tree without forcing."""
         mock_run.return_value = MagicMock(
@@ -647,7 +647,7 @@ class TestRestore(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("Local changes", result.message)
 
-    @patch('utils.state_teleport.shutil.which', return_value=None)
+    @patch('services.storage.teleport.shutil.which', return_value=None)
     def test_restore_git_not_installed(self, mock_which):
         """Returns failure when git is not installed."""
         result = StateTeleportManager.restore_git_state(

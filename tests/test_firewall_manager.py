@@ -8,7 +8,7 @@ from unittest.mock import patch, MagicMock
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'loofi-fedora-tweaks'))
 
-from utils.firewall_manager import FirewallManager, FirewallInfo, FirewallResult
+from services.security.firewall import FirewallManager, FirewallInfo, FirewallResult
 
 
 class TestFirewallInfo(unittest.TestCase):
@@ -64,21 +64,21 @@ class TestFirewallResult(unittest.TestCase):
 class TestFirewallManagerAvailability(unittest.TestCase):
     """Tests for availability and running checks."""
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_is_available_true(self, mock_run):
         """Returns True when firewall-cmd exists."""
         mock_run.return_value = MagicMock(returncode=0)
 
         self.assertTrue(FirewallManager.is_available())
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_is_available_false(self, mock_run):
         """Returns False when firewall-cmd not found."""
         mock_run.side_effect = OSError("Not found")
 
         self.assertFalse(FirewallManager.is_available())
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_is_available_timeout(self, mock_run):
         """Returns False on timeout."""
         import subprocess
@@ -86,21 +86,21 @@ class TestFirewallManagerAvailability(unittest.TestCase):
 
         self.assertFalse(FirewallManager.is_available())
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_is_running_true(self, mock_run):
         """Returns True when firewalld is running."""
         mock_run.return_value = MagicMock(returncode=0, stdout="running\n")
 
         self.assertTrue(FirewallManager.is_running())
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_is_running_false(self, mock_run):
         """Returns False when firewalld is not running."""
         mock_run.return_value = MagicMock(returncode=1, stdout="not running\n")
 
         self.assertFalse(FirewallManager.is_running())
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_is_running_os_error(self, mock_run):
         """Returns False on OSError."""
         mock_run.side_effect = OSError("No such file")
@@ -111,12 +111,12 @@ class TestFirewallManagerAvailability(unittest.TestCase):
 class TestFirewallManagerStatus(unittest.TestCase):
     """Tests for FirewallManager.get_status()."""
 
-    @patch('utils.firewall_manager.FirewallManager.list_rich_rules')
-    @patch('utils.firewall_manager.FirewallManager.list_services')
-    @patch('utils.firewall_manager.FirewallManager.list_ports')
-    @patch('utils.firewall_manager.FirewallManager.get_active_zones')
-    @patch('utils.firewall_manager.FirewallManager.get_default_zone')
-    @patch('utils.firewall_manager.FirewallManager.is_running')
+    @patch('services.security.firewall.FirewallManager.list_rich_rules')
+    @patch('services.security.firewall.FirewallManager.list_services')
+    @patch('services.security.firewall.FirewallManager.list_ports')
+    @patch('services.security.firewall.FirewallManager.get_active_zones')
+    @patch('services.security.firewall.FirewallManager.get_default_zone')
+    @patch('services.security.firewall.FirewallManager.is_running')
     def test_get_status_running(self, mock_running, mock_zone, mock_active,
                                  mock_ports, mock_services, mock_rules):
         """Returns full status when running."""
@@ -134,7 +134,7 @@ class TestFirewallManagerStatus(unittest.TestCase):
         self.assertEqual(info.ports, ["80/tcp"])
         self.assertEqual(info.services, ["ssh", "http"])
 
-    @patch('utils.firewall_manager.FirewallManager.is_running')
+    @patch('services.security.firewall.FirewallManager.is_running')
     def test_get_status_not_running(self, mock_running):
         """Returns minimal status when not running."""
         mock_running.return_value = False
@@ -149,7 +149,7 @@ class TestFirewallManagerStatus(unittest.TestCase):
 class TestFirewallManagerZones(unittest.TestCase):
     """Tests for zone operations."""
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_get_default_zone(self, mock_run):
         """Returns default zone name."""
         mock_run.return_value = MagicMock(returncode=0, stdout="public\n")
@@ -158,7 +158,7 @@ class TestFirewallManagerZones(unittest.TestCase):
 
         self.assertEqual(zone, "public")
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_get_default_zone_failure(self, mock_run):
         """Returns empty string on failure."""
         mock_run.return_value = MagicMock(returncode=1, stdout="")
@@ -167,7 +167,7 @@ class TestFirewallManagerZones(unittest.TestCase):
 
         self.assertEqual(zone, "")
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_get_zones(self, mock_run):
         """Lists all available zones."""
         mock_run.return_value = MagicMock(
@@ -180,7 +180,7 @@ class TestFirewallManagerZones(unittest.TestCase):
         self.assertIn("trusted", zones)
         self.assertEqual(len(zones), 10)
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_get_zones_failure(self, mock_run):
         """Returns empty list on failure."""
         mock_run.return_value = MagicMock(returncode=1, stdout="")
@@ -189,7 +189,7 @@ class TestFirewallManagerZones(unittest.TestCase):
 
         self.assertEqual(zones, [])
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_get_active_zones(self, mock_run):
         """Parses active zones with interfaces."""
         output = "public\n  interfaces: eth0 wlan0\ntrusted\n  interfaces: virbr0\n"
@@ -202,7 +202,7 @@ class TestFirewallManagerZones(unittest.TestCase):
         self.assertIn("wlan0", zones["public"])
         self.assertIn("trusted", zones)
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_get_active_zones_empty(self, mock_run):
         """Returns empty dict when no active zones."""
         mock_run.return_value = MagicMock(returncode=0, stdout="")
@@ -211,7 +211,7 @@ class TestFirewallManagerZones(unittest.TestCase):
 
         self.assertEqual(zones, {})
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_set_default_zone_success(self, mock_run):
         """Set default zone returns success."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -221,7 +221,7 @@ class TestFirewallManagerZones(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertIn("trusted", result.message)
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_set_default_zone_failure(self, mock_run):
         """Set default zone returns failure on error."""
         mock_run.return_value = MagicMock(
@@ -236,7 +236,7 @@ class TestFirewallManagerZones(unittest.TestCase):
 class TestFirewallManagerPorts(unittest.TestCase):
     """Tests for port operations."""
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_list_ports(self, mock_run):
         """Lists open ports."""
         mock_run.return_value = MagicMock(
@@ -248,7 +248,7 @@ class TestFirewallManagerPorts(unittest.TestCase):
         self.assertEqual(len(ports), 3)
         self.assertIn("80/tcp", ports)
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_list_ports_empty(self, mock_run):
         """Returns empty list when no ports open."""
         mock_run.return_value = MagicMock(returncode=0, stdout="\n")
@@ -257,7 +257,7 @@ class TestFirewallManagerPorts(unittest.TestCase):
 
         self.assertEqual(ports, [])
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_list_ports_with_zone(self, mock_run):
         """Passes zone parameter."""
         mock_run.return_value = MagicMock(returncode=0, stdout="")
@@ -268,8 +268,8 @@ class TestFirewallManagerPorts(unittest.TestCase):
         self.assertIn("--zone", cmd)
         self.assertIn("trusted", cmd)
 
-    @patch('utils.firewall_manager.FirewallManager._reload')
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.FirewallManager._reload')
+    @patch('services.security.firewall.subprocess.run')
     def test_open_port_success(self, mock_run, mock_reload):
         """Open port returns success and calls reload."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -281,7 +281,7 @@ class TestFirewallManagerPorts(unittest.TestCase):
         self.assertIn("8080/tcp", result.message)
         mock_reload.assert_called_once()
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_open_port_failure(self, mock_run):
         """Open port returns failure on error."""
         mock_run.return_value = MagicMock(
@@ -292,7 +292,7 @@ class TestFirewallManagerPorts(unittest.TestCase):
 
         self.assertFalse(result.success)
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_open_port_uses_pkexec(self, mock_run):
         """Open port command uses pkexec."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -302,8 +302,8 @@ class TestFirewallManagerPorts(unittest.TestCase):
         cmd = mock_run.call_args[0][0]
         self.assertEqual(cmd[0], "pkexec")
 
-    @patch('utils.firewall_manager.FirewallManager._reload')
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.FirewallManager._reload')
+    @patch('services.security.firewall.subprocess.run')
     def test_close_port_success(self, mock_run, mock_reload):
         """Close port returns success."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -314,7 +314,7 @@ class TestFirewallManagerPorts(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertIn("8080/tcp", result.message)
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_open_port_timeout(self, mock_run):
         """Open port returns failure on timeout."""
         import subprocess
@@ -325,7 +325,7 @@ class TestFirewallManagerPorts(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("Error", result.message)
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_open_port_non_permanent(self, mock_run):
         """Non-permanent port doesn't add --permanent flag."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -339,7 +339,7 @@ class TestFirewallManagerPorts(unittest.TestCase):
 class TestFirewallManagerServices(unittest.TestCase):
     """Tests for service operations."""
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_list_services(self, mock_run):
         """Lists allowed services."""
         mock_run.return_value = MagicMock(
@@ -351,7 +351,7 @@ class TestFirewallManagerServices(unittest.TestCase):
         self.assertIn("http", services)
         self.assertIn("ssh", services)
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_list_services_empty(self, mock_run):
         """Returns empty list when no services."""
         mock_run.return_value = MagicMock(returncode=0, stdout="\n")
@@ -360,7 +360,7 @@ class TestFirewallManagerServices(unittest.TestCase):
 
         self.assertEqual(services, [])
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_get_available_services(self, mock_run):
         """Lists all known services."""
         mock_run.return_value = MagicMock(
@@ -373,8 +373,8 @@ class TestFirewallManagerServices(unittest.TestCase):
         self.assertIn("ssh", services)
         self.assertGreater(len(services), 5)
 
-    @patch('utils.firewall_manager.FirewallManager._reload')
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.FirewallManager._reload')
+    @patch('services.security.firewall.subprocess.run')
     def test_add_service_success(self, mock_run, mock_reload):
         """Add service returns success."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -385,7 +385,7 @@ class TestFirewallManagerServices(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertIn("http", result.message)
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_add_service_failure(self, mock_run):
         """Add service returns failure on error."""
         mock_run.return_value = MagicMock(
@@ -396,8 +396,8 @@ class TestFirewallManagerServices(unittest.TestCase):
 
         self.assertFalse(result.success)
 
-    @patch('utils.firewall_manager.FirewallManager._reload')
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.FirewallManager._reload')
+    @patch('services.security.firewall.subprocess.run')
     def test_remove_service_success(self, mock_run, mock_reload):
         """Remove service returns success."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -408,7 +408,7 @@ class TestFirewallManagerServices(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertIn("http", result.message)
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_add_service_uses_pkexec(self, mock_run):
         """Add service uses pkexec."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -418,7 +418,7 @@ class TestFirewallManagerServices(unittest.TestCase):
         cmd = mock_run.call_args[0][0]
         self.assertEqual(cmd[0], "pkexec")
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_add_service_with_zone(self, mock_run):
         """Add service passes zone parameter."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -433,7 +433,7 @@ class TestFirewallManagerServices(unittest.TestCase):
 class TestFirewallManagerRichRules(unittest.TestCase):
     """Tests for rich rule operations."""
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_list_rich_rules(self, mock_run):
         """Lists rich rules."""
         mock_run.return_value = MagicMock(
@@ -446,7 +446,7 @@ class TestFirewallManagerRichRules(unittest.TestCase):
         self.assertEqual(len(rules), 1)
         self.assertIn("192.168.1.0/24", rules[0])
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_list_rich_rules_empty(self, mock_run):
         """Returns empty list when no rich rules."""
         mock_run.return_value = MagicMock(returncode=0, stdout="\n")
@@ -455,8 +455,8 @@ class TestFirewallManagerRichRules(unittest.TestCase):
 
         self.assertEqual(rules, [])
 
-    @patch('utils.firewall_manager.FirewallManager._reload')
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.FirewallManager._reload')
+    @patch('services.security.firewall.subprocess.run')
     def test_add_rich_rule_success(self, mock_run, mock_reload):
         """Add rich rule returns success."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -467,7 +467,7 @@ class TestFirewallManagerRichRules(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertIn("rich rule", result.message)
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_add_rich_rule_failure(self, mock_run):
         """Add rich rule returns failure on invalid rule."""
         mock_run.return_value = MagicMock(
@@ -478,8 +478,8 @@ class TestFirewallManagerRichRules(unittest.TestCase):
 
         self.assertFalse(result.success)
 
-    @patch('utils.firewall_manager.FirewallManager._reload')
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.FirewallManager._reload')
+    @patch('services.security.firewall.subprocess.run')
     def test_remove_rich_rule_success(self, mock_run, mock_reload):
         """Remove rich rule returns success."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -493,7 +493,7 @@ class TestFirewallManagerRichRules(unittest.TestCase):
 class TestFirewallManagerToggle(unittest.TestCase):
     """Tests for start/stop firewall."""
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_start_firewall_success(self, mock_run):
         """Start firewalld returns success."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -503,7 +503,7 @@ class TestFirewallManagerToggle(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertIn("started", result.message)
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_start_firewall_failure(self, mock_run):
         """Start firewalld returns failure."""
         mock_run.return_value = MagicMock(
@@ -514,7 +514,7 @@ class TestFirewallManagerToggle(unittest.TestCase):
 
         self.assertFalse(result.success)
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_stop_firewall_success(self, mock_run):
         """Stop firewalld returns success."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -524,7 +524,7 @@ class TestFirewallManagerToggle(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertIn("stopped", result.message)
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_stop_firewall_failure(self, mock_run):
         """Stop firewalld returns failure."""
         mock_run.return_value = MagicMock(
@@ -535,7 +535,7 @@ class TestFirewallManagerToggle(unittest.TestCase):
 
         self.assertFalse(result.success)
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_start_firewall_uses_pkexec(self, mock_run):
         """Start firewall uses pkexec via PrivilegedCommand."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -545,7 +545,7 @@ class TestFirewallManagerToggle(unittest.TestCase):
         cmd = mock_run.call_args[0][0]
         self.assertEqual(cmd[0], "pkexec")
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_start_firewall_timeout(self, mock_run):
         """Start firewall returns failure on timeout."""
         import subprocess
@@ -560,21 +560,21 @@ class TestFirewallManagerToggle(unittest.TestCase):
 class TestFirewallManagerReload(unittest.TestCase):
     """Tests for internal _reload method."""
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_reload_success(self, mock_run):
         """Reload returns True on success."""
         mock_run.return_value = MagicMock(returncode=0)
 
         self.assertTrue(FirewallManager._reload())
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_reload_failure(self, mock_run):
         """Reload returns False on failure."""
         mock_run.return_value = MagicMock(returncode=1)
 
         self.assertFalse(FirewallManager._reload())
 
-    @patch('utils.firewall_manager.subprocess.run')
+    @patch('services.security.firewall.subprocess.run')
     def test_reload_timeout(self, mock_run):
         """Reload returns False on timeout."""
         import subprocess

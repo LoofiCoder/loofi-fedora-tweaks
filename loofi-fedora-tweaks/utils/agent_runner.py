@@ -19,7 +19,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 from services.system import SystemManager
 
-from utils.action_executor import ActionExecutor as CentralExecutor
+from core.executor.action_executor import ActionExecutor as CentralExecutor
 from utils.agents import (
     ActionSeverity,
     AgentAction,

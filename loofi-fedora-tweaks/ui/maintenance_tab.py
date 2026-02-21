@@ -166,7 +166,7 @@ class _UpdatesSubTab(QWidget):
         )
 
     def run_dnf_update(self):
-        from utils.safety import SafetyManager
+        from services.security import SafetyManager
 
         if self.package_manager == "dnf" and SafetyManager.check_dnf_lock():
             QMessageBox.warning(
@@ -199,7 +199,7 @@ class _UpdatesSubTab(QWidget):
         self.runner.run_command("flatpak", ["update", "-y"])
 
     def run_fw_update(self):
-        from utils.safety import SafetyManager
+        from services.security import SafetyManager
 
         if not SafetyManager.confirm_action(self, self.tr("Firmware Update")):
             return
@@ -211,7 +211,7 @@ class _UpdatesSubTab(QWidget):
     # -- Update All (sequential queue) -------------------------------------
 
     def run_update_all(self):
-        from utils.safety import SafetyManager
+        from services.security import SafetyManager
 
         if self.package_manager == "dnf" and SafetyManager.check_dnf_lock():
             QMessageBox.warning(
@@ -408,7 +408,7 @@ class _CleanupSubTab(QWidget):
             )
 
     def run_autoremove(self):
-        from utils.safety import SafetyManager
+        from services.security import SafetyManager
 
         if SafetyManager.check_dnf_lock():
             QMessageBox.warning(

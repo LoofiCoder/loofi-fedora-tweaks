@@ -19,22 +19,24 @@ from services.hardware import (
     DiskManager,  # noqa: E402
     TemperatureManager,  # noqa: E402
 )
+from services.network import (
+    NetworkMonitor,  # noqa: E402
+    PortAuditor,  # noqa: E402
+)
 from services.system import (
     ProcessManager,  # noqa: E402
     SystemManager,  # noqa: E402
 )
-from utils.firewall_manager import FirewallManager  # noqa: E402
+from services.security import FirewallManager  # noqa: E402
 from utils.focus_mode import FocusMode  # noqa: E402
 from utils.health_timeline import HealthTimeline  # noqa: E402
 from utils.journal import JournalManager  # noqa: E402
 from utils.monitor import SystemMonitor  # noqa: E402
-from utils.network_monitor import NetworkMonitor  # noqa: E402
 from utils.operations import AdvancedOps, CleanupOps, NetworkOps, TweakOps  # noqa: E402
 from utils.package_explorer import PackageExplorer  # noqa: E402
 from utils.plugin_base import PluginLoader  # noqa: E402
 from utils.plugin_installer import PluginInstaller  # noqa: E402
 from utils.plugin_marketplace import PluginMarketplace  # noqa: E402
-from utils.ports import PortAuditor  # noqa: E402
 from utils.presets import PresetManager  # noqa: E402
 from utils.profiles import ProfileManager  # noqa: E402
 from utils.service_explorer import ServiceExplorer, ServiceScope  # noqa: E402
@@ -86,7 +88,7 @@ def run_operation(op_result, timeout=None):
         _print(f"🔍 [DRY-RUN] Would execute: {' '.join(full_cmd)}")
         _print(f"   Description: {desc}")
         try:
-            from utils.audit import AuditLogger
+            from services.security import AuditLogger
 
             AuditLogger().log(
                 action=f"cli.{cmd}",
@@ -168,16 +170,12 @@ def cmd_tweak(args):
             _output_json(
                 {
                     "power_profile": profile,
-                    "system_type": "Atomic"
-                    if SystemManager.is_atomic()
-                    else "Traditional",
+                    "system_type": "Atomic" if SystemManager.is_atomic() else "Traditional",
                 }
             )
         else:
             _print(f"⚡ Power Profile: {profile}")
-            _print(
-                f"💻 System: {'Atomic' if SystemManager.is_atomic() else 'Traditional'} Fedora"
-            )
+            _print(f"💻 System: {'Atomic' if SystemManager.is_atomic() else 'Traditional'} Fedora")
         return 0
     return 1
 
@@ -280,23 +278,13 @@ def cmd_health(_args):
         _print(f"⏱️  Uptime: {health.uptime}")
 
         if health.memory:
-            mem_icon = (
-                "🟢"
-                if health.memory_status == "ok"
-                else ("🟡" if health.memory_status == "warning" else "🔴")
-            )
-            _print(
-                f"{mem_icon} Memory: {health.memory.used_human} / {health.memory.total_human} ({health.memory.percent_used}%)"
-            )
+            mem_icon = "🟢" if health.memory_status == "ok" else ("🟡" if health.memory_status == "warning" else "🔴")
+            _print(f"{mem_icon} Memory: {health.memory.used_human} / {health.memory.total_human} ({health.memory.percent_used}%)")
         else:
             _print("⚪ Memory: Unable to read")
 
         if health.cpu:
-            cpu_icon = (
-                "🟢"
-                if health.cpu_status == "ok"
-                else ("🟡" if health.cpu_status == "warning" else "🔴")
-            )
+            cpu_icon = "🟢" if health.cpu_status == "ok" else ("🟡" if health.cpu_status == "warning" else "🔴")
             _print(
                 f"{cpu_icon} CPU Load: {health.cpu.load_1min} / {health.cpu.load_5min} / {health.cpu.load_15min} ({health.cpu.core_count} cores, {health.cpu.load_percent}%)"
             )
@@ -304,14 +292,10 @@ def cmd_health(_args):
             _print("⚪ CPU: Unable to read")
 
         disk_level, disk_msg = DiskManager.check_disk_health("/")
-        disk_icon = (
-            "🟢" if disk_level == "ok" else ("🟡" if disk_level == "warning" else "🔴")
-        )
+        disk_icon = "🟢" if disk_level == "ok" else ("🟡" if disk_level == "warning" else "🔴")
         _print(f"{disk_icon} {disk_msg}")
         _print(f"⚡ Power Profile: {TweakOps.get_power_profile()}")
-        _print(
-            f"💻 System: {'Atomic' if SystemManager.is_atomic() else 'Traditional'} Fedora ({SystemManager.get_variant_name()})"
-        )
+        _print(f"💻 System: {'Atomic' if SystemManager.is_atomic() else 'Traditional'} Fedora ({SystemManager.get_variant_name()})")
 
     return 0
 
@@ -370,9 +354,7 @@ def cmd_disk(args):
         if getattr(args, "details", False):
             home_dir = os.path.expanduser("~")
             _print(f"\n📂 Largest directories in {home_dir}:")
-            large_dirs = DiskManager.find_large_directories(
-                home_dir, max_depth=2, top_n=5
-            )
+            large_dirs = DiskManager.find_large_directories(home_dir, max_depth=2, top_n=5)
             if large_dirs:
                 for d in large_dirs:
                     _print(f"   {d.size_human:>10}  {d.path}")
@@ -414,19 +396,13 @@ def cmd_processes(args):
         _print("═══════════════════════════════════════════")
         _print("   Process Monitor")
         _print("═══════════════════════════════════════════")
-        _print(
-            f"\n📊 Total: {counts['total']} | Running: {counts['running']} | Sleeping: {counts['sleeping']} | Zombie: {counts['zombie']}"
-        )
+        _print(f"\n📊 Total: {counts['total']} | Running: {counts['running']} | Sleeping: {counts['sleeping']} | Zombie: {counts['zombie']}")
         _print(f"\n🔍 Top {n} by {'Memory' if sort_by == 'memory' else 'CPU'}:")
-        _print(
-            f"{'PID':>7}  {'CPU%':>6}  {'MEM%':>6}  {'Memory':>10}  {'User':<12}  {'Name'}"
-        )
+        _print(f"{'PID':>7}  {'CPU%':>6}  {'MEM%':>6}  {'Memory':>10}  {'User':<12}  {'Name'}")
         _print("─" * 70)
         for p in processes:
             mem_human = ProcessManager.bytes_to_human(p.memory_bytes)
-            _print(
-                f"{p.pid:>7}  {p.cpu_percent:>5.1f}%  {p.memory_percent:>5.1f}%  {mem_human:>10}  {p.user:<12}  {p.name}"
-            )
+            _print(f"{p.pid:>7}  {p.cpu_percent:>5.1f}%  {p.memory_percent:>5.1f}%  {mem_human:>10}  {p.user:<12}  {p.name}")
 
     return 0
 
@@ -459,6 +435,7 @@ def cmd_temperature(_args):
         if not sensors:
             _print("\n⚠️  No temperature sensors found.")
             from utils.install_hints import build_install_hint
+
             _print(f"   Ensure lm_sensors is installed: {build_install_hint('lm_sensors')}")
             return 1
 
@@ -480,9 +457,7 @@ def cmd_temperature(_args):
         if len(sensors) > 1:
             avg_temp = sum(s.current for s in sensors) / len(sensors)
             hottest = max(sensors, key=lambda s: s.current)
-            _print(
-                f"\n📊 Summary: avg {avg_temp:.1f}°C | max {hottest.current:.1f}°C ({hottest.label})"
-            )
+            _print(f"\n📊 Summary: avg {avg_temp:.1f}°C | max {hottest.current:.1f}°C ({hottest.label})")
 
     return 0
 
@@ -522,37 +497,23 @@ def cmd_netmon(args):
             _print(f"\n{icon} {iface.name} ({iface.type}) [{status}]")
             if iface.ip_address:
                 _print(f"   IP: {iface.ip_address}")
-            _print(
-                f"   RX: {NetworkMonitor.bytes_to_human(iface.bytes_recv)}  TX: {NetworkMonitor.bytes_to_human(iface.bytes_sent)}"
-            )
+            _print(f"   RX: {NetworkMonitor.bytes_to_human(iface.bytes_recv)}  TX: {NetworkMonitor.bytes_to_human(iface.bytes_sent)}")
             if iface.recv_rate > 0 or iface.send_rate > 0:
-                _print(
-                    f"   Rate: ↓{NetworkMonitor.bytes_to_human(int(iface.recv_rate))}/s  ↑{NetworkMonitor.bytes_to_human(int(iface.send_rate))}/s"
-                )
+                _print(f"   Rate: ↓{NetworkMonitor.bytes_to_human(int(iface.recv_rate))}/s  ↑{NetworkMonitor.bytes_to_human(int(iface.send_rate))}/s")
 
         summary = NetworkMonitor.get_bandwidth_summary()
-        _print(
-            f"\n📊 Total: ↓{NetworkMonitor.bytes_to_human(summary['total_recv'])} ↑{NetworkMonitor.bytes_to_human(summary['total_sent'])}"
-        )
+        _print(f"\n📊 Total: ↓{NetworkMonitor.bytes_to_human(summary['total_recv'])} ↑{NetworkMonitor.bytes_to_human(summary['total_sent'])}")
 
         if getattr(args, "connections", False):
             connections = NetworkMonitor.get_active_connections()
             if connections:
                 _print(f"\n🔗 Active Connections ({len(connections)}):")
-                _print(
-                    f"{'Proto':<6} {'Local':>21} {'Remote':>21} {'State':<14} {'Process'}"
-                )
+                _print(f"{'Proto':<6} {'Local':>21} {'Remote':>21} {'State':<14} {'Process'}")
                 _print("─" * 80)
                 for conn in connections[:20]:
                     local = f"{conn.local_addr}:{conn.local_port}"
-                    remote = (
-                        f"{conn.remote_addr}:{conn.remote_port}"
-                        if conn.remote_addr != "0.0.0.0"
-                        else "*"
-                    )
-                    _print(
-                        f"{conn.protocol:<6} {local:>21} {remote:>21} {conn.state:<14} {conn.process_name}"
-                    )
+                    remote = f"{conn.remote_addr}:{conn.remote_port}" if conn.remote_addr != "0.0.0.0" else "*"
+                    _print(f"{conn.protocol:<6} {local:>21} {remote:>21} {conn.state:<14} {conn.process_name}")
 
     return 0
 
@@ -604,9 +565,7 @@ def cmd_doctor(_args):
         if all_ok:
             _print("\n🟢 All critical dependencies found.")
         else:
-            _print(
-                "\n🔴 Some critical tools are missing. Install them for full functionality."
-            )
+            _print("\n🔴 Some critical tools are missing. Install them for full functionality.")
 
     return 0 if all_ok else 1
 
@@ -627,9 +586,7 @@ def cmd_hardware(_args):
         _print(f"   Battery Limit:    {'✅' if profile.get('battery_limit') else '❌'}")
         _print(f"   Fan Control:      {'✅' if profile.get('nbfc') else '❌'}")
         _print(f"   Fingerprint:      {'✅' if profile.get('fingerprint') else '❌'}")
-        _print(
-            f"   Power Profiles:   {'✅' if profile.get('power_profiles') else '❌'}"
-        )
+        _print(f"   Power Profiles:   {'✅' if profile.get('power_profiles') else '❌'}")
         thermal = profile.get("thermal_management", "None")
         _print(f"   Thermal Driver:   {thermal or 'Generic'}")
 
@@ -639,15 +596,11 @@ def cmd_hardware(_args):
 def cmd_self_update(args):
     """Check and run self-update flow."""
     package_manager = SystemManager.get_package_manager()
-    preference = UpdateChecker.resolve_artifact_preference(
-        package_manager, args.channel
-    )
+    preference = UpdateChecker.resolve_artifact_preference(package_manager, args.channel)
     use_cache = not args.no_cache
 
     if args.action == "check":
-        info = UpdateChecker.check_for_updates(
-            timeout=args.timeout, use_cache=use_cache
-        )
+        info = UpdateChecker.check_for_updates(timeout=args.timeout, use_cache=use_cache)
         if _json_output:
             _output_json(
                 {
@@ -658,9 +611,7 @@ def cmd_self_update(args):
                     "source": info.source if info else "network",
                     "current_version": info.current_version if info else __version__,
                     "latest_version": info.latest_version if info else None,
-                    "selected_asset": info.selected_asset.name
-                    if info and info.selected_asset
-                    else None,
+                    "selected_asset": info.selected_asset.name if info and info.selected_asset else None,
                 }
             )
             return 0 if info is not None else 1
@@ -669,9 +620,7 @@ def cmd_self_update(args):
             _print("❌ Update check failed")
             return 1
         if info.is_newer:
-            _print(
-                f"✅ Update available: {info.current_version} -> {info.latest_version}"
-            )
+            _print(f"✅ Update available: {info.current_version} -> {info.latest_version}")
             if info.selected_asset:
                 _print(f"📦 Selected asset: {info.selected_asset.name}")
         else:
@@ -696,12 +645,8 @@ def cmd_self_update(args):
                 "error": result.error,
                 "offline": result.offline,
                 "source": result.source,
-                "selected_asset": result.selected_asset.name
-                if result.selected_asset
-                else None,
-                "downloaded_file": result.download.file_path
-                if result.download
-                else None,
+                "selected_asset": result.selected_asset.name if result.selected_asset else None,
+                "downloaded_file": result.download.file_path if result.download else None,
                 "download_ok": result.download.ok if result.download else None,
                 "verify_ok": result.verify.ok if result.verify else None,
             }
@@ -753,9 +698,7 @@ def cmd_plugins(args):
         if _json_output:
             _output_json({"plugin": args.name, "enabled": enabled})
         else:
-            _print(
-                f"{'✅' if enabled else '❌'} {args.name} {'enabled' if enabled else 'disabled'}"
-            )
+            _print(f"{'✅' if enabled else '❌'} {args.name} {'enabled' if enabled else 'disabled'}")
         return 0
 
     return 1
@@ -802,11 +745,7 @@ def cmd_plugin_marketplace(args):
                 }
                 for p in plugins
             ]
-            print(
-                json_module.dumps(
-                    {"plugins": data, "count": len(data)}, indent=2, default=str
-                )
-            )
+            print(json_module.dumps({"plugins": data, "count": len(data)}, indent=2, default=str))
         else:
             if not plugins:
                 print("No plugins found")
@@ -847,9 +786,7 @@ def cmd_plugin_marketplace(args):
                 "description": plugin.description,
                 "homepage": getattr(plugin, "homepage", None),
                 "license": getattr(plugin, "license", None),
-                "verified_publisher": bool(
-                    getattr(plugin, "verified_publisher", False)
-                ),
+                "verified_publisher": bool(getattr(plugin, "verified_publisher", False)),
                 "publisher_id": getattr(plugin, "publisher_id", None),
                 "publisher_badge": getattr(plugin, "publisher_badge", None),
             }
@@ -882,19 +819,13 @@ def cmd_plugin_marketplace(args):
             print(f"Error: {info_result.error}", file=sys.stderr)
             return 1
 
-        plugin = (
-            info_result.data[0]
-            if isinstance(info_result.data, list)
-            else info_result.data
-        )
+        plugin = info_result.data[0] if isinstance(info_result.data, list) else info_result.data
 
         # Check permissions consent
         permissions = getattr(plugin, "requires", None) or []
         accept = getattr(args, "accept_permissions", False)
         if permissions and not accept:
-            print(
-                f"Plugin '{plugin.name}' requires permissions: {', '.join(permissions)}"
-            )
+            print(f"Plugin '{plugin.name}' requires permissions: {', '.join(permissions)}")
             print("Re-run with --accept-permissions to install")
             return 1
 
@@ -924,9 +855,7 @@ def cmd_plugin_marketplace(args):
 
         limit = getattr(args, "limit", 20)
         offset = getattr(args, "offset", 0)
-        result = marketplace.fetch_reviews(
-            plugin_id=plugin_id, limit=limit, offset=offset
-        )
+        result = marketplace.fetch_reviews(plugin_id=plugin_id, limit=limit, offset=offset)
 
         if not result.success:
             print(f"Error: {result.error}", file=sys.stderr)
@@ -1075,11 +1004,7 @@ def cmd_plugin_marketplace(args):
 
         # Check if update is available first
         check = installer.check_update(plugin_id)
-        if (
-            check.success
-            and check.data
-            and not check.data.get("update_available", True)
-        ):
+        if check.success and check.data and not check.data.get("update_available", True):
             print(f"Plugin '{plugin_id}' is already up to date")
             return 0
 
@@ -1124,9 +1049,7 @@ def cmd_support_bundle(_args):
     """Export support bundle ZIP."""
     result = JournalManager.export_support_bundle()
     if _json_output:
-        _output_json(
-            {"success": result.success, "message": result.message, "data": result.data}
-        )
+        _output_json({"success": result.success, "message": result.message, "data": result.data})
     else:
         _print(f"{'✅' if result.success else '❌'} {result.message}")
     return 0 if result.success else 1
@@ -1137,7 +1060,7 @@ def cmd_support_bundle(_args):
 
 def cmd_vm(args):
     """Handle VM subcommand."""
-    from utils.vm_manager import VMManager
+    from services.virtualization import VMManager
 
     if args.action == "list":
         vms = VMManager.list_vms()
@@ -1154,9 +1077,7 @@ def cmd_vm(args):
             else:
                 for vm in vms:
                     icon = "🟢" if vm.state == "running" else "⚪"
-                    _print(
-                        f"  {icon} {vm.name} [{vm.state}]  RAM: {vm.memory_mb}MB  vCPUs: {vm.vcpus}"
-                    )
+                    _print(f"  {icon} {vm.name} [{vm.state}]  RAM: {vm.memory_mb}MB  vCPUs: {vm.vcpus}")
         return 0
 
     elif args.action == "status":
@@ -1190,7 +1111,7 @@ def cmd_vm(args):
 
 def cmd_vfio(args):
     """Handle VFIO GPU passthrough subcommand."""
-    from utils.vfio import VFIOAssistant
+    from services.virtualization import VFIOAssistant
 
     if args.action == "check":
         prereqs = VFIOAssistant.check_prerequisites()
@@ -1219,9 +1140,7 @@ def cmd_vfio(args):
                 for gpu in candidates:
                     _print(f"\n  {gpu.get('name', 'Unknown GPU')}")
                     _print(f"    IOMMU Group: {gpu.get('iommu_group', '?')}")
-                    _print(
-                        f"    IDs: {gpu.get('vendor_id', '?')}:{gpu.get('device_id', '?')}"
-                    )
+                    _print(f"    IDs: {gpu.get('vendor_id', '?')}:{gpu.get('device_id', '?')}")
         return 0
 
     elif args.action == "plan":
@@ -1249,7 +1168,7 @@ def cmd_vfio(args):
 
 def cmd_mesh(args):
     """Handle mesh networking subcommand."""
-    from utils.mesh_discovery import MeshDiscovery
+    from services.network import MeshDiscovery
 
     if args.action == "discover":
         peers = MeshDiscovery.discover_peers()
@@ -1283,14 +1202,12 @@ def cmd_mesh(args):
 
 def cmd_teleport(args):
     """Handle state teleport subcommand."""
-    from utils.state_teleport import StateTeleportManager
+    from services.storage import StateTeleportManager
 
     if args.action == "capture":
         workspace_path = getattr(args, "path", None) or os.getcwd()
         state = StateTeleportManager.capture_full_state(workspace_path)
-        package = StateTeleportManager.create_teleport_package(
-            state, target_device=getattr(args, "target", "unknown")
-        )
+        package = StateTeleportManager.create_teleport_package(state, target_device=getattr(args, "target", "unknown"))
         pkg_dir = StateTeleportManager.get_package_dir()
         filepath = os.path.join(pkg_dir, f"{package.package_id}.json")
         result = StateTeleportManager.save_package_to_file(package, filepath)
@@ -1322,9 +1239,7 @@ def cmd_teleport(args):
                 _print("\n(no packages found)")
             else:
                 for pkg in packages:
-                    _print(
-                        f"  📦 {pkg['package_id'][:8]}... from {pkg['source_device']}"
-                    )
+                    _print(f"  📦 {pkg['package_id'][:8]}... from {pkg['source_device']}")
                     _print(f"     Size: {pkg['size_bytes']} bytes")
         return 0
 
@@ -1355,9 +1270,7 @@ def cmd_ai_models(args):
         installed = AIModelManager.get_installed_models()
         recommended = RECOMMENDED_MODELS
         if _json_output:
-            _output_json(
-                {"installed": installed, "recommended": list(recommended.keys())}
-            )
+            _output_json({"installed": installed, "recommended": list(recommended.keys())})
         else:
             _print("═══════════════════════════════════════════")
             _print("   AI Models")
@@ -1414,17 +1327,13 @@ def cmd_preset(args):
         result = manager.load_preset(args.name)
         if result:
             if _json_output:
-                _output_json(
-                    {"success": True, "applied": args.name, "settings": result}
-                )
+                _output_json({"success": True, "applied": args.name, "settings": result})
             else:
                 _print(f"✅ Applied preset: {args.name}")
             return 0
         else:
             if _json_output:
-                _output_json(
-                    {"success": False, "error": f"Preset '{args.name}' not found"}
-                )
+                _output_json({"success": False, "error": f"Preset '{args.name}' not found"})
             else:
                 _print(f"❌ Preset '{args.name}' not found")
             return 1
@@ -1443,9 +1352,7 @@ def cmd_preset(args):
             with open(args.path, "w", encoding="utf-8") as f:
                 json_module.dump(result, f, indent=2)
             if _json_output:
-                _output_json(
-                    {"success": True, "exported": args.name, "path": args.path}
-                )
+                _output_json({"success": True, "exported": args.name, "path": args.path})
             else:
                 _print(f"✅ Exported preset '{args.name}' to {args.path}")
             return 0
@@ -1471,9 +1378,7 @@ def cmd_focus_mode(args):
             if result.get("dnd_enabled"):
                 _print("   🔕 Do Not Disturb enabled")
             if result.get("processes_killed"):
-                _print(
-                    f"   💀 Killed processes: {', '.join(result['processes_killed'])}"
-                )
+                _print(f"   💀 Killed processes: {', '.join(result['processes_killed'])}")
         return 0 if result["success"] else 1
 
     elif args.action == "off":
@@ -1652,9 +1557,7 @@ def cmd_profile(args):
         if not path:
             _print("❌ Import path required")
             return 1
-        result = ProfileManager.import_profile_json(
-            path, overwrite=getattr(args, "overwrite", False)
-        )
+        result = ProfileManager.import_profile_json(path, overwrite=getattr(args, "overwrite", False))
         if _json_output:
             _output_json(
                 {
@@ -1695,9 +1598,7 @@ def cmd_profile(args):
         if not path:
             _print("❌ Import bundle path required")
             return 1
-        result = ProfileManager.import_bundle_json(
-            path, overwrite=getattr(args, "overwrite", False)
-        )
+        result = ProfileManager.import_bundle_json(path, overwrite=getattr(args, "overwrite", False))
         if _json_output:
             _output_json(
                 {
@@ -1830,9 +1731,7 @@ def cmd_tuner(args):
             _print("   Performance Auto-Tuner")
             _print("═══════════════════════════════════════════")
             _print(f"\n  Workload Detected: {workload.name}")
-            _print(
-                f"  CPU: {workload.cpu_percent:.1f}%  Memory: {workload.memory_percent:.1f}%"
-            )
+            _print(f"  CPU: {workload.cpu_percent:.1f}%  Memory: {workload.memory_percent:.1f}%")
             _print(f"  Description: {workload.description}")
             _print("\n  Current Settings:")
             for k, v in current.items():
@@ -1867,9 +1766,7 @@ def cmd_tuner(args):
                 import time
 
                 for entry in history[-10:]:
-                    ts = time.strftime(
-                        "%Y-%m-%d %H:%M", time.localtime(entry.timestamp)
-                    )
+                    ts = time.strftime("%Y-%m-%d %H:%M", time.localtime(entry.timestamp))
                     _print(f"\n  {ts} — {entry.workload} (applied: {entry.applied})")
         return 0
 
@@ -1894,11 +1791,7 @@ def cmd_snapshot(args):
                 import time
 
                 for s in snapshots[:20]:
-                    ts = (
-                        time.strftime("%Y-%m-%d %H:%M", time.localtime(s.timestamp))
-                        if s.timestamp
-                        else "unknown"
-                    )
+                    ts = time.strftime("%Y-%m-%d %H:%M", time.localtime(s.timestamp)) if s.timestamp else "unknown"
                     _print(f"  [{s.backend}] {s.id}: {s.label or '(no label)'} — {ts}")
         return 0
 
@@ -1925,9 +1818,7 @@ def cmd_snapshot(args):
             _print("═══════════════════════════════════════════")
             for b in backends:
                 status = "✅" if b.available else "❌"
-                _print(
-                    f"  {status} {b.name}: {b.version if b.available else 'not installed'}"
-                )
+                _print(f"  {status} {b.name}: {b.version if b.available else 'not installed'}")
         return 0
 
     return 1
@@ -1949,9 +1840,7 @@ def cmd_logs(args):
         else:
             for e in entries:
                 marker = "⚠️ " if e.pattern_match else ""
-                _print(
-                    f"  {e.timestamp} [{e.priority_label}] {e.unit}: {marker}{e.message[:120]}"
-                )
+                _print(f"  {e.timestamp} [{e.priority_label}] {e.unit}: {marker}{e.message[:120]}")
                 if e.pattern_match:
                     _print(f"    ↳ {e.pattern_match}")
         return 0
@@ -2000,9 +1889,7 @@ def cmd_service(args):
     scope = ServiceScope.USER if args.user else ServiceScope.SYSTEM
 
     if args.action == "list":
-        services = ServiceExplorer.list_services(
-            scope=scope, filter_state=args.filter, search=args.search or ""
-        )
+        services = ServiceExplorer.list_services(scope=scope, filter_state=args.filter, search=args.search or "")
         if _json_output:
             _output_json([s.to_dict() for s in services])
         else:
@@ -2010,9 +1897,7 @@ def cmd_service(args):
             _print("─" * 90)
             for s in services:
                 color = "✅" if s.is_running else "❌" if s.is_failed else "⬜"
-                _print(
-                    f"{color} {s.name:<33} {s.state.value:<12} {s.enabled:<10} {s.description[:40]}"
-                )
+                _print(f"{color} {s.name:<33} {s.state.value:<12} {s.enabled:<10} {s.description[:40]}")
             _print(f"\nTotal: {len(services)} services")
         return 0
 
@@ -2093,9 +1978,7 @@ def cmd_package(args):
             _print("─" * 100)
             for p in results[:30]:
                 inst = "✅" if p.installed else "  "
-                _print(
-                    f"{p.name:<40} {p.version:<15} {p.source:<12} {inst:<6} {p.summary[:35]}"
-                )
+                _print(f"{p.name:<40} {p.version:<15} {p.source:<12} {inst:<6} {p.summary[:35]}")
             _print(f"\nShowing {min(len(results), 30)} of {len(results)} results")
         return 0
 
@@ -2127,9 +2010,7 @@ def cmd_package(args):
 
     elif args.action == "list":
         source = args.source or "all"
-        packages = PackageExplorer.list_installed(
-            source=source, search=args.search or ""
-        )
+        packages = PackageExplorer.list_installed(source=source, search=args.search or "")
         if _json_output:
             _output_json([p.to_dict() for p in packages])
         else:
@@ -2328,11 +2209,7 @@ def cmd_bluetooth(args):
         return 0
 
     elif args.action in ("power-on", "power-off"):
-        result = (
-            BluetoothManager.power_on()
-            if args.action == "power-on"
-            else BluetoothManager.power_off()
-        )
+        result = BluetoothManager.power_on() if args.action == "power-on" else BluetoothManager.power_off()
         icon = "✅" if result.success else "❌"
         _print(f"{icon} {result.message}")
         return 0 if result.success else 1
@@ -2383,12 +2260,8 @@ def cmd_agent(args):
                     state = registry.get_state(a.agent_id)
                     enabled = "✅" if a.enabled else "❌"
                     _print(f"\n  {enabled} {a.name} ({a.agent_id})")
-                    _print(
-                        f"      Type: {a.agent_type.value} | Status: {state.status.value}"
-                    )
-                    _print(
-                        f"      Runs: {state.run_count} | Errors: {state.error_count}"
-                    )
+                    _print(f"      Type: {a.agent_type.value} | Status: {state.status.value}")
+                    _print(f"      Runs: {state.run_count} | Errors: {state.error_count}")
                     _print(f"      {a.description}")
         return 0
 
@@ -2413,11 +2286,7 @@ def cmd_agent(args):
             return 1
         success = registry.enable_agent(args.agent_id)
         icon = "✅" if success else "❌"
-        msg = (
-            f"Agent '{args.agent_id}' enabled"
-            if success
-            else f"Agent '{args.agent_id}' not found"
-        )
+        msg = f"Agent '{args.agent_id}' enabled" if success else f"Agent '{args.agent_id}' not found"
         _print(f"{icon} {msg}")
         if _json_output:
             _output_json({"success": success, "message": msg})
@@ -2429,11 +2298,7 @@ def cmd_agent(args):
             return 1
         success = registry.disable_agent(args.agent_id)
         icon = "✅" if success else "❌"
-        msg = (
-            f"Agent '{args.agent_id}' disabled"
-            if success
-            else f"Agent '{args.agent_id}' not found"
-        )
+        msg = f"Agent '{args.agent_id}' disabled" if success else f"Agent '{args.agent_id}' not found"
         _print(f"{icon} {msg}")
         if _json_output:
             _output_json({"success": success, "message": msg})
@@ -2483,9 +2348,7 @@ def cmd_agent(args):
             _print("   Steps:")
             for step in plan.steps:
                 _print(f"     {step.step_number}. {step.description}")
-            _print(
-                f"\n   Agent starts in dry-run mode. Use 'agent enable {registered.agent_id}' to activate."
-            )
+            _print(f"\n   Agent starts in dry-run mode. Use 'agent enable {registered.agent_id}' to activate.")
         return 0
 
     elif args.action == "remove":
@@ -2494,11 +2357,7 @@ def cmd_agent(args):
             return 1
         success = registry.remove_agent(args.agent_id)
         icon = "✅" if success else "❌"
-        msg = (
-            f"Agent '{args.agent_id}' removed"
-            if success
-            else f"Cannot remove agent '{args.agent_id}' (built-in or not found)"
-        )
+        msg = f"Agent '{args.agent_id}' removed" if success else f"Cannot remove agent '{args.agent_id}' (built-in or not found)"
         _print(f"{icon} {msg}")
         if _json_output:
             _output_json({"success": success, "message": msg})
@@ -2518,13 +2377,9 @@ def cmd_agent(args):
                     _print("\n(no activity)")
                 else:
                     for item in activity:
-                        ts = time_mod.strftime(
-                            "%Y-%m-%d %H:%M:%S", time_mod.localtime(item["timestamp"])
-                        )
+                        ts = time_mod.strftime("%Y-%m-%d %H:%M:%S", time_mod.localtime(item["timestamp"]))
                         icon = "✅" if item["success"] else "❌"
-                        _print(
-                            f"  {ts} {icon} [{item['agent_name']}] {item['message'][:80]}"
-                        )
+                        _print(f"  {ts} {icon} [{item['agent_name']}] {item['message'][:80]}")
         else:
             state = registry.get_state(args.agent_id)
             if _json_output:
@@ -2532,16 +2387,12 @@ def cmd_agent(args):
             else:
                 agent = registry.get_agent(args.agent_id)
                 name = agent.name if agent else args.agent_id
-                _print(
-                    f"Agent: {name} (runs: {state.run_count}, errors: {state.error_count})"
-                )
+                _print(f"Agent: {name} (runs: {state.run_count}, errors: {state.error_count})")
                 if not state.history:
                     _print("  (no history)")
                 else:
                     for h in state.history[-20:]:
-                        ts = time_mod.strftime(
-                            "%H:%M:%S", time_mod.localtime(h.timestamp)
-                        )
+                        ts = time_mod.strftime("%H:%M:%S", time_mod.localtime(h.timestamp))
                         icon = "✅" if h.success else "❌"
                         _print(f"  {ts} {icon} [{h.action_id}] {h.message[:80]}")
         return 0
@@ -2582,9 +2433,7 @@ def cmd_agent(args):
                     _print(f"      Enabled: {enabled}")
                     if enabled:
                         _print(f"      Min severity: {nc.get('min_severity', 'high')}")
-                        _print(
-                            f"      Channels: {', '.join(nc.get('channels', ['desktop', 'in_app']))}"
-                        )
+                        _print(f"      Channels: {', '.join(nc.get('channels', ['desktop', 'in_app']))}")
                         webhook = nc.get("webhook_url", "")
                         if webhook:
                             _print(f"      Webhook: {webhook}")
@@ -2600,19 +2449,13 @@ def cmd_agent(args):
             if args.webhook is not None:
                 from utils.agent_notifications import AgentNotifier
 
-                if args.webhook and not AgentNotifier.validate_webhook_url(
-                    args.webhook
-                ):
-                    _print(
-                        "❌ Invalid webhook URL (must start with http:// or https://)"
-                    )
+                if args.webhook and not AgentNotifier.validate_webhook_url(args.webhook):
+                    _print("❌ Invalid webhook URL (must start with http:// or https://)")
                     return 1
                 nc["webhook_url"] = args.webhook or None
                 if args.webhook:
                     if "webhook" not in nc.get("channels", []):
-                        nc.setdefault("channels", ["desktop", "in_app"]).append(
-                            "webhook"
-                        )
+                        nc.setdefault("channels", ["desktop", "in_app"]).append("webhook")
                 updated = True
             if args.min_severity is not None:
                 valid = ["info", "low", "medium", "high", "critical"]
@@ -2629,9 +2472,7 @@ def cmd_agent(args):
             agent.notification_config = nc
             registry.save()
             icon = "🔔" if nc.get("enabled") else "🔕"
-            _print(
-                f"{icon} Notifications {'enabled' if nc.get('enabled') else 'disabled'} for '{agent.name}'"
-            )
+            _print(f"{icon} Notifications {'enabled' if nc.get('enabled') else 'disabled'} for '{agent.name}'")
             if _json_output:
                 _output_json({"success": True, "notification_config": nc})
             return 0
@@ -2691,10 +2532,7 @@ def cmd_storage(args):
         else:
             _print("Mount Points:")
             for m in mounts:
-                _print(
-                    f"  {m.source} -> {m.target} ({m.fstype}) "
-                    f"[{m.used}/{m.size} = {m.use_percent}]"
-                )
+                _print(f"  {m.source} -> {m.target} ({m.fstype}) [{m.used}/{m.size} = {m.use_percent}]")
         return 0
 
     elif args.action == "smart":
@@ -2749,16 +2587,14 @@ def cmd_storage(args):
 
 def cmd_audit_log(args):
     """Show recent audit log entries."""
-    from utils.audit import AuditLogger
+    from services.security import AuditLogger
 
     audit = AuditLogger()
     count = getattr(args, "count", 20)
     entries = audit.get_recent(count)
 
     if _json_output:
-        _output_json(
-            {"entries": entries, "count": len(entries), "log_path": str(audit.log_path)}
-        )
+        _output_json({"entries": entries, "count": len(entries), "log_path": str(audit.log_path)})
         return 0
 
     if not entries:
@@ -2941,10 +2777,7 @@ def cmd_flatpak_manage(args):
                 [
                     {
                         "app_id": a.app_id,
-                        "permissions": [
-                            {"type": p.permission_type, "value": p.value}
-                            for p in a.permissions
-                        ],
+                        "permissions": [{"type": p.permission_type, "value": p.value} for p in a.permissions],
                     }
                     for a in all_perms
                 ]
@@ -2996,12 +2829,7 @@ def cmd_boot(args):
     elif args.action == "kernels":
         kernels = BootConfigManager.list_kernels()
         if _json_output:
-            _output_json(
-                [
-                    {"title": k.title, "version": k.version, "default": k.is_default}
-                    for k in kernels
-                ]
-            )
+            _output_json([{"title": k.title, "version": k.version, "default": k.is_default} for k in kernels])
         else:
             for k in kernels:
                 marker = "→ " if k.is_default else "  "
@@ -3023,7 +2851,7 @@ def cmd_boot(args):
 
 def cmd_display(args):
     """Handle display configuration subcommand."""
-    from utils.wayland_display import WaylandDisplayManager
+    from services.desktop import WaylandDisplayManager
 
     if args.action == "list":
         displays = WaylandDisplayManager.get_displays()
@@ -3043,9 +2871,7 @@ def cmd_display(args):
         else:
             for d in displays:
                 primary = " ★" if d.primary else ""
-                _print(
-                    f"  {d.name}: {d.resolution} @{d.scale}x {d.refresh_rate}Hz{primary}"
-                )
+                _print(f"  {d.name}: {d.resolution} @{d.scale}x {d.refresh_rate}Hz{primary}")
         return 0
 
     elif args.action == "session":
@@ -3058,16 +2884,10 @@ def cmd_display(args):
         return 0
 
     elif args.action == "fractional-on":
-        return (
-            0 if run_operation(WaylandDisplayManager.enable_fractional_scaling()) else 1
-        )
+        return 0 if run_operation(WaylandDisplayManager.enable_fractional_scaling()) else 1
 
     elif args.action == "fractional-off":
-        return (
-            0
-            if run_operation(WaylandDisplayManager.disable_fractional_scaling())
-            else 1
-        )
+        return 0 if run_operation(WaylandDisplayManager.disable_fractional_scaling()) else 1
 
     return 1
 
@@ -3089,11 +2909,7 @@ def cmd_backup(args):
     elif args.action == "create":
         desc = getattr(args, "description", None) or "CLI backup"
         tool = getattr(args, "tool", None)
-        return (
-            0
-            if run_operation(BackupWizard.create_snapshot(tool=tool, description=desc))
-            else 1
-        )
+        return 0 if run_operation(BackupWizard.create_snapshot(tool=tool, description=desc)) else 1
 
     elif args.action == "list":
         tool = getattr(args, "tool", None)
@@ -3123,9 +2939,7 @@ def cmd_backup(args):
             _print("❌ Snapshot ID required")
             return 1
         tool = getattr(args, "tool", None)
-        return (
-            0 if run_operation(BackupWizard.restore_snapshot(snap_id, tool=tool)) else 1
-        )
+        return 0 if run_operation(BackupWizard.restore_snapshot(snap_id, tool=tool)) else 1
 
     elif args.action == "delete":
         snap_id = getattr(args, "snapshot_id", None)
@@ -3133,9 +2947,7 @@ def cmd_backup(args):
             _print("❌ Snapshot ID required")
             return 1
         tool = getattr(args, "tool", None)
-        return (
-            0 if run_operation(BackupWizard.delete_snapshot(snap_id, tool=tool)) else 1
-        )
+        return 0 if run_operation(BackupWizard.delete_snapshot(snap_id, tool=tool)) else 1
 
     elif args.action == "status":
         status = BackupWizard.get_backup_status()
@@ -3161,9 +2973,7 @@ def main(argv: Optional[List[str]] = None):
         action="version",
         version=f'{__version__} "{__version_codename__}"',
     )
-    parser.add_argument(
-        "--json", action="store_true", help="Output in JSON format (for scripting)"
-    )
+    parser.add_argument("--json", action="store_true", help="Output in JSON format (for scripting)")
     parser.add_argument(
         "--timeout",
         type=int,
@@ -3186,27 +2996,19 @@ def main(argv: Optional[List[str]] = None):
 
     # Disk command
     disk_parser = subparsers.add_parser("disk", help="Disk usage information")
-    disk_parser.add_argument(
-        "--details", action="store_true", help="Show large directories"
-    )
+    disk_parser.add_argument("--details", action="store_true", help="Show large directories")
 
     # Process monitor command
     proc_parser = subparsers.add_parser("processes", help="Show top processes")
-    proc_parser.add_argument(
-        "-n", "--count", type=int, default=10, help="Number of processes to show"
-    )
-    proc_parser.add_argument(
-        "--sort", choices=["cpu", "memory"], default="cpu", help="Sort by"
-    )
+    proc_parser.add_argument("-n", "--count", type=int, default=10, help="Number of processes to show")
+    proc_parser.add_argument("--sort", choices=["cpu", "memory"], default="cpu", help="Sort by")
 
     # Temperature command
     subparsers.add_parser("temperature", help="Show temperature readings")
 
     # Network monitor command
     netmon_parser = subparsers.add_parser("netmon", help="Network interface monitoring")
-    netmon_parser.add_argument(
-        "--connections", action="store_true", help="Show active connections"
-    )
+    netmon_parser.add_argument("--connections", action="store_true", help="Show active connections")
 
     # Cleanup subcommand
     cleanup_parser = subparsers.add_parser("cleanup", help="System cleanup operations")
@@ -3217,26 +3019,18 @@ def main(argv: Optional[List[str]] = None):
         nargs="?",
         help="Cleanup action to perform",
     )
-    cleanup_parser.add_argument(
-        "--days", type=int, default=14, help="Days to keep journal"
-    )
+    cleanup_parser.add_argument("--days", type=int, default=14, help="Days to keep journal")
 
     # Tweak subcommand
-    tweak_parser = subparsers.add_parser(
-        "tweak", help="Hardware tweaks (power, audio, battery)"
-    )
-    tweak_parser.add_argument(
-        "action", choices=["power", "audio", "battery", "status"], help="Tweak action"
-    )
+    tweak_parser = subparsers.add_parser("tweak", help="Hardware tweaks (power, audio, battery)")
+    tweak_parser.add_argument("action", choices=["power", "audio", "battery", "status"], help="Tweak action")
     tweak_parser.add_argument(
         "--profile",
         choices=["performance", "balanced", "power-saver"],
         default="balanced",
         help="Power profile",
     )
-    tweak_parser.add_argument(
-        "--limit", type=int, default=80, help="Battery limit (50-100)"
-    )
+    tweak_parser.add_argument("--limit", type=int, default=80, help="Battery limit (50-100)")
 
     # Advanced subcommand
     adv_parser = subparsers.add_parser("advanced", help="Advanced optimizations")
@@ -3245,9 +3039,7 @@ def main(argv: Optional[List[str]] = None):
         choices=["dnf-tweaks", "bbr", "gamemode", "swappiness"],
         help="Optimization action",
     )
-    adv_parser.add_argument(
-        "--value", type=int, default=10, help="Value for swappiness"
-    )
+    adv_parser.add_argument("--value", type=int, default=10, help="Value for swappiness")
 
     # Network subcommand
     net_parser = subparsers.add_parser("network", help="Network configuration")
@@ -3265,15 +3057,11 @@ def main(argv: Optional[List[str]] = None):
 
     # Plugin management
     plugin_parser = subparsers.add_parser("plugins", help="Manage plugins")
-    plugin_parser.add_argument(
-        "action", choices=["list", "enable", "disable"], help="Plugin action"
-    )
+    plugin_parser.add_argument("action", choices=["list", "enable", "disable"], help="Plugin action")
     plugin_parser.add_argument("name", nargs="?", help="Plugin name for enable/disable")
 
     # v26.0 - Plugin marketplace
-    marketplace_parser = subparsers.add_parser(
-        "plugin-marketplace", help="Plugin marketplace operations"
-    )
+    marketplace_parser = subparsers.add_parser("plugin-marketplace", help="Plugin marketplace operations")
     marketplace_parser.add_argument(
         "action",
         choices=[
@@ -3292,22 +3080,12 @@ def main(argv: Optional[List[str]] = None):
     marketplace_parser.add_argument("plugin", nargs="?", help="Plugin name or ID")
     marketplace_parser.add_argument("--category", help="Filter by category")
     marketplace_parser.add_argument("--query", help="Search query")
-    marketplace_parser.add_argument(
-        "--limit", type=int, default=20, help="Review fetch limit (for reviews)"
-    )
-    marketplace_parser.add_argument(
-        "--offset", type=int, default=0, help="Review fetch offset (for reviews)"
-    )
-    marketplace_parser.add_argument(
-        "--reviewer", help="Reviewer name (for review-submit)"
-    )
-    marketplace_parser.add_argument(
-        "--rating", type=int, help="Rating 1-5 (for review-submit)"
-    )
+    marketplace_parser.add_argument("--limit", type=int, default=20, help="Review fetch limit (for reviews)")
+    marketplace_parser.add_argument("--offset", type=int, default=0, help="Review fetch offset (for reviews)")
+    marketplace_parser.add_argument("--reviewer", help="Reviewer name (for review-submit)")
+    marketplace_parser.add_argument("--rating", type=int, help="Rating 1-5 (for review-submit)")
     marketplace_parser.add_argument("--title", help="Review title (for review-submit)")
-    marketplace_parser.add_argument(
-        "--comment", help="Review comment (for review-submit)"
-    )
+    marketplace_parser.add_argument("--comment", help="Review comment (for review-submit)")
     marketplace_parser.add_argument(
         "--accept-permissions",
         action="store_true",
@@ -3321,60 +3099,38 @@ def main(argv: Optional[List[str]] = None):
 
     # VM management
     vm_parser = subparsers.add_parser("vm", help="Virtual machine management")
-    vm_parser.add_argument(
-        "action", choices=["list", "status", "start", "stop"], help="VM action"
-    )
+    vm_parser.add_argument("action", choices=["list", "status", "start", "stop"], help="VM action")
     vm_parser.add_argument("name", nargs="?", help="VM name (for status/start/stop)")
 
     # VFIO GPU passthrough
     vfio_parser = subparsers.add_parser("vfio", help="GPU passthrough assistant")
-    vfio_parser.add_argument(
-        "action", choices=["check", "gpus", "plan"], help="VFIO action"
-    )
+    vfio_parser.add_argument("action", choices=["check", "gpus", "plan"], help="VFIO action")
 
     # Mesh networking
     mesh_parser = subparsers.add_parser("mesh", help="Loofi Link mesh networking")
-    mesh_parser.add_argument(
-        "action", choices=["discover", "status"], help="Mesh action"
-    )
+    mesh_parser.add_argument("action", choices=["discover", "status"], help="Mesh action")
 
     # State Teleport
-    teleport_parser = subparsers.add_parser(
-        "teleport", help="State Teleport workspace capture/restore"
-    )
-    teleport_parser.add_argument(
-        "action", choices=["capture", "list", "restore"], help="Teleport action"
-    )
+    teleport_parser = subparsers.add_parser("teleport", help="State Teleport workspace capture/restore")
+    teleport_parser.add_argument("action", choices=["capture", "list", "restore"], help="Teleport action")
     teleport_parser.add_argument("--path", help="Workspace path for capture")
-    teleport_parser.add_argument(
-        "--target", default="unknown", help="Target device name"
-    )
+    teleport_parser.add_argument("--target", default="unknown", help="Target device name")
     teleport_parser.add_argument("package_id", nargs="?", help="Package ID for restore")
 
     # AI Models
     ai_models_parser = subparsers.add_parser("ai-models", help="AI model management")
-    ai_models_parser.add_argument(
-        "action", choices=["list", "recommend"], help="AI models action"
-    )
+    ai_models_parser.add_argument("action", choices=["list", "recommend"], help="AI models action")
 
     # Preset management
     preset_parser = subparsers.add_parser("preset", help="Manage system presets")
-    preset_parser.add_argument(
-        "action", choices=["list", "apply", "export"], help="Preset action"
-    )
+    preset_parser.add_argument("action", choices=["list", "apply", "export"], help="Preset action")
     preset_parser.add_argument("name", nargs="?", help="Preset name (for apply/export)")
     preset_parser.add_argument("path", nargs="?", help="Export path (for export)")
 
     # Focus mode
-    focus_parser = subparsers.add_parser(
-        "focus-mode", help="Focus mode distraction blocking"
-    )
-    focus_parser.add_argument(
-        "action", choices=["on", "off", "status"], help="Focus mode action"
-    )
-    focus_parser.add_argument(
-        "--profile", default="default", help="Profile to use (default: default)"
-    )
+    focus_parser = subparsers.add_parser("focus-mode", help="Focus mode distraction blocking")
+    focus_parser.add_argument("action", choices=["on", "off", "status"], help="Focus mode action")
+    focus_parser.add_argument("--profile", default="default", help="Profile to use (default: default)")
 
     # Security audit
     subparsers.add_parser("security-audit", help="Run security audit and show score")
@@ -3395,9 +3151,7 @@ def main(argv: Optional[List[str]] = None):
         ],
         help="Profile action",
     )
-    profile_parser.add_argument(
-        "name", nargs="?", help="Profile name (for apply/create/delete/export)"
-    )
+    profile_parser.add_argument("name", nargs="?", help="Profile name (for apply/create/delete/export)")
     profile_parser.add_argument("path", nargs="?", help="Import/export file path")
     profile_parser.add_argument(
         "--overwrite",
@@ -3416,52 +3170,36 @@ def main(argv: Optional[List[str]] = None):
     )
 
     # v13.0 Nexus Update - Health history
-    health_history_parser = subparsers.add_parser(
-        "health-history", help="Health timeline metrics"
-    )
+    health_history_parser = subparsers.add_parser("health-history", help="Health timeline metrics")
     health_history_parser.add_argument(
         "action",
         choices=["show", "record", "export", "prune"],
         help="Health history action",
     )
-    health_history_parser.add_argument(
-        "path", nargs="?", help="Export path (for export)"
-    )
+    health_history_parser.add_argument("path", nargs="?", help="Export path (for export)")
 
     # ==================== v15.0 Nebula subparsers ====================
 
     # Performance auto-tuner
     tuner_parser = subparsers.add_parser("tuner", help="Performance auto-tuner")
-    tuner_parser.add_argument(
-        "action", choices=["analyze", "apply", "history"], help="Tuner action"
-    )
+    tuner_parser.add_argument("action", choices=["analyze", "apply", "history"], help="Tuner action")
 
     # Snapshot management
-    snapshot_parser = subparsers.add_parser(
-        "snapshot", help="System snapshot management"
-    )
+    snapshot_parser = subparsers.add_parser("snapshot", help="System snapshot management")
     snapshot_parser.add_argument(
         "action",
         choices=["list", "create", "delete", "backends"],
         help="Snapshot action",
     )
     snapshot_parser.add_argument("--label", help="Snapshot label (for create)")
-    snapshot_parser.add_argument(
-        "snapshot_id", nargs="?", help="Snapshot ID (for delete)"
-    )
+    snapshot_parser.add_argument("snapshot_id", nargs="?", help="Snapshot ID (for delete)")
 
     # Smart log viewer
-    logs_parser = subparsers.add_parser(
-        "logs", help="Smart log viewer with pattern detection"
-    )
-    logs_parser.add_argument(
-        "action", choices=["show", "errors", "export"], help="Logs action"
-    )
+    logs_parser = subparsers.add_parser("logs", help="Smart log viewer with pattern detection")
+    logs_parser.add_argument("action", choices=["show", "errors", "export"], help="Logs action")
     logs_parser.add_argument("--unit", help="Filter by systemd unit")
     logs_parser.add_argument("--priority", type=int, help="Max priority level (0-7)")
-    logs_parser.add_argument(
-        "--since", help="Time filter (e.g. '1h ago', '2024-01-01')"
-    )
+    logs_parser.add_argument("--since", help="Time filter (e.g. '1h ago', '2024-01-01')")
     logs_parser.add_argument("--lines", type=int, default=100, help="Number of lines")
     logs_parser.add_argument("path", nargs="?", help="Export path (for export)")
 
@@ -3486,35 +3224,25 @@ def main(argv: Optional[List[str]] = None):
         help="Service action",
     )
     service_parser.add_argument("name", nargs="?", help="Service name")
-    service_parser.add_argument(
-        "--user", action="store_true", help="User scope (default: system)"
-    )
+    service_parser.add_argument("--user", action="store_true", help="User scope (default: system)")
     service_parser.add_argument(
         "--filter",
         choices=["active", "inactive", "failed"],
         help="Filter by state (for list)",
     )
     service_parser.add_argument("--search", help="Search filter (for list)")
-    service_parser.add_argument(
-        "--lines", type=int, default=50, help="Log lines (for logs)"
-    )
+    service_parser.add_argument("--lines", type=int, default=50, help="Log lines (for logs)")
 
     # Package management
-    package_parser = subparsers.add_parser(
-        "package", help="Package search and management"
-    )
+    package_parser = subparsers.add_parser("package", help="Package search and management")
     package_parser.add_argument(
         "action",
         choices=["search", "install", "remove", "list", "recent"],
         help="Package action",
     )
-    package_parser.add_argument(
-        "name", nargs="?", help="Package name (for install/remove)"
-    )
+    package_parser.add_argument("name", nargs="?", help="Package name (for install/remove)")
     package_parser.add_argument("--query", help="Search query (for search)")
-    package_parser.add_argument(
-        "--source", choices=["dnf", "flatpak", "all"], help="Package source filter"
-    )
+    package_parser.add_argument("--source", choices=["dnf", "flatpak", "all"], help="Package source filter")
     package_parser.add_argument("--search", help="Filter installed packages")
     package_parser.add_argument("--days", type=int, default=30, help="Days for recent")
 
@@ -3558,36 +3286,22 @@ def main(argv: Optional[List[str]] = None):
     )
     storage_parser.add_argument("device", nargs="?", help="Device path (e.g. /dev/sda)")
 
-    update_parser = subparsers.add_parser(
-        "self-update", help="Check/download verified Loofi updates"
+    update_parser = subparsers.add_parser("self-update", help="Check/download verified Loofi updates")
+    update_parser.add_argument(
+        "action", choices=["check", "run"], default="run", nargs="?", help="Self-update action: check for updates or run the update"
     )
     update_parser.add_argument(
-        "action", choices=["check", "run"], default="run", nargs="?",
-        help="Self-update action: check for updates or run the update"
+        "--channel", choices=["auto", "rpm", "flatpak", "appimage"], default="auto", help="Update channel to use (default: auto-detect)"
     )
-    update_parser.add_argument(
-        "--channel", choices=["auto", "rpm", "flatpak", "appimage"], default="auto",
-        help="Update channel to use (default: auto-detect)"
-    )
-    update_parser.add_argument(
-        "--download-dir", default="~/.cache/loofi-fedora-tweaks/updates",
-        help="Directory to download updates to"
-    )
-    update_parser.add_argument("--timeout", type=int, default=30,
-                               help="Download timeout in seconds (default: 30)")
-    update_parser.add_argument("--no-cache", action="store_true",
-                               help="Skip cached update packages")
-    update_parser.add_argument("--checksum", default="",
-                               help="Expected SHA256 checksum of the update package")
-    update_parser.add_argument("--signature-path",
-                               help="Path to GPG signature file for verification")
-    update_parser.add_argument("--public-key-path",
-                               help="Path to GPG public key for signature verification")
+    update_parser.add_argument("--download-dir", default="~/.cache/loofi-fedora-tweaks/updates", help="Directory to download updates to")
+    update_parser.add_argument("--timeout", type=int, default=30, help="Download timeout in seconds (default: 30)")
+    update_parser.add_argument("--no-cache", action="store_true", help="Skip cached update packages")
+    update_parser.add_argument("--checksum", default="", help="Expected SHA256 checksum of the update package")
+    update_parser.add_argument("--signature-path", help="Path to GPG signature file for verification")
+    update_parser.add_argument("--public-key-path", help="Path to GPG public key for signature verification")
 
     # v18.0 Sentinel - Agent management
-    agent_parser = subparsers.add_parser(
-        "agent", help="Autonomous system agent management"
-    )
+    agent_parser = subparsers.add_parser("agent", help="Autonomous system agent management")
     agent_parser.add_argument(
         "action",
         choices=[
@@ -3610,21 +3324,15 @@ def main(argv: Optional[List[str]] = None):
         help="Agent ID (for enable/disable/run/remove/logs/notify)",
     )
     agent_parser.add_argument("--goal", help="Natural language goal (for create)")
-    agent_parser.add_argument(
-        "--webhook", help="Webhook URL for notifications (for notify)"
-    )
+    agent_parser.add_argument("--webhook", help="Webhook URL for notifications (for notify)")
     agent_parser.add_argument(
         "--min-severity",
         help="Minimum severity to notify: info/low/medium/high/critical",
     )
 
     # v35.0 Fortress - Audit log viewer
-    audit_parser = subparsers.add_parser(
-        "audit-log", help="View recent audit log entries"
-    )
-    audit_parser.add_argument(
-        "--count", type=int, default=20, help="Number of entries to show (default: 20)"
-    )
+    audit_parser = subparsers.add_parser("audit-log", help="View recent audit log entries")
+    audit_parser.add_argument("--count", type=int, default=20, help="Number of entries to show (default: 20)")
 
     # v37.0 Pinnacle - Smart Updates
     updates_parser = subparsers.add_parser("updates", help="Smart update management")
@@ -3633,9 +3341,7 @@ def main(argv: Optional[List[str]] = None):
         choices=["check", "conflicts", "schedule", "rollback", "history"],
         help="Update action to perform",
     )
-    updates_parser.add_argument(
-        "--time", default="02:00", help="Schedule time (HH:MM, default: 02:00)"
-    )
+    updates_parser.add_argument("--time", default="02:00", help="Schedule time (HH:MM, default: 02:00)")
 
     # v37.0 Pinnacle - Extensions
     ext_parser = subparsers.add_parser("extension", help="Desktop extension management")
@@ -3644,14 +3350,10 @@ def main(argv: Optional[List[str]] = None):
         choices=["list", "install", "remove", "enable", "disable"],
         help="Extension action",
     )
-    ext_parser.add_argument(
-        "--uuid", help="Extension UUID for install/remove/enable/disable"
-    )
+    ext_parser.add_argument("--uuid", help="Extension UUID for install/remove/enable/disable")
 
     # v37.0 Pinnacle - Flatpak Manager
-    flatpak_parser = subparsers.add_parser(
-        "flatpak-manage", help="Flatpak management tools"
-    )
+    flatpak_parser = subparsers.add_parser("flatpak-manage", help="Flatpak management tools")
     flatpak_parser.add_argument(
         "action",
         choices=["sizes", "permissions", "orphans", "cleanup"],
@@ -3660,17 +3362,11 @@ def main(argv: Optional[List[str]] = None):
 
     # v37.0 Pinnacle - Boot Configuration
     boot_parser = subparsers.add_parser("boot", help="Boot configuration management")
-    boot_parser.add_argument(
-        "action", choices=["config", "kernels", "timeout", "apply"], help="Boot action"
-    )
-    boot_parser.add_argument(
-        "--seconds", type=int, help="Timeout in seconds (for timeout action)"
-    )
+    boot_parser.add_argument("action", choices=["config", "kernels", "timeout", "apply"], help="Boot action")
+    boot_parser.add_argument("--seconds", type=int, help="Timeout in seconds (for timeout action)")
 
     # v37.0 Pinnacle - Display
-    display_parser = subparsers.add_parser(
-        "display", help="Display and Wayland configuration"
-    )
+    display_parser = subparsers.add_parser("display", help="Display and Wayland configuration")
     display_parser.add_argument(
         "action",
         choices=["list", "session", "fractional-on", "fractional-off"],
@@ -3685,9 +3381,7 @@ def main(argv: Optional[List[str]] = None):
         help="Backup action",
     )
     backup_parser.add_argument("--tool", help="Backup tool (timeshift/snapper)")
-    backup_parser.add_argument(
-        "--description", help="Snapshot description (for create)"
-    )
+    backup_parser.add_argument("--description", help="Snapshot description (for create)")
     backup_parser.add_argument("--snapshot-id", help="Snapshot ID (for restore/delete)")
 
     args = parser.parse_args(argv)

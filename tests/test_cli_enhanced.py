@@ -27,7 +27,7 @@ from cli.main import (
 from utils.operations import OperationResult
 from services.system import ProcessInfo
 from services.hardware import TemperatureSensor
-from utils.network_monitor import InterfaceStats
+from services.network.monitor import InterfaceStats
 
 
 class TestCLIArgParsing(unittest.TestCase):

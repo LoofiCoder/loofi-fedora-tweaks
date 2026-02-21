@@ -16,8 +16,6 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from services.system import SystemManager
 
-from utils.audit import AuditLogger
-
 CommandTuple = Tuple[str, List[str], str]
 
 # --- Polkit Action ID Mapping ---
@@ -75,6 +73,8 @@ def validated_action(schema: Dict[str, Dict[str, Any]]) -> Callable:
             bound = sig.bind(*args, **kwargs)
             bound.apply_defaults()
             param_map = dict(bound.arguments)
+
+            from services.security import AuditLogger
 
             audit = AuditLogger()
             action_name = f"PrivilegedCommand.{func.__name__}"
@@ -190,6 +190,8 @@ class PrivilegedCommand:
         # Derive action name from command if not provided
         if action_name is None:
             action_name = PrivilegedCommand._derive_action_name(binary, args)
+
+        from services.security import AuditLogger
 
         audit = AuditLogger()
         params = {"cmd": cmd, "description": desc}

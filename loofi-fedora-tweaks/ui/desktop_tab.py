@@ -29,9 +29,12 @@ from PyQt6.QtWidgets import (  # noqa: E402
     QVBoxLayout,
     QWidget,
 )
+from services.desktop import (  # noqa: E402
+    DotfileManager,
+    KWinManager,  # noqa: E402
+    TilingManager,
+)
 from utils.commands import PrivilegedCommand  # noqa: E402
-from utils.kwin_tiling import KWinManager  # noqa: E402
-from utils.tiling import DotfileManager, TilingManager  # noqa: E402
 
 from ui.base_tab import BaseTab  # noqa: E402
 from ui.tab_utils import CONTENT_MARGINS, configure_top_tabs  # noqa: E402
@@ -147,10 +150,7 @@ class DesktopTab(BaseTab):
         # Quick actions based on compositor
         if compositor == "kde":
             info = QLabel(
-                self.tr(
-                    "KWin provides native quick-tiling with keyboard shortcuts. "
-                    "Use Meta+Arrow keys or configure custom bindings below."
-                )
+                self.tr("KWin provides native quick-tiling with keyboard shortcuts. Use Meta+Arrow keys or configure custom bindings below.")
             )
         elif compositor in ["hyprland", "sway"]:
             config_path = str(TilingManager.get_config_path())
@@ -224,9 +224,7 @@ class DesktopTab(BaseTab):
         group = QGroupBox(self.tr("Workspace Templates"))
         layout = QVBoxLayout(group)
 
-        layout.addWidget(
-            QLabel(self.tr("Apply a workspace template to organize apps:"))
-        )
+        layout.addWidget(QLabel(self.tr("Apply a workspace template to organize apps:")))
 
         template_layout = QHBoxLayout()
 
@@ -263,13 +261,7 @@ class DesktopTab(BaseTab):
         group = QGroupBox(self.tr("Dotfile Sync"))
         layout = QVBoxLayout(group)
 
-        layout.addWidget(
-            QLabel(
-                self.tr(
-                    "Sync your config files to a git repository for backup and sharing."
-                )
-            )
-        )
+        layout.addWidget(QLabel(self.tr("Sync your config files to a git repository for backup and sharing.")))
 
         # Repository path
         path_layout = QHBoxLayout()
@@ -312,11 +304,7 @@ class DesktopTab(BaseTab):
         if self.compositor == "kde":
             result = KWinManager.apply_tiling_preset(preset)
         else:
-            self.append_output(
-                self.tr("Generate keybindings for {} preset manually for {}\n").format(
-                    preset, self.compositor
-                )
-            )
+            self.append_output(self.tr("Generate keybindings for {} preset manually for {}\n").format(preset, self.compositor))
             return
 
         self.append_output(result.message + "\n")
@@ -346,17 +334,11 @@ class DesktopTab(BaseTab):
         template_key = self.template_combo.currentData()
         template = TilingManager.WORKSPACE_TEMPLATES.get(template_key, {})
 
-        preview_lines = [
-            self.tr("Template: {}").format(template.get("name", template_key))
-        ]
+        preview_lines = [self.tr("Template: {}").format(template.get("name", template_key))]
 
         for ws_num, ws_config in template.get("workspaces", {}).items():
             apps = ", ".join(ws_config.get("apps", []))
-            preview_lines.append(
-                self.tr("  Workspace {} ({}): {}").format(
-                    ws_num, ws_config["name"], apps
-                )
-            )
+            preview_lines.append(self.tr("  Workspace {} ({}): {}").format(ws_num, ws_config["name"], apps))
 
         self.template_preview.setText("\n".join(preview_lines))
 
@@ -367,11 +349,7 @@ class DesktopTab(BaseTab):
 
         if result.success:
             self.template_preview.setText(result.data.get("config", ""))
-            self.append_output(
-                self.tr("Config generated for {}. Copy to your config file.\n").format(
-                    template_key
-                )
-            )
+            self.append_output(self.tr("Config generated for {}. Copy to your config file.\n").format(template_key))
         else:
             self.append_output(result.message + "\n")
 
@@ -562,16 +540,14 @@ class DesktopTab(BaseTab):
     def _detect_displays(self):
         """Detect connected displays."""
         try:
-            from utils.wayland_display import WaylandDisplayManager
+            from services.desktop import WaylandDisplayManager
 
             displays = WaylandDisplayManager.get_displays()
             self.display_list.clear()
             for d in displays:
                 primary = " ★" if d.primary else ""
                 scale_str = f" @{d.scale}x" if d.scale != 1.0 else ""
-                text = (
-                    f"{d.name}: {d.resolution}{scale_str} @ {d.refresh_rate}Hz{primary}"
-                )
+                text = f"{d.name}: {d.resolution}{scale_str} @ {d.refresh_rate}Hz{primary}"
                 if d.make or d.model:
                     text += f" ({d.make} {d.model})".strip()
                 self.display_list.addItem(text)
@@ -585,7 +561,7 @@ class DesktopTab(BaseTab):
     def _load_session_info(self):
         """Load session type info."""
         try:
-            from utils.wayland_display import WaylandDisplayManager
+            from services.desktop import WaylandDisplayManager
 
             info = WaylandDisplayManager.get_session_info()
             self.display_session_info.setText(
@@ -602,7 +578,7 @@ class DesktopTab(BaseTab):
     def _enable_fractional(self):
         """Enable fractional scaling."""
         try:
-            from utils.wayland_display import WaylandDisplayManager
+            from services.desktop import WaylandDisplayManager
 
             binary, args, desc = WaylandDisplayManager.enable_fractional_scaling()
             self.run_command(binary, args, desc)
@@ -612,7 +588,7 @@ class DesktopTab(BaseTab):
     def _disable_fractional(self):
         """Disable fractional scaling."""
         try:
-            from utils.wayland_display import WaylandDisplayManager
+            from services.desktop import WaylandDisplayManager
 
             binary, args, desc = WaylandDisplayManager.disable_fractional_scaling()
             self.run_command(binary, args, desc)

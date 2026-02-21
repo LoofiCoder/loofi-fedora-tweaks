@@ -6,7 +6,7 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'loofi-fedora-tweaks'))
 
-from utils.risk import RiskLevel, RiskEntry, RiskRegistry
+from services.security.risk import RiskLevel, RiskEntry, RiskRegistry
 
 
 class TestRiskLevel(unittest.TestCase):

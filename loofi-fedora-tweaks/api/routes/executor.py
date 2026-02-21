@@ -11,9 +11,9 @@ from typing import FrozenSet, List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
-from utils.action_executor import ActionExecutor
+from core.executor.action_executor import ActionExecutor
 from utils.action_result import ActionResult
-from utils.audit import AuditLogger
+from services.security import AuditLogger
 from utils.auth import AuthManager
 
 logger = logging.getLogger(__name__)

@@ -11,37 +11,37 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'loofi-fedora-t
 for _mod in ('PyQt6', 'PyQt6.QtCore', 'PyQt6.QtWidgets', 'PyQt6.QtGui'):
     sys.modules.setdefault(_mod, MagicMock())
 
-from utils.mesh_discovery import MeshDiscovery, PeerDevice  # noqa: E402
+from services.network.mesh import MeshDiscovery, PeerDevice  # noqa: E402
 
 
 class TestGetDeviceId(unittest.TestCase):
     """Tests for MeshDiscovery.get_device_id()."""
 
     @patch('builtins.open', mock_open(read_data="test-uuid-1234\n"))
-    @patch('utils.mesh_discovery.os.path.isfile', return_value=True)
+    @patch('services.network.mesh.os.path.isfile', return_value=True)
     def test_get_device_id_existing(self, mock_isfile):
         result = MeshDiscovery.get_device_id()
         self.assertEqual(result, "test-uuid-1234")
 
     @patch('builtins.open', mock_open(read_data=""))
-    @patch('utils.mesh_discovery.os.path.isfile', return_value=True)
+    @patch('services.network.mesh.os.path.isfile', return_value=True)
     def test_get_device_id_empty_file_generates_new(self, mock_isfile):
         with patch('builtins.open', mock_open()):
-            with patch('utils.mesh_discovery.os.path.isfile', return_value=True):
+            with patch('services.network.mesh.os.path.isfile', return_value=True):
                 # First open returns empty, needs to pass through
                 pass
         # The function should generate a new UUID when file is empty
         # Testing the generation path more directly:
-        with patch('utils.mesh_discovery.os.path.isfile', return_value=False):
-            with patch('utils.mesh_discovery.os.makedirs'):
+        with patch('services.network.mesh.os.path.isfile', return_value=False):
+            with patch('services.network.mesh.os.makedirs'):
                 with patch('builtins.open', mock_open()):
                     result = MeshDiscovery.get_device_id()
                     self.assertIsInstance(result, str)
                     self.assertGreater(len(result), 0)
 
     @patch('builtins.open', mock_open())
-    @patch('utils.mesh_discovery.os.makedirs')
-    @patch('utils.mesh_discovery.os.path.isfile', return_value=False)
+    @patch('services.network.mesh.os.makedirs')
+    @patch('services.network.mesh.os.path.isfile', return_value=False)
     def test_get_device_id_creates_new(self, mock_isfile, mock_makedirs):
         result = MeshDiscovery.get_device_id()
         self.assertIsInstance(result, str)
@@ -52,7 +52,7 @@ class TestGetDeviceId(unittest.TestCase):
 class TestGetDeviceName(unittest.TestCase):
     """Tests for MeshDiscovery.get_device_name()."""
 
-    @patch('utils.mesh_discovery.socket.gethostname', return_value="my-fedora-pc")
+    @patch('services.network.mesh.socket.gethostname', return_value="my-fedora-pc")
     def test_get_device_name(self, mock_hostname):
         result = MeshDiscovery.get_device_name()
         self.assertEqual(result, "my-fedora-pc")
@@ -61,9 +61,9 @@ class TestGetDeviceName(unittest.TestCase):
 class TestGetLocalIps(unittest.TestCase):
     """Tests for MeshDiscovery.get_local_ips()."""
 
-    @patch('utils.mesh_discovery.socket.getaddrinfo')
-    @patch('utils.mesh_discovery.socket.gethostname', return_value="host")
-    @patch('utils.mesh_discovery.socket.socket')
+    @patch('services.network.mesh.socket.getaddrinfo')
+    @patch('services.network.mesh.socket.gethostname', return_value="host")
+    @patch('services.network.mesh.socket.socket')
     def test_get_local_ips_udp_method(self, mock_sock_cls, mock_hostname, mock_addrinfo):
         mock_sock = MagicMock()
         mock_sock.getsockname.return_value = ("192.168.1.100", 0)
@@ -73,9 +73,9 @@ class TestGetLocalIps(unittest.TestCase):
         result = MeshDiscovery.get_local_ips()
         self.assertIn("192.168.1.100", result)
 
-    @patch('utils.mesh_discovery.socket.getaddrinfo')
-    @patch('utils.mesh_discovery.socket.gethostname', return_value="host")
-    @patch('utils.mesh_discovery.socket.socket')
+    @patch('services.network.mesh.socket.getaddrinfo')
+    @patch('services.network.mesh.socket.gethostname', return_value="host")
+    @patch('services.network.mesh.socket.socket')
     def test_get_local_ips_hostname_fallback(self, mock_sock_cls, mock_hostname, mock_addrinfo):
         mock_sock = MagicMock()
         mock_sock.getsockname.return_value = ("127.0.0.1", 0)
@@ -87,9 +87,9 @@ class TestGetLocalIps(unittest.TestCase):
         result = MeshDiscovery.get_local_ips()
         self.assertIn("192.168.1.50", result)
 
-    @patch('utils.mesh_discovery.socket.getaddrinfo', side_effect=OSError)
-    @patch('utils.mesh_discovery.socket.gethostname', return_value="host")
-    @patch('utils.mesh_discovery.socket.socket')
+    @patch('services.network.mesh.socket.getaddrinfo', side_effect=OSError)
+    @patch('services.network.mesh.socket.gethostname', return_value="host")
+    @patch('services.network.mesh.socket.socket')
     def test_get_local_ips_all_fail(self, mock_sock_cls, mock_hostname, mock_addrinfo):
         mock_sock = MagicMock()
         mock_sock.connect.side_effect = OSError("no route")
@@ -98,9 +98,9 @@ class TestGetLocalIps(unittest.TestCase):
         result = MeshDiscovery.get_local_ips()
         self.assertIsInstance(result, list)
 
-    @patch('utils.mesh_discovery.socket.getaddrinfo')
-    @patch('utils.mesh_discovery.socket.gethostname', return_value="host")
-    @patch('utils.mesh_discovery.socket.socket')
+    @patch('services.network.mesh.socket.getaddrinfo')
+    @patch('services.network.mesh.socket.gethostname', return_value="host")
+    @patch('services.network.mesh.socket.socket')
     def test_get_local_ips_excludes_loopback(self, mock_sock_cls, mock_hostname, mock_addrinfo):
         mock_sock = MagicMock()
         mock_sock.getsockname.return_value = ("127.0.0.1", 0)
@@ -116,11 +116,11 @@ class TestGetLocalIps(unittest.TestCase):
 class TestIsAvahiAvailable(unittest.TestCase):
     """Tests for MeshDiscovery.is_avahi_available()."""
 
-    @patch('utils.mesh_discovery.shutil.which', return_value="/usr/bin/avahi-browse")
+    @patch('services.network.mesh.shutil.which', return_value="/usr/bin/avahi-browse")
     def test_avahi_available(self, mock_which):
         self.assertTrue(MeshDiscovery.is_avahi_available())
 
-    @patch('utils.mesh_discovery.shutil.which', return_value=None)
+    @patch('services.network.mesh.shutil.which', return_value=None)
     def test_avahi_not_available(self, mock_which):
         self.assertFalse(MeshDiscovery.is_avahi_available())
 
@@ -128,8 +128,8 @@ class TestIsAvahiAvailable(unittest.TestCase):
 class TestDiscoverPeers(unittest.TestCase):
     """Tests for MeshDiscovery.discover_peers()."""
 
-    @patch('utils.mesh_discovery.subprocess.run')
-    @patch('utils.mesh_discovery.MeshDiscovery.is_avahi_available', return_value=True)
+    @patch('services.network.mesh.subprocess.run')
+    @patch('services.network.mesh.MeshDiscovery.is_avahi_available', return_value=True)
     def test_discover_peers_success(self, mock_avahi, mock_run):
         avahi_output = (
             '=;eth0;IPv4;Loofi-PC;_loofi._tcp.local.;local;Loofi-PC.local;192.168.1.50;53317;'
@@ -143,41 +143,41 @@ class TestDiscoverPeers(unittest.TestCase):
         self.assertEqual(result[0].address, "192.168.1.50")
         self.assertEqual(result[0].port, 53317)
 
-    @patch('utils.mesh_discovery.MeshDiscovery.is_avahi_available', return_value=False)
+    @patch('services.network.mesh.MeshDiscovery.is_avahi_available', return_value=False)
     def test_discover_peers_no_avahi(self, mock_avahi):
         result = MeshDiscovery.discover_peers()
         self.assertEqual(result, [])
 
-    @patch('utils.mesh_discovery.subprocess.run')
-    @patch('utils.mesh_discovery.MeshDiscovery.is_avahi_available', return_value=True)
+    @patch('services.network.mesh.subprocess.run')
+    @patch('services.network.mesh.MeshDiscovery.is_avahi_available', return_value=True)
     def test_discover_peers_timeout(self, mock_avahi, mock_run):
         mock_run.side_effect = subprocess.TimeoutExpired(cmd="avahi-browse", timeout=5)
         result = MeshDiscovery.discover_peers()
         self.assertEqual(result, [])
 
-    @patch('utils.mesh_discovery.subprocess.run')
-    @patch('utils.mesh_discovery.MeshDiscovery.is_avahi_available', return_value=True)
+    @patch('services.network.mesh.subprocess.run')
+    @patch('services.network.mesh.MeshDiscovery.is_avahi_available', return_value=True)
     def test_discover_peers_subprocess_error(self, mock_avahi, mock_run):
         mock_run.side_effect = subprocess.SubprocessError("fail")
         result = MeshDiscovery.discover_peers()
         self.assertEqual(result, [])
 
-    @patch('utils.mesh_discovery.subprocess.run')
-    @patch('utils.mesh_discovery.MeshDiscovery.is_avahi_available', return_value=True)
+    @patch('services.network.mesh.subprocess.run')
+    @patch('services.network.mesh.MeshDiscovery.is_avahi_available', return_value=True)
     def test_discover_peers_command_failure(self, mock_avahi, mock_run):
         mock_run.return_value = MagicMock(returncode=1, stdout="")
         result = MeshDiscovery.discover_peers()
         self.assertEqual(result, [])
 
-    @patch('utils.mesh_discovery.subprocess.run')
-    @patch('utils.mesh_discovery.MeshDiscovery.is_avahi_available', return_value=True)
+    @patch('services.network.mesh.subprocess.run')
+    @patch('services.network.mesh.MeshDiscovery.is_avahi_available', return_value=True)
     def test_discover_peers_empty_output(self, mock_avahi, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout="")
         result = MeshDiscovery.discover_peers()
         self.assertEqual(result, [])
 
-    @patch('utils.mesh_discovery.subprocess.run')
-    @patch('utils.mesh_discovery.MeshDiscovery.is_avahi_available', return_value=True)
+    @patch('services.network.mesh.subprocess.run')
+    @patch('services.network.mesh.MeshDiscovery.is_avahi_available', return_value=True)
     def test_discover_peers_skips_non_resolved(self, mock_avahi, mock_run):
         output = "+;eth0;IPv4;SomeService;_http._tcp;local\n"
         mock_run.return_value = MagicMock(returncode=0, stdout=output)
@@ -191,33 +191,33 @@ class TestRegisterService(unittest.TestCase):
     def setUp(self):
         MeshDiscovery._publish_process = None
 
-    @patch('utils.mesh_discovery.MeshDiscovery.build_service_info', return_value={"device_id": "abc", "version": "1.0", "platform": "linux", "name": "test", "capabilities": "clipboard"})
-    @patch('utils.mesh_discovery.MeshDiscovery.get_device_name', return_value="test-host")
-    @patch('utils.mesh_discovery.subprocess.Popen')
-    @patch('utils.mesh_discovery.shutil.which', return_value="/usr/bin/avahi-publish")
+    @patch('services.network.mesh.MeshDiscovery.build_service_info', return_value={"device_id": "abc", "version": "1.0", "platform": "linux", "name": "test", "capabilities": "clipboard"})
+    @patch('services.network.mesh.MeshDiscovery.get_device_name', return_value="test-host")
+    @patch('services.network.mesh.subprocess.Popen')
+    @patch('services.network.mesh.shutil.which', return_value="/usr/bin/avahi-publish")
     def test_register_service_success(self, mock_which, mock_popen, mock_name, mock_info):
         mock_popen.return_value = MagicMock()
         result = MeshDiscovery.register_service()
         self.assertTrue(result.success)
         self.assertIn("registered", result.message)
 
-    @patch('utils.mesh_discovery.shutil.which', return_value=None)
+    @patch('services.network.mesh.shutil.which', return_value=None)
     def test_register_service_no_avahi_publish(self, mock_which):
         result = MeshDiscovery.register_service()
         self.assertFalse(result.success)
         self.assertIn("not installed", result.message)
 
-    @patch('utils.mesh_discovery.shutil.which', return_value="/usr/bin/avahi-publish")
+    @patch('services.network.mesh.shutil.which', return_value="/usr/bin/avahi-publish")
     def test_register_service_already_registered(self, mock_which):
         MeshDiscovery._publish_process = MagicMock()
         result = MeshDiscovery.register_service()
         self.assertFalse(result.success)
         self.assertIn("already registered", result.message)
 
-    @patch('utils.mesh_discovery.MeshDiscovery.build_service_info', return_value={"device_id": "abc"})
-    @patch('utils.mesh_discovery.MeshDiscovery.get_device_name', return_value="test-host")
-    @patch('utils.mesh_discovery.subprocess.Popen')
-    @patch('utils.mesh_discovery.shutil.which', return_value="/usr/bin/avahi-publish")
+    @patch('services.network.mesh.MeshDiscovery.build_service_info', return_value={"device_id": "abc"})
+    @patch('services.network.mesh.MeshDiscovery.get_device_name', return_value="test-host")
+    @patch('services.network.mesh.subprocess.Popen')
+    @patch('services.network.mesh.shutil.which', return_value="/usr/bin/avahi-publish")
     def test_register_service_subprocess_error(self, mock_which, mock_popen, mock_name, mock_info):
         mock_popen.side_effect = OSError("fail")
         result = MeshDiscovery.register_service()
@@ -262,8 +262,8 @@ class TestUnregisterService(unittest.TestCase):
 class TestBuildServiceInfo(unittest.TestCase):
     """Tests for MeshDiscovery.build_service_info()."""
 
-    @patch('utils.mesh_discovery.MeshDiscovery.get_device_name', return_value="test-host")
-    @patch('utils.mesh_discovery.MeshDiscovery.get_device_id', return_value="uuid-test-123")
+    @patch('services.network.mesh.MeshDiscovery.get_device_name', return_value="test-host")
+    @patch('services.network.mesh.MeshDiscovery.get_device_id', return_value="uuid-test-123")
     def test_build_service_info(self, mock_id, mock_name):
         with patch.dict('sys.modules', {'version': MagicMock(__version__="1.0.0")}):
             result = MeshDiscovery.build_service_info()
@@ -277,7 +277,7 @@ class TestBuildServiceInfo(unittest.TestCase):
 class TestIsPeerAlive(unittest.TestCase):
     """Tests for MeshDiscovery.is_peer_alive()."""
 
-    @patch('utils.mesh_discovery.socket.socket')
+    @patch('services.network.mesh.socket.socket')
     def test_peer_alive(self, mock_sock_cls):
         mock_sock = MagicMock()
         mock_sock_cls.return_value = mock_sock
@@ -289,7 +289,7 @@ class TestIsPeerAlive(unittest.TestCase):
         self.assertTrue(MeshDiscovery.is_peer_alive(peer))
         mock_sock.connect.assert_called_once_with(("192.168.1.50", 53317))
 
-    @patch('utils.mesh_discovery.socket.socket')
+    @patch('services.network.mesh.socket.socket')
     def test_peer_not_alive(self, mock_sock_cls):
         mock_sock = MagicMock()
         mock_sock.connect.side_effect = OSError("connection refused")

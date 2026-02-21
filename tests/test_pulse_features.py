@@ -16,7 +16,7 @@ from utils.performance import (
 )
 from services.system import ProcessManager, ProcessInfo
 from services.hardware import TemperatureManager, TemperatureSensor
-from utils.network_monitor import NetworkMonitor, InterfaceStats
+from services.network.monitor import NetworkMonitor, InterfaceStats
 
 
 # ---------------------------------------------------------------------------

@@ -20,7 +20,7 @@ from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'loofi-fedora-tweaks'))
 
-from utils.kwin_tiling import KWinManager
+from services.desktop.kwin import KWinManager
 
 
 class TestKWinIsKDE(unittest.TestCase):

@@ -14,7 +14,7 @@ from unittest.mock import MagicMock, patch
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "loofi-fedora-tweaks"))
 
-from utils.vm_manager import (
+from services.virtualization.vm_manager import (
     Result,
     VMInfo,
     VMManager,
@@ -139,13 +139,13 @@ class TestVMNameRegex(unittest.TestCase):
 class TestIsAvailable(unittest.TestCase):
     """Tests for VMManager.is_available()."""
 
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_both_tools_present(self, mock_which):
         """Returns True when both virsh and qemu-system-x86_64 are found."""
         mock_which.side_effect = lambda cmd: f"/usr/bin/{cmd}"
         self.assertTrue(VMManager.is_available())
 
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_virsh_missing(self, mock_which):
         """Returns False when virsh is missing."""
         mock_which.side_effect = lambda cmd: (
@@ -153,7 +153,7 @@ class TestIsAvailable(unittest.TestCase):
         )
         self.assertFalse(VMManager.is_available())
 
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_qemu_missing(self, mock_which):
         """Returns False when qemu-system-x86_64 is missing."""
         mock_which.side_effect = lambda cmd: (
@@ -161,7 +161,7 @@ class TestIsAvailable(unittest.TestCase):
         )
         self.assertFalse(VMManager.is_available())
 
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_both_missing(self, mock_which):
         """Returns False when neither tool is found."""
         mock_which.return_value = None
@@ -193,8 +193,8 @@ class TestGetAvailableFlavors(unittest.TestCase):
 class TestListVMs(unittest.TestCase):
     """Tests for VMManager.list_vms()."""
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_normal_output(self, mock_which, mock_run):
         """Parses three VMs with correct names and states."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -209,8 +209,8 @@ class TestListVMs(unittest.TestCase):
         self.assertEqual(vms[2].name, "kali")
         self.assertEqual(vms[2].state, "paused")
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_empty_list(self, mock_which, mock_run):
         """Returns empty list when no VMs are defined."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -218,14 +218,14 @@ class TestListVMs(unittest.TestCase):
 
         self.assertEqual(VMManager.list_vms(), [])
 
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_virsh_not_installed(self, mock_which):
         """Returns empty list when virsh is not installed."""
         mock_which.return_value = None
         self.assertEqual(VMManager.list_vms(), [])
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_nonzero_returncode(self, mock_which, mock_run):
         """Returns empty list on non-zero exit code."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -233,8 +233,8 @@ class TestListVMs(unittest.TestCase):
 
         self.assertEqual(VMManager.list_vms(), [])
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_timeout(self, mock_which, mock_run):
         """Returns empty list on subprocess timeout."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -242,8 +242,8 @@ class TestListVMs(unittest.TestCase):
 
         self.assertEqual(VMManager.list_vms(), [])
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_generic_exception(self, mock_which, mock_run):
         """Returns empty list on unexpected exception."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -258,8 +258,8 @@ class TestListVMs(unittest.TestCase):
 class TestGetVMInfo(unittest.TestCase):
     """Tests for VMManager.get_vm_info()."""
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_parses_all_fields(self, mock_which, mock_run):
         """Parses state, UUID, memory, and vCPUs from dominfo output."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -273,8 +273,8 @@ class TestGetVMInfo(unittest.TestCase):
         self.assertEqual(info.memory_mb, 4096)
         self.assertEqual(info.vcpus, 4)
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_vm_not_found(self, mock_which, mock_run):
         """Returns None when virsh reports non-zero (VM not found)."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -282,14 +282,14 @@ class TestGetVMInfo(unittest.TestCase):
 
         self.assertIsNone(VMManager.get_vm_info("nonexistent"))
 
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_virsh_not_installed(self, mock_which):
         """Returns None when virsh is not available."""
         mock_which.return_value = None
         self.assertIsNone(VMManager.get_vm_info("any"))
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_timeout(self, mock_which, mock_run):
         """Returns None on subprocess timeout."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -297,8 +297,8 @@ class TestGetVMInfo(unittest.TestCase):
 
         self.assertIsNone(VMManager.get_vm_info("test"))
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_malformed_memory_value(self, mock_which, mock_run):
         """Gracefully handles unparseable memory value."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -309,8 +309,8 @@ class TestGetVMInfo(unittest.TestCase):
         self.assertIsNotNone(info)
         self.assertEqual(info.memory_mb, 0)
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_malformed_vcpus_value(self, mock_which, mock_run):
         """Gracefully handles unparseable CPU(s) value."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -328,8 +328,8 @@ class TestGetVMInfo(unittest.TestCase):
 class TestGetVMState(unittest.TestCase):
     """Tests for VMManager.get_vm_state()."""
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_returns_running(self, mock_which, mock_run):
         """Returns 'running' when VM is active."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -337,8 +337,8 @@ class TestGetVMState(unittest.TestCase):
 
         self.assertEqual(VMManager.get_vm_state("fedora41"), "running")
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_returns_unknown_on_failure(self, mock_which, mock_run):
         """Returns 'unknown' when VM info cannot be retrieved."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -353,10 +353,10 @@ class TestGetVMState(unittest.TestCase):
 class TestCreateVM(unittest.TestCase):
     """Tests for VMManager.create_vm()."""
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.os.path.isdir")
-    @patch("utils.vm_manager.os.path.isfile")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.os.path.isdir")
+    @patch("services.virtualization.vm_manager.os.path.isfile")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_create_success(self, mock_which, mock_isfile, mock_isdir, mock_run):
         """Successful VM creation returns Result with success=True and data."""
         mock_which.return_value = "/usr/bin/virt-install"
@@ -370,29 +370,29 @@ class TestCreateVM(unittest.TestCase):
         self.assertEqual(result.data["name"], "test-vm")
         self.assertIn(".qcow2", result.data["disk"])
 
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_invalid_name_spaces(self, mock_which):
         """Rejects names with spaces."""
         result = VMManager.create_vm("bad name", "fedora", "/tmp/f.iso")
         self.assertFalse(result.success)
         self.assertIn("Invalid VM name", result.message)
 
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_invalid_name_dots(self, mock_which):
         """Rejects names with dots."""
         result = VMManager.create_vm("my.vm", "fedora", "/tmp/f.iso")
         self.assertFalse(result.success)
 
-    @patch("utils.vm_manager.os.path.isfile")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.os.path.isfile")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_unknown_flavor(self, mock_which, mock_isfile):
         """Rejects unrecognised flavour keys."""
         result = VMManager.create_vm("test-vm", "haiku", "/tmp/f.iso")
         self.assertFalse(result.success)
         self.assertIn("Unknown flavour", result.message)
 
-    @patch("utils.vm_manager.os.path.isfile")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.os.path.isfile")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_missing_iso(self, mock_which, mock_isfile):
         """Rejects when ISO file does not exist."""
         mock_isfile.return_value = False
@@ -400,16 +400,16 @@ class TestCreateVM(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("ISO file not found", result.message)
 
-    @patch("utils.vm_manager.os.path.isfile")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.os.path.isfile")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_empty_iso_path(self, mock_which, mock_isfile):
         """Rejects empty ISO path."""
         result = VMManager.create_vm("test-vm", "fedora", "")
         self.assertFalse(result.success)
         self.assertIn("ISO file not found", result.message)
 
-    @patch("utils.vm_manager.os.path.isfile")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.os.path.isfile")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_virt_install_missing(self, mock_which, mock_isfile):
         """Returns failure when virt-install is not installed."""
         mock_which.side_effect = lambda cmd: (
@@ -421,10 +421,10 @@ class TestCreateVM(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("virt-install is not installed", result.message)
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.os.path.isdir")
-    @patch("utils.vm_manager.os.path.isfile")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.os.path.isdir")
+    @patch("services.virtualization.vm_manager.os.path.isfile")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_overrides_applied(self, mock_which, mock_isfile, mock_isdir, mock_run):
         """Keyword overrides (ram_mb, vcpus, disk_gb) are applied to the command."""
         mock_which.return_value = "/usr/bin/virt-install"
@@ -440,10 +440,10 @@ class TestCreateVM(unittest.TestCase):
         self.assertIn("8", cmd)
         self.assertIn("size=100", [a for a in cmd if "size=" in a][0])
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.os.path.isdir")
-    @patch("utils.vm_manager.os.path.isfile")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.os.path.isdir")
+    @patch("services.virtualization.vm_manager.os.path.isfile")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_windows11_with_swtpm(self, mock_which, mock_isfile, mock_isdir, mock_run):
         """Windows 11 VM includes --tpm flag when swtpm is available."""
         mock_which.return_value = "/usr/bin/swtpm"  # all which() calls return a path
@@ -456,8 +456,8 @@ class TestCreateVM(unittest.TestCase):
         cmd = mock_run.call_args[0][0]
         self.assertIn("--tpm", cmd)
 
-    @patch("utils.vm_manager.os.path.isfile")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.os.path.isfile")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_windows11_without_swtpm(self, mock_which, mock_isfile):
         """Windows 11 VM fails when swtpm is missing."""
 
@@ -473,10 +473,10 @@ class TestCreateVM(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("swtpm", result.message)
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.os.path.isdir")
-    @patch("utils.vm_manager.os.path.isfile")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.os.path.isdir")
+    @patch("services.virtualization.vm_manager.os.path.isfile")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_virtio_drivers_attached(
         self, mock_which, mock_isfile, mock_isdir, mock_run
     ):
@@ -491,10 +491,10 @@ class TestCreateVM(unittest.TestCase):
         virtio_args = [a for a in cmd if "virtio-win" in a]
         self.assertTrue(len(virtio_args) > 0)
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.os.path.isdir")
-    @patch("utils.vm_manager.os.path.isfile")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.os.path.isdir")
+    @patch("services.virtualization.vm_manager.os.path.isfile")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_create_failure_stderr(self, mock_which, mock_isfile, mock_isdir, mock_run):
         """Reports stderr content on virt-install failure."""
         mock_which.return_value = "/usr/bin/virt-install"
@@ -506,10 +506,10 @@ class TestCreateVM(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("disk full", result.message)
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.os.path.isdir")
-    @patch("utils.vm_manager.os.path.isfile")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.os.path.isdir")
+    @patch("services.virtualization.vm_manager.os.path.isfile")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_create_timeout(self, mock_which, mock_isfile, mock_isdir, mock_run):
         """Returns timeout message when virt-install exceeds 120s."""
         mock_which.return_value = "/usr/bin/virt-install"
@@ -523,10 +523,10 @@ class TestCreateVM(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("timed out", result.message)
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.os.path.isdir")
-    @patch("utils.vm_manager.os.path.isfile")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.os.path.isdir")
+    @patch("services.virtualization.vm_manager.os.path.isfile")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_create_generic_exception(
         self, mock_which, mock_isfile, mock_isdir, mock_run
     ):
@@ -547,8 +547,8 @@ class TestCreateVM(unittest.TestCase):
 class TestStartVM(unittest.TestCase):
     """Tests for VMManager.start_vm()."""
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_start_success(self, mock_which, mock_run):
         """Returns success when virsh start exits 0."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -558,8 +558,8 @@ class TestStartVM(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertIn("started", result.message)
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_start_failure(self, mock_which, mock_run):
         """Returns failure with stderr on non-zero exit."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -571,7 +571,7 @@ class TestStartVM(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("already running", result.message)
 
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_start_virsh_missing(self, mock_which):
         """Returns failure when virsh is not installed."""
         mock_which.return_value = None
@@ -579,8 +579,8 @@ class TestStartVM(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("virsh is not installed", result.message)
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_start_timeout(self, mock_which, mock_run):
         """Returns timeout message on subprocess timeout."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -597,8 +597,8 @@ class TestStartVM(unittest.TestCase):
 class TestStopVM(unittest.TestCase):
     """Tests for VMManager.stop_vm()."""
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_stop_success(self, mock_which, mock_run):
         """Returns success on graceful shutdown."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -608,8 +608,8 @@ class TestStopVM(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertIn("shutdown signal sent", result.message)
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_stop_failure(self, mock_which, mock_run):
         """Returns failure on non-zero exit."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -618,15 +618,15 @@ class TestStopVM(unittest.TestCase):
         result = VMManager.stop_vm("vm1")
         self.assertFalse(result.success)
 
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_stop_virsh_missing(self, mock_which):
         """Returns failure when virsh is not installed."""
         mock_which.return_value = None
         result = VMManager.stop_vm("any")
         self.assertFalse(result.success)
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_stop_timeout(self, mock_which, mock_run):
         """Returns timeout message on subprocess timeout."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -636,8 +636,8 @@ class TestStopVM(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("timed out", result.message)
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_stop_generic_exception(self, mock_which, mock_run):
         """Returns error message on unexpected exception."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -654,8 +654,8 @@ class TestStopVM(unittest.TestCase):
 class TestForceStopVM(unittest.TestCase):
     """Tests for VMManager.force_stop_vm()."""
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_force_stop_success(self, mock_which, mock_run):
         """Returns success on virsh destroy exit 0."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -665,8 +665,8 @@ class TestForceStopVM(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertIn("force-stopped", result.message)
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_force_stop_failure(self, mock_which, mock_run):
         """Returns failure on non-zero exit."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -676,15 +676,15 @@ class TestForceStopVM(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("not running", result.message)
 
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_force_stop_virsh_missing(self, mock_which):
         """Returns failure when virsh is not installed."""
         mock_which.return_value = None
         result = VMManager.force_stop_vm("any")
         self.assertFalse(result.success)
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_force_stop_timeout(self, mock_which, mock_run):
         """Returns timeout message on subprocess timeout."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -701,8 +701,8 @@ class TestForceStopVM(unittest.TestCase):
 class TestDeleteVM(unittest.TestCase):
     """Tests for VMManager.delete_vm()."""
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_delete_success(self, mock_which, mock_run):
         """Returns success on virsh undefine exit 0."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -712,8 +712,8 @@ class TestDeleteVM(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertIn("deleted", result.message)
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_delete_with_storage(self, mock_which, mock_run):
         """Passes --remove-all-storage when delete_storage=True."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -723,8 +723,8 @@ class TestDeleteVM(unittest.TestCase):
         cmd = mock_run.call_args[0][0]
         self.assertIn("--remove-all-storage", cmd)
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_delete_without_storage(self, mock_which, mock_run):
         """Does not pass --remove-all-storage when delete_storage=False."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -734,8 +734,8 @@ class TestDeleteVM(unittest.TestCase):
         cmd = mock_run.call_args[0][0]
         self.assertNotIn("--remove-all-storage", cmd)
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_delete_failure(self, mock_which, mock_run):
         """Returns failure with stderr on non-zero exit."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -747,15 +747,15 @@ class TestDeleteVM(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("domain not found", result.message)
 
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_delete_virsh_missing(self, mock_which):
         """Returns failure when virsh is not installed."""
         mock_which.return_value = None
         result = VMManager.delete_vm("any")
         self.assertFalse(result.success)
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_delete_timeout(self, mock_which, mock_run):
         """Returns timeout message on subprocess timeout."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -765,8 +765,8 @@ class TestDeleteVM(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("timed out", result.message)
 
-    @patch("utils.vm_manager.subprocess.run")
-    @patch("utils.vm_manager.shutil.which")
+    @patch("services.virtualization.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.shutil.which")
     def test_delete_generic_exception(self, mock_which, mock_run):
         """Returns error message on unexpected exception."""
         mock_which.return_value = "/usr/bin/virsh"
@@ -783,16 +783,16 @@ class TestDeleteVM(unittest.TestCase):
 class TestGetDefaultStoragePool(unittest.TestCase):
     """Tests for VMManager.get_default_storage_pool()."""
 
-    @patch("utils.vm_manager.os.path.isdir")
+    @patch("services.virtualization.vm_manager.os.path.isdir")
     def test_system_pool_exists(self, mock_isdir):
         """Returns /var/lib/libvirt/images when the directory exists."""
         mock_isdir.return_value = True
         result = VMManager.get_default_storage_pool()
         self.assertEqual(result, "/var/lib/libvirt/images")
 
-    @patch("utils.vm_manager.os.makedirs")
-    @patch("utils.vm_manager.os.path.expanduser")
-    @patch("utils.vm_manager.os.path.isdir")
+    @patch("services.virtualization.vm_manager.os.makedirs")
+    @patch("services.virtualization.vm_manager.os.path.expanduser")
+    @patch("services.virtualization.vm_manager.os.path.isdir")
     def test_fallback_pool(self, mock_isdir, mock_expanduser, mock_makedirs):
         """Falls back to ~/.local/share/loofi-vms when system path is absent."""
         mock_isdir.return_value = False
@@ -812,7 +812,7 @@ class TestGetDefaultStoragePool(unittest.TestCase):
 class TestCheckUserInLibvirtGroup(unittest.TestCase):
     """Tests for VMManager.check_user_in_libvirt_group()."""
 
-    @patch("utils.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.subprocess.run")
     def test_user_in_group(self, mock_run):
         """Returns True when 'libvirt' appears in user's groups."""
         mock_run.return_value = MagicMock(
@@ -821,7 +821,7 @@ class TestCheckUserInLibvirtGroup(unittest.TestCase):
         )
         self.assertTrue(VMManager.check_user_in_libvirt_group())
 
-    @patch("utils.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.subprocess.run")
     def test_user_not_in_group(self, mock_run):
         """Returns False when 'libvirt' is absent from user's groups."""
         mock_run.return_value = MagicMock(
@@ -830,7 +830,7 @@ class TestCheckUserInLibvirtGroup(unittest.TestCase):
         )
         self.assertFalse(VMManager.check_user_in_libvirt_group())
 
-    @patch("utils.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.subprocess.run")
     def test_partial_match_rejected(self, mock_run):
         """Does not match 'libvirtd' as 'libvirt' (word-level split)."""
         mock_run.return_value = MagicMock(
@@ -839,19 +839,19 @@ class TestCheckUserInLibvirtGroup(unittest.TestCase):
         )
         self.assertFalse(VMManager.check_user_in_libvirt_group())
 
-    @patch("utils.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.subprocess.run")
     def test_id_command_fails(self, mock_run):
         """Returns False when id command exits non-zero."""
         mock_run.return_value = MagicMock(returncode=1, stdout="")
         self.assertFalse(VMManager.check_user_in_libvirt_group())
 
-    @patch("utils.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.subprocess.run")
     def test_timeout(self, mock_run):
         """Returns False on subprocess timeout."""
         mock_run.side_effect = subprocess.TimeoutExpired(cmd="id", timeout=5)
         self.assertFalse(VMManager.check_user_in_libvirt_group())
 
-    @patch("utils.vm_manager.subprocess.run")
+    @patch("services.virtualization.vm_manager.subprocess.run")
     def test_generic_exception(self, mock_run):
         """Returns False on unexpected exception."""
         mock_run.side_effect = OSError("no such command")

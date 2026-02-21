@@ -14,7 +14,7 @@ import urllib.error
 # Add source path to sys.path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'loofi-fedora-tweaks'))
 
-from utils.cloud_sync import CloudSyncManager
+from services.storage.cloud_sync import CloudSyncManager
 
 
 class TestCloudSyncDirectories(unittest.TestCase):

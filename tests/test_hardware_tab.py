@@ -315,6 +315,7 @@ def _install_stubs():
     _hw_mod = types.ModuleType("services.hardware")
     _hw_mod.HardwareManager = MagicMock()
     _hw_mod.BluetoothManager = MagicMock()
+    _hw_mod.BatteryManager = MagicMock()
     _services = types.ModuleType("services")
     sys.modules["services"] = _services
     sys.modules["services.hardware"] = _hw_mod
@@ -800,9 +801,9 @@ class TestSetBatteryLimit(unittest.TestCase):
     def test_set_battery_limit_with_cmd(self):
         mock_manager = MagicMock()
         mock_manager.set_limit.return_value = ("pkexec", ["bash", "/tmp/battery.sh"])
-        batt_mod = types.ModuleType("utils.battery")
+        batt_mod = types.ModuleType("services.hardware")
         batt_mod.BatteryManager = MagicMock(return_value=mock_manager)
-        with patch.dict(sys.modules, {"utils.battery": batt_mod}):
+        with patch.dict(sys.modules, {"services.hardware": batt_mod}):
             with patch.object(self.tab, "_run_hw_command") as mock_run:
                 self.tab._set_battery_limit(80)
                 mock_manager.set_limit.assert_called_with(80)
@@ -811,27 +812,27 @@ class TestSetBatteryLimit(unittest.TestCase):
     def test_set_battery_limit_echo_cmd(self):
         mock_manager = MagicMock()
         mock_manager.set_limit.return_value = ("echo", ["Battery limit set to 80%"])
-        batt_mod = types.ModuleType("utils.battery")
+        batt_mod = types.ModuleType("services.hardware")
         batt_mod.BatteryManager = MagicMock(return_value=mock_manager)
-        with patch.dict(sys.modules, {"utils.battery": batt_mod}):
+        with patch.dict(sys.modules, {"services.hardware": batt_mod}):
             self.tab._set_battery_limit(80)
         self.assertIn("80%", self.tab.hw_output_area._text)
 
     def test_set_battery_limit_none_cmd(self):
         mock_manager = MagicMock()
         mock_manager.set_limit.return_value = (None, None)
-        batt_mod = types.ModuleType("utils.battery")
+        batt_mod = types.ModuleType("services.hardware")
         batt_mod.BatteryManager = MagicMock(return_value=mock_manager)
-        with patch.dict(sys.modules, {"utils.battery": batt_mod}):
+        with patch.dict(sys.modules, {"services.hardware": batt_mod}):
             self.tab._set_battery_limit(80)
         self.assertIn("Failed", self.tab.hw_output_area._text)
 
     def test_set_battery_limit_100(self):
         mock_manager = MagicMock()
         mock_manager.set_limit.return_value = ("echo", ["Battery limit set to 100%"])
-        batt_mod = types.ModuleType("utils.battery")
+        batt_mod = types.ModuleType("services.hardware")
         batt_mod.BatteryManager = MagicMock(return_value=mock_manager)
-        with patch.dict(sys.modules, {"utils.battery": batt_mod}):
+        with patch.dict(sys.modules, {"services.hardware": batt_mod}):
             self.tab._set_battery_limit(100)
         mock_manager.set_limit.assert_called_with(100)
 

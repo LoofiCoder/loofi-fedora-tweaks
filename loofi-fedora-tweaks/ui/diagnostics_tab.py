@@ -34,7 +34,7 @@ from services.system import ServiceManager, UnitScope, UnitState
 from utils.boot_analyzer import BootAnalyzer
 from utils.journal import JournalManager
 from utils.kernel import KernelManager
-from utils.secureboot import SecureBootManager
+from services.security import SecureBootManager
 from utils.zram import ZramManager
 
 from ui.base_tab import BaseTab

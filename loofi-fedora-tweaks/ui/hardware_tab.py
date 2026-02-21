@@ -493,7 +493,7 @@ class HardwareTab(QWidget, PluginInterface):
 
     def _set_battery_limit(self, limit):
         """Set battery charge limit using BatteryManager."""
-        from utils.battery import BatteryManager
+        from services.hardware import BatteryManager
 
         manager = BatteryManager()
         cmd, args = manager.set_limit(limit)

@@ -199,9 +199,7 @@ class _ApplicationsSubTab(QWidget):
             btn_install.setEnabled(False)
             btn_install.setObjectName("swInstalledBtn")
         else:
-            btn_install.clicked.connect(
-                lambda checked, app=app_data: self.install_app(app)
-            )
+            btn_install.clicked.connect(lambda checked, app=app_data: self.install_app(app))
 
         row_layout.addWidget(lbl_name)
         row_layout.addWidget(lbl_desc)
@@ -225,9 +223,7 @@ class _ApplicationsSubTab(QWidget):
         self.output_area.moveCursor(self.output_area.textCursor().MoveOperation.End)
 
     def command_finished(self, exit_code):
-        self.append_output(
-            self.tr("\nCommand finished with exit code: {}").format(exit_code)
-        )
+        self.append_output(self.tr("\nCommand finished with exit code: {}").format(exit_code))
         # Refresh list to update status if installation succeeded
         if exit_code == 0:
             self.show_success("Software", self.tr("Operation completed successfully"))
@@ -265,9 +261,7 @@ class _ApplicationsSubTab(QWidget):
         if not packages:
             return
         self.output_area.clear()
-        self.append_output(
-            self.tr("Batch installing: {}\n").format(", ".join(packages))
-        )
+        self.append_output(self.tr("Batch installing: {}\n").format(", ".join(packages)))
         binary, args, desc = BatchOpsManager.batch_install(packages)
         self.runner.run_command(binary, args)
 
@@ -328,23 +322,17 @@ class _RepositoriesSubTab(QWidget):
         layout.addWidget(header)
 
         # RPM Fusion Group
-        fusion_group = QGroupBox(
-            self.tr("RPM Fusion (Essential for media codecs & drivers)")
-        )
+        fusion_group = QGroupBox(self.tr("RPM Fusion (Essential for media codecs & drivers)"))
         fusion_layout = QVBoxLayout()
         fusion_group.setLayout(fusion_layout)
 
-        self.btn_enable_fusion = QPushButton(
-            self.tr("Enable RPM Fusion (Free & Non-Free)")
-        )
+        self.btn_enable_fusion = QPushButton(self.tr("Enable RPM Fusion (Free & Non-Free)"))
         self.btn_enable_fusion.setAccessibleName(self.tr("Enable RPM Fusion"))
         self.btn_enable_fusion.setToolTip(SW_RPM_FUSION)
         self.btn_enable_fusion.clicked.connect(self.enable_rpm_fusion)
         fusion_layout.addWidget(self.btn_enable_fusion)
 
-        self.btn_install_codecs = QPushButton(
-            self.tr("Install Multimedia Codecs (ffmpeg, gstreamer, etc.)")
-        )
+        self.btn_install_codecs = QPushButton(self.tr("Install Multimedia Codecs (ffmpeg, gstreamer, etc.)"))
         self.btn_install_codecs.setAccessibleName(self.tr("Install codecs"))
         self.btn_install_codecs.setToolTip(SW_CODECS)
         self.btn_install_codecs.clicked.connect(self.install_multimedia_codecs)
@@ -376,9 +364,7 @@ class _RepositoriesSubTab(QWidget):
         self.btn_copr_loofi.setAccessibleName(self.tr("Enable Loofi COPR"))
         self.btn_copr_loofi.clicked.connect(
             lambda: self.run_command(
-                *PrivilegedCommand.dnf(
-                    "copr enable", "loofitheboss/loofi-fedora-tweaks"
-                ),
+                *PrivilegedCommand.dnf("copr enable", "loofitheboss/loofi-fedora-tweaks"),
             )
         )
         copr_layout.addWidget(self.btn_copr_loofi)
@@ -401,14 +387,8 @@ class _RepositoriesSubTab(QWidget):
     def enable_rpm_fusion(self):
         fedora_ver = SoftwareUtils.get_fedora_version()
 
-        free_url = (
-            f"https://mirrors.rpmfusion.org/free/fedora/"
-            f"rpmfusion-free-release-{fedora_ver}.noarch.rpm"
-        )
-        nonfree_url = (
-            f"https://mirrors.rpmfusion.org/nonfree/fedora/"
-            f"rpmfusion-nonfree-release-{fedora_ver}.noarch.rpm"
-        )
+        free_url = f"https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-{fedora_ver}.noarch.rpm"
+        nonfree_url = f"https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-{fedora_ver}.noarch.rpm"
         binary, args, desc = PrivilegedCommand.dnf("install", free_url, nonfree_url)
         self.run_command(
             binary,
@@ -457,9 +437,7 @@ class _RepositoriesSubTab(QWidget):
         self.output_area.moveCursor(self.output_area.textCursor().MoveOperation.End)
 
     def command_finished(self, exit_code):
-        self.append_output(
-            self.tr("\nCommand finished with exit code: {}").format(exit_code)
-        )
+        self.append_output(self.tr("\nCommand finished with exit code: {}").format(exit_code))
         if exit_code == 0:
             self.show_success("Flatpak", self.tr("Operation completed successfully"))
         else:
@@ -568,21 +546,15 @@ class SoftwareTab(BaseTab):
         layout.addWidget(self._flatpak_output)
 
         self._flatpak_runner = CommandRunner()
-        self._flatpak_runner.output_received.connect(
-            lambda t: self._flatpak_output.insertPlainText(t)
-        )
-        self._flatpak_runner.finished.connect(
-            lambda ec: self._flatpak_output.insertPlainText(
-                self.tr("\nDone (exit {})\n").format(ec)
-            )
-        )
+        self._flatpak_runner.output_received.connect(lambda t: self._flatpak_output.insertPlainText(t))
+        self._flatpak_runner.finished.connect(lambda ec: self._flatpak_output.insertPlainText(self.tr("\nDone (exit {})\n").format(ec)))
 
         layout.addStretch()
         return widget
 
     def _show_flatpak_sizes(self):
         try:
-            from utils.flatpak_manager import FlatpakManager
+            from services.software import FlatpakManager
 
             sizes = FlatpakManager.get_flatpak_sizes()
             total = FlatpakManager.get_total_size()
@@ -594,19 +566,17 @@ class SoftwareTab(BaseTab):
 
     def _find_orphans(self):
         try:
-            from utils.flatpak_manager import FlatpakManager
+            from services.software import FlatpakManager
 
             orphans = FlatpakManager.find_orphan_runtimes()
             lines = [f"🗑 {o}" for o in orphans]
-            self._flatpak_output.setPlainText(
-                "\n".join(lines) if lines else "No orphan runtimes found."
-            )
+            self._flatpak_output.setPlainText("\n".join(lines) if lines else "No orphan runtimes found.")
         except (RuntimeError, OSError, ValueError) as e:
             self._flatpak_output.setPlainText(f"[ERROR] {e}")
 
     def _cleanup_flatpaks(self):
         try:
-            from utils.flatpak_manager import FlatpakManager
+            from services.software import FlatpakManager
 
             binary, args, desc = FlatpakManager.cleanup_unused()
             self._flatpak_output.clear()
@@ -617,14 +587,12 @@ class SoftwareTab(BaseTab):
 
     def _show_permissions(self):
         try:
-            from utils.flatpak_manager import FlatpakManager
+            from services.software import FlatpakManager
 
             self._flatpak_perms_list.clear()
             all_perms = FlatpakManager.get_all_permissions()
             for app in all_perms:
-                self._flatpak_perms_list.addItem(
-                    f"{app.app_id}: {len(app.permissions)} permissions"
-                )
+                self._flatpak_perms_list.addItem(f"{app.app_id}: {len(app.permissions)} permissions")
             if not all_perms:
                 self._flatpak_perms_list.addItem("No Flatpak apps found.")
         except (RuntimeError, OSError, ValueError) as e:

@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from utils.safety import SafetyManager
+from services.security.safety import SafetyManager
 from utils.history import HistoryManager
 import os
 import subprocess
