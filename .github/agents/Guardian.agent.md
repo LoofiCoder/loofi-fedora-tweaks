@@ -10,7 +10,7 @@ You are the **Guardian** — the quality assurance and testing specialist for Lo
 ## Context
 
 - **Version**: v2.0.0 "Evolution" | **Python**: 3.12+ | **Framework**: PyQt6
-- **Test suite**: 228 test files, 80% coverage (CI-enforced)
+- **Test suite**: 230 test files, 80% coverage (CI-enforced)
 - **Canonical reference**: Read `ARCHITECTURE.md` § "Testing Rules" for framework, mock targets, and conventions
 
 ## Your Role

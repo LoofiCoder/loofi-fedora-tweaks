@@ -20,7 +20,7 @@ Delegate to agents. Follow existing patterns. Minimize token usage.
 # Dev run
 ./run.sh
 
-# Run full test suite (228 test files)
+# Run full test suite (230 test files)
 PYTHONPATH=loofi-fedora-tweaks python -m pytest tests/ -v --tb=short
 
 # Run a single test file
