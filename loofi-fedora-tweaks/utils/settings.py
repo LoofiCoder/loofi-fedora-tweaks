@@ -11,7 +11,7 @@ automatic recovery from corrupt files.
 import json
 import logging
 import threading
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Optional
 
@@ -42,6 +42,11 @@ class AppSettings:
     plugin_analytics_enabled: bool = False
     plugin_analytics_anonymous_id: str = ""
     plugin_analytics_endpoint: str = "https://api.loofi.software/marketplace/v1/analytics/events"
+
+    # UX
+    experience_level: str = "beginner"
+    suppressed_confirmations: list = field(default_factory=list)
+    locale: str = "en"
 
     # Version tracking
     last_seen_version: str = "0.0.0"

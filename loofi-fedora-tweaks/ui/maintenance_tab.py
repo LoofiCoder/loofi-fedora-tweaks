@@ -395,8 +395,14 @@ class _OverlaysSubTab(QWidget):
 
         self.pkg_manager = PackageManager()
         self.reboot_runner = CommandRunner()
+        self._loaded = False
         self.init_ui()
-        QTimer.singleShot(0, self.refresh_list)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        if not self._loaded:
+            self._loaded = True
+            QTimer.singleShot(0, self.refresh_list)
 
     def init_ui(self):
         layout = QVBoxLayout()
