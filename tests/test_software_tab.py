@@ -177,7 +177,15 @@ for _name, _orig in _original_modules.items():
 
 class TestApplicationsSubTabFeedback(unittest.TestCase):
     def setUp(self):
-        self.tab = _st._ApplicationsSubTab()
+        from unittest.mock import patch
+
+        # Patch refresh_list and load_apps at class level during __init__ to avoid
+        # infinite loop: scroll_layout.count() on the _Dummy stub always returns a
+        # truthy MagicMock, so the while loop in refresh_list never terminates.
+        with patch.object(_st._ApplicationsSubTab, "refresh_list"), patch.object(
+            _st._ApplicationsSubTab, "load_apps", return_value=[]
+        ):
+            self.tab = _st._ApplicationsSubTab()
         self.tab.output_area = MagicMock()
         self.tab.append_output = MagicMock()
         self.tab.refresh_list = MagicMock()
