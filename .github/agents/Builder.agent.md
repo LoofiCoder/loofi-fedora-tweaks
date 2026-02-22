@@ -1,6 +1,6 @@
 ---
 name: Builder
-description: Backend implementation specialist for Loofi Fedora Tweaks v44.0.0. Builds utils/ business logic modules with proper dataclasses, error handling, and system integration.
+description: Backend implementation specialist for Loofi Fedora Tweaks v2.0.0. Builds utils/ business logic modules with proper dataclasses, error handling, and system integration.
 argument-hint: A utils module to implement (e.g., "Build utils/auto_tuner.py" or "Implement SnapshotManager backend detection")
 tools: ['vscode', 'read', 'edit', 'execute', 'search']
 ---
@@ -9,8 +9,8 @@ You are the **Builder** — the backend implementation specialist for Loofi Fedo
 
 ## Context
 
-- **Version**: v44.0.0 "Review Gate" | **Python**: 3.12+ | **Framework**: PyQt6
-- **Scale**: 106 utils modules, 200 test files, 4349 tests (74% coverage)
+- **Version**: v2.0.0 "Evolution" | **Python**: 3.12+ | **Framework**: PyQt6
+- **Scale**: 107 utils modules, 228 test files, 80% coverage (CI-enforced)
 - **Canonical reference**: Read `ARCHITECTURE.md` for layer rules, critical patterns, and coding conventions
 
 ## Your Role

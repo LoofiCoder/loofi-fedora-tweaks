@@ -48,7 +48,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class _ApplicationsSubTab(QWidget):
+class _ApplicationsSubTab(BaseTab):
     """Sub-tab containing all application management functionality.
 
     Preserves every feature from the original AppsTab:
@@ -226,10 +226,10 @@ class _ApplicationsSubTab(QWidget):
         self.append_output(self.tr("\nCommand finished with exit code: {}").format(exit_code))
         # Refresh list to update status if installation succeeded
         if exit_code == 0:
-            self.show_success("Software", self.tr("Operation completed successfully"))
+            self.show_success(self.tr("Operation completed successfully"))
             self.refresh_list()
         else:
-            self.show_error("Software", self.tr("Operation failed (exit code {})").format(exit_code))
+            self.show_error(self.tr("Operation failed (exit code {})").format(exit_code))
 
     # v31.0: Batch operations
 
@@ -300,7 +300,7 @@ class _ApplicationsSubTab(QWidget):
 # ---------------------------------------------------------------------------
 
 
-class _RepositoriesSubTab(QWidget):
+class _RepositoriesSubTab(BaseTab):
     """Sub-tab containing all repository management functionality.
 
     Preserves every feature from the original ReposTab:
@@ -439,9 +439,9 @@ class _RepositoriesSubTab(QWidget):
     def command_finished(self, exit_code):
         self.append_output(self.tr("\nCommand finished with exit code: {}").format(exit_code))
         if exit_code == 0:
-            self.show_success("Flatpak", self.tr("Operation completed successfully"))
+            self.show_success(self.tr("Operation completed successfully"))
         else:
-            self.show_error("Flatpak", self.tr("Operation failed (exit code {})").format(exit_code))
+            self.show_error(self.tr("Operation failed (exit code {})").format(exit_code))
 
 
 # ---------------------------------------------------------------------------

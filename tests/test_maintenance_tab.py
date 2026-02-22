@@ -9,6 +9,7 @@ Comprehensive tests covering:
 
 All PyQt6 classes are stubbed at module level — no real QApplication needed.
 """
+# pyright: reportAttributeAccessIssue=false
 
 import importlib
 import os
@@ -185,9 +186,7 @@ def _install_stubs():
 
         @staticmethod
         def schedule_update(packages=None, when="now"):
-            return MagicMock(
-                id="test", packages=[], scheduled_time=when, timer_unit="test.timer"
-            )
+            return MagicMock(id="test", packages=[], scheduled_time=when, timer_unit="test.timer")
 
         @staticmethod
         def get_schedule_commands(schedule):
@@ -458,9 +457,7 @@ class TestUpdatesSubTabInstance(unittest.TestCase):
         self.tab.append_output = MagicMock()
         self.tab.run_fw_update()
         self.tab.start_process.assert_called_once()
-        self.tab.runner.run_command.assert_called_once_with(
-            "pkexec", ["fwupdmgr", "update", "-y"]
-        )
+        self.tab.runner.run_command.assert_called_once_with("pkexec", ["fwupdmgr", "update", "-y"])
 
     # -- run_dnf_update --
 
@@ -491,9 +488,7 @@ class TestUpdatesSubTabInstance(unittest.TestCase):
         self.tab.append_output = MagicMock()
         self.tab.run_dnf_update()
         self.tab.start_process.assert_called_once()
-        self.tab.runner.run_command.assert_called_once_with(
-            "pkexec", ["dnf", "update", "-y"]
-        )
+        self.tab.runner.run_command.assert_called_once_with("pkexec", ["dnf", "update", "-y"])
 
     @patch("utils.safety.SafetyManager.confirm_action", return_value=True)
     @patch("utils.safety.SafetyManager.check_dnf_lock", return_value=False)
@@ -504,9 +499,7 @@ class TestUpdatesSubTabInstance(unittest.TestCase):
         self.tab.append_output = MagicMock()
         self.tab.run_dnf_update()
         self.tab.start_process.assert_called_once()
-        self.tab.runner.run_command.assert_called_once_with(
-            "pkexec", ["rpm-ostree", "upgrade"]
-        )
+        self.tab.runner.run_command.assert_called_once_with("pkexec", ["rpm-ostree", "upgrade"])
 
     @patch("utils.safety.SafetyManager.confirm_action", return_value=True)
     @patch("utils.safety.SafetyManager.check_dnf_lock", return_value=False)
@@ -557,9 +550,7 @@ class TestUpdatesSubTabInstance(unittest.TestCase):
         self.tab.start_process = MagicMock()
         self.tab.append_output = MagicMock()
         self.tab.run_update_all()
-        self.tab.runner.run_command.assert_called_once_with(
-            "pkexec", ["dnf", "update", "-y"]
-        )
+        self.tab.runner.run_command.assert_called_once_with("pkexec", ["dnf", "update", "-y"])
 
     @patch("utils.safety.SafetyManager.confirm_action", return_value=True)
     @patch("utils.safety.SafetyManager.check_dnf_lock", return_value=False)
@@ -611,9 +602,7 @@ class TestUpdatesSubTabInstance(unittest.TestCase):
         self.tab.append_output = MagicMock()
         self.tab.command_finished(0)
         self.assertEqual(self.tab.current_update_index, 2)
-        self.tab.runner.run_command.assert_called_once_with(
-            "pkexec", ["fwupdmgr", "update", "-y"]
-        )
+        self.tab.runner.run_command.assert_called_once_with("pkexec", ["fwupdmgr", "update", "-y"])
 
     def test_command_finished_end_of_queue_re_enables(self):
         """command_finished() re-enables buttons at end of queue."""
@@ -665,10 +654,45 @@ class TestUpdatesSubTabInstance(unittest.TestCase):
         call_args = self.tab.append_output.call_args[0][0]
         self.assertIn("42", call_args)
 
+    def test_command_finished_success_calls_show_success(self):
+        """command_finished() calls show_success on exit code 0 (regression: AttributeError)."""
+        self.tab.update_queue = []
+        self.tab.append_output = MagicMock()
+        self.tab.show_success = MagicMock()
+        self.tab.command_finished(0)
+        self.tab.show_success.assert_called_once()
 
-# ===================================================================
-# Test: _CleanupSubTab
-# ===================================================================
+    def test_command_finished_failure_calls_show_error(self):
+        """command_finished() calls show_error on nonzero exit code (regression: AttributeError)."""
+        self.tab.update_queue = []
+        self.tab.append_output = MagicMock()
+        self.tab.show_error = MagicMock()
+        self.tab.command_finished(1)
+        self.tab.show_error.assert_called_once()
+
+    def test_show_success_no_attribute_error(self):
+        """show_success() exists and does not raise AttributeError (regression)."""
+        self.tab.show_success("Test message")
+
+    def test_show_error_no_attribute_error(self):
+        """show_error() exists and does not raise AttributeError (regression)."""
+        self.tab.show_error("Test message")
+
+    def test_show_success_single_arg_signature(self):
+        """show_success() accepts a single message argument (regression: wrong signature)."""
+        self.tab.append_output = MagicMock()
+        try:
+            self.tab.show_success("Done")
+        except TypeError:
+            self.fail("show_success() should accept a single message argument")
+
+    def test_show_error_single_arg_signature(self):
+        """show_error() accepts a single message argument (regression: wrong signature)."""
+        self.tab.append_output = MagicMock()
+        try:
+            self.tab.show_error("Failed")
+        except TypeError:
+            self.fail("show_error() should accept a single message argument")
 
 
 class TestCleanupSubTab(unittest.TestCase):
@@ -714,9 +738,7 @@ class TestCleanupSubTab(unittest.TestCase):
         """run_command() calls runner.run_command."""
         self.tab.append_output = MagicMock()
         self.tab.run_command("pkexec", ["dnf", "clean", "all"], "Cleaning...")
-        self.tab.runner.run_command.assert_called_once_with(
-            "pkexec", ["dnf", "clean", "all"]
-        )
+        self.tab.runner.run_command.assert_called_once_with("pkexec", ["dnf", "clean", "all"])
 
     def test_run_command_appends_description(self):
         """run_command() appends description to output."""
@@ -771,6 +793,44 @@ class TestCleanupSubTab(unittest.TestCase):
         args = self.tab.run_command.call_args[0]
         self.assertEqual(args[0], "pkexec")
         self.assertIn("autoremove", args[1])
+
+    def test_command_finished_success_calls_show_success(self):
+        """command_finished() calls show_success on exit code 0 (regression: AttributeError)."""
+        self.tab.append_output = MagicMock()
+        self.tab.show_success = MagicMock()
+        self.tab.command_finished(0)
+        self.tab.show_success.assert_called_once()
+
+    def test_command_finished_failure_calls_show_error(self):
+        """command_finished() calls show_error on nonzero exit code (regression: AttributeError)."""
+        self.tab.append_output = MagicMock()
+        self.tab.show_error = MagicMock()
+        self.tab.command_finished(1)
+        self.tab.show_error.assert_called_once()
+
+    def test_show_success_no_attribute_error(self):
+        """show_success() exists and does not raise AttributeError (regression)."""
+        self.tab.show_success("Test message")
+
+    def test_show_error_no_attribute_error(self):
+        """show_error() exists and does not raise AttributeError (regression)."""
+        self.tab.show_error("Test message")
+
+    def test_show_success_single_arg_signature(self):
+        """show_success() accepts a single message argument (regression: wrong signature)."""
+        self.tab.append_output = MagicMock()
+        try:
+            self.tab.show_success("Done")
+        except TypeError:
+            self.fail("show_success() should accept a single message argument")
+
+    def test_show_error_single_arg_signature(self):
+        """show_error() accepts a single message argument (regression: wrong signature)."""
+        self.tab.append_output = MagicMock()
+        try:
+            self.tab.show_error("Failed")
+        except TypeError:
+            self.fail("show_error() should accept a single message argument")
 
 
 # ===================================================================
@@ -935,9 +995,7 @@ class TestOverlaysSubTab(unittest.TestCase):
         mock_item = MagicMock()
         mock_item.text.return_value = "\U0001f4e6 vim"
         tab.packages_list.currentItem.return_value = mock_item
-        mock_pm.remove.return_value = MagicMock(
-            success=False, message="Permission denied"
-        )
+        mock_pm.remove.return_value = MagicMock(success=False, message="Permission denied")
         tab.remove_selected()
         mock_pm.remove.assert_called_once_with(["vim"])
 
@@ -972,9 +1030,7 @@ class TestOverlaysSubTab(unittest.TestCase):
     def test_reset_to_base_confirm_yes_success(self):
         """reset_to_base() calls pkg_manager.reset_to_base on confirmation."""
         tab, mock_pm = self._make_tab()
-        mock_pm.reset_to_base.return_value = MagicMock(
-            success=True, message="Reset complete"
-        )
+        mock_pm.reset_to_base.return_value = MagicMock(success=True, message="Reset complete")
         tab.reset_to_base()
         mock_pm.reset_to_base.assert_called_once()
 
@@ -986,9 +1042,7 @@ class TestOverlaysSubTab(unittest.TestCase):
     def test_reset_to_base_confirm_yes_failure(self):
         """reset_to_base() shows error dialog on failure."""
         tab, mock_pm = self._make_tab()
-        mock_pm.reset_to_base.return_value = MagicMock(
-            success=False, message="Error resetting"
-        )
+        mock_pm.reset_to_base.return_value = MagicMock(success=False, message="Error resetting")
         tab.reset_to_base()
         mock_pm.reset_to_base.assert_called_once()
 
@@ -1145,9 +1199,7 @@ class TestSmartUpdatesSubTab(unittest.TestCase):
         ]
         self.tab._append_output = MagicMock()
         self.tab._schedule_update()
-        self.tab.runner.run_command.assert_called_once_with(
-            "pkexec", ["systemctl", "enable", "test.timer"]
-        )
+        self.tab.runner.run_command.assert_called_once_with("pkexec", ["systemctl", "enable", "test.timer"])
 
     @patch("utils.update_manager.UpdateManager.get_schedule_commands")
     @patch("utils.update_manager.UpdateManager.schedule_update")
@@ -1185,9 +1237,7 @@ class TestSmartUpdatesSubTab(unittest.TestCase):
         )
         self.tab._append_output = MagicMock()
         self.tab._rollback_last()
-        self.tab.runner.run_command.assert_called_once_with(
-            "pkexec", ["dnf", "history", "undo", "last", "-y"]
-        )
+        self.tab.runner.run_command.assert_called_once_with("pkexec", ["dnf", "history", "undo", "last", "-y"])
 
     @patch("utils.update_manager.UpdateManager.rollback_last")
     def test_rollback_last_appends_description(self, mock_rollback):

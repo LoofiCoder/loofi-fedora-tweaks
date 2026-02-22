@@ -1,7 +1,7 @@
 # Loofi Fedora Tweaks — Agent Instructions
 
 > PyQt6 desktop app for Fedora Linux system customization.
-> Python 3.12+ | 28 feature tabs | 200 test files (4349 tests, 74% coverage) | 106 utils modules
+> Python 3.12+ | 28 feature tabs | 228 test files | 80% coverage (CI-enforced) | 107 utils modules
 > Canonical references: `ARCHITECTURE.md` (structure), `ROADMAP.md` (scope), `.github/copilot-instructions.md` (patterns)
 
 ## Build, Lint, Test Commands
@@ -17,7 +17,7 @@ PYTHONPATH=loofi-fedora-tweaks python -m pytest tests/test_commands.py -v
 PYTHONPATH=loofi-fedora-tweaks python -m pytest tests/test_commands.py::TestPrivilegedCommandBuilders::test_dnf_install -v
 
 # Run tests with coverage
-PYTHONPATH=loofi-fedora-tweaks python -m pytest tests/ -v --cov=loofi-fedora-tweaks --cov-report=term-missing --cov-fail-under=75
+PYTHONPATH=loofi-fedora-tweaks python -m pytest tests/ -v --cov=loofi-fedora-tweaks --cov-report=term-missing --cov-fail-under=80
 
 # Lint
 flake8 loofi-fedora-tweaks/ --max-line-length=150 --ignore=E501,W503,E402,E722,E203
@@ -47,7 +47,7 @@ loofi-fedora-tweaks/          # Source root (set as PYTHONPATH)
 └── version.py                # __version__, __version_codename__
 tests/                        # unittest + mock, @patch decorators, no root
 scripts/                      # build_rpm.sh, MCP servers, workflow tools
-.github/agents/               # 8 VS Code Copilot agents (canonical)
+.github/agents/               # 9 VS Code Copilot agents (canonical)
 .github/claude-agents/        # 7 Claude agents (adapters)
 .github/instructions/         # AI instructions + hardening guide
 ```

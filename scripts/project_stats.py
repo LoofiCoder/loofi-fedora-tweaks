@@ -123,7 +123,7 @@ def read_coverage_from_reports() -> str:
     """Try to read latest coverage from workflow reports."""
     reports_dir = ROOT / ".workflow" / "reports"
     if not reports_dir.exists():
-        return "74"  # fallback to last known
+        return "80"  # fallback to CI threshold
 
     # Look for test-results files, get latest
     results = sorted(reports_dir.glob("test-results-*.json"), reverse=True)
@@ -136,14 +136,14 @@ def read_coverage_from_reports() -> str:
         except (json.JSONDecodeError, OSError):
             continue
 
-    return "74"  # fallback
+    return "80"  # fallback to CI threshold
 
 
 def read_test_count_from_reports() -> str:
     """Try to read latest test count from workflow reports."""
     reports_dir = ROOT / ".workflow" / "reports"
     if not reports_dir.exists():
-        return "4349"  # fallback
+        return "0"  # fallback — unknown count
 
     results = sorted(reports_dir.glob("test-results-*.json"), reverse=True)
     for result_file in results:
@@ -155,7 +155,7 @@ def read_test_count_from_reports() -> str:
         except (json.JSONDecodeError, OSError):
             continue
 
-    return "4349"  # fallback
+    return "0"  # fallback — unknown count
 
 
 # ---------------------------------------------------------------------------
@@ -269,7 +269,16 @@ CHECKED_FILES = [
 # Hardcoded patterns that should match current stats
 STAT_CHECKS: list[tuple[str, str, str]] = [
     # (pattern_description, regex_to_find, stats_key)
-    # These detect stale hardcoded values in non-templated files
+    # Version references in prose text (e.g. "v2.0.0 ")
+    ("version in description", r"\bv([\d]+\.[\d]+\.[\d]+)\s", "version"),
+    # Tab count references (e.g. "28 UI tabs", "28 tabs") — word boundary avoids "PyQt6 tabs"
+    ("tab count", r"\b(\d{2,})\s+(?:UI\s+)?(?:feature\s+)?tabs\b", "tab_count"),
+    # Test file count references (e.g. "228 test files")
+    ("test file count", r"\b(\d+)\s+test\s+files\b", "test_file_count"),
+    # Utils module count references (e.g. "107 utils modules")
+    ("utils module count", r"\b(\d+)\s+utils\s+modules\b", "utils_module_count"),
+    # Coverage percentage references (e.g. "80% coverage")
+    ("coverage percentage", r"\b(\d+)%\s+coverage\b", "coverage"),
 ]
 
 
@@ -290,12 +299,33 @@ def check_unrendered_templates(stats: dict[str, Any]) -> list[str]:
     return issues
 
 
+def check_stat_drift(stats: dict[str, Any]) -> list[str]:
+    """Check for stale stat values in committed files using STAT_CHECKS patterns."""
+    issues: list[str] = []
+    for rel_path in CHECKED_FILES:
+        full_path = ROOT / rel_path
+        if not full_path.exists():
+            continue
+        text = full_path.read_text(encoding="utf-8")
+        for desc, pattern, stats_key in STAT_CHECKS:
+            expected = str(stats.get(stats_key, ""))
+            if not expected:
+                continue
+            for match in re.finditer(pattern, text):
+                found = match.group(1)
+                if found != expected:
+                    issues.append(
+                        f"{rel_path}: {desc} — found '{found}', expected '{expected}'"
+                    )
+    return issues
+
+
 def run_check(stats: dict[str, Any]) -> int:
     """Run all consistency checks. Returns exit code."""
     issues: list[str] = []
 
-    # Check for unrendered template variables
     issues.extend(check_unrendered_templates(stats))
+    issues.extend(check_stat_drift(stats))
 
     if not issues:
         print("[stats] OK: all stats consistent")

@@ -52,12 +52,11 @@ def _check_pyqt6():
         msg = str(exc)
         if "libGL" in msg:
             from utils.install_hints import build_install_hint
-            hint = (
-                "PyQt6 cannot load because libGL is missing.\n"
-                f"Fix:  {build_install_hint('mesa-libGL mesa-libEGL')}"
-            )
+
+            hint = f"PyQt6 cannot load because libGL is missing.\nFix:  {build_install_hint('mesa-libGL mesa-libEGL')}"
         elif "No module named" in msg:
             from utils.install_hints import build_install_hint
+
             hint = f"PyQt6 is not installed.\nFix:  {build_install_hint('python3-pyqt6')}"
         else:
             hint = f"PyQt6 import failed: {msg}"
@@ -86,12 +85,8 @@ def main():
         action="store_true",
         help="Run in command-line mode (pass remaining args to CLI)",
     )
-    parser.add_argument(
-        "--web", action="store_true", help="Run headless Loofi Web API server"
-    )
-    parser.add_argument(
-        "--version", "-v", action="version", version=f"%(prog)s {__version__}"
-    )
+    parser.add_argument("--web", action="store_true", help="Run headless Loofi Web API server")
+    parser.add_argument("--version", "-v", action="version", version=f"%(prog)s {__version__}")
 
     args, remaining = parser.parse_known_args()
 
@@ -103,7 +98,13 @@ def main():
     elif args.web:
         from utils.api_server import APIServer
 
-        server = APIServer()
+        api_host = os.getenv("LOOFI_API_HOST", "127.0.0.1")
+        try:
+            api_port = int(os.getenv("LOOFI_API_PORT", "8000"))
+        except ValueError:
+            _log.warning("Invalid LOOFI_API_PORT; falling back to 8000")
+            api_port = 8000
+        server = APIServer(host=api_host, port=api_port)
         server.start()
         _log.info("Loofi Web API started on %s:%s", server.host, server.port)
         try:
@@ -177,8 +178,7 @@ def main():
                     QMessageBox.critical(
                         None,
                         "Loofi Fedora Tweaks — Startup Error",
-                        f"The application failed to start:\n\n{exc}\n\n"
-                        f"Check the log at:\n{LOG_FILE}",
+                        f"The application failed to start:\n\n{exc}\n\nCheck the log at:\n{LOG_FILE}",
                     )
             except (RuntimeError, OSError, ValueError) as e:
                 _log.debug("Failed to show Qt error dialog: %s", e)

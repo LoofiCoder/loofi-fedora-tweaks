@@ -33,23 +33,24 @@ See `.github/instructions/system_hardening_and_stabilization_guide.md` for full 
 - If unsure, default to restrictive behavior
 
 ### Current State
-- **Done**: v33.0.0 "Bastion"
-- **Active/Next**: v44.0 (see `ROADMAP.md`)
+- **Done**: v2.0.0 "Evolution"
+- **Active/Next**: See `ROADMAP.md`
 - **Source of truth**: `ROADMAP.md`
 
 ---
 
 ## 2. Architecture & Layering
 
-Three entry modes in `loofi-fedora-tweaks/main.py`:
+Four entry modes in `loofi-fedora-tweaks/main.py`:
 
 | Layer | Path | Role | Rule |
 |-------|------|------|------|
 | UI | `ui/*_tab.py` | PyQt6 widgets, inherit `BaseTab` | NO business logic, NO subprocess calls |
 | Utils | `utils/*.py` | Business logic, system commands | Shared API consumed by UI + CLI |
 | CLI | `cli/main.py` | Subcommands, `--json` output | Calls `utils/` directly, never `ui/` |
+| API | `api/routes/` | FastAPI endpoints | Calls `utils/`, no PyQt6 |
 | Core | `core/executor/` | `BaseActionExecutor` + `ActionResult` | Subprocess abstraction layer |
-| Services | `services/` | Service layer | Future expansion |
+| Services | `services/` | Service layer | Domain-specific modules |
 | Plugins | `plugins/`, `core/plugins/` | `LoofiPlugin` ABC, marketplace | Sandboxed extensions |
 
 **Strict Rule**: `utils/operations.py` (and similar managers) is the API. GUI and CLI are consumers only.
@@ -104,7 +105,7 @@ if ConfirmActionDialog.confirm(self, "Delete all snapshots", "This cannot be und
 - **Both paths**: Test success AND failure for every operation
 - **No root**: Tests run in CI without privileges or network
 - **Path setup**: `sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'loofi-fedora-tweaks'))`
-- **Coverage target**: 74% current, 85% stretch goal
+- **Coverage target**: 80% (CI-enforced)
 
 ---
 

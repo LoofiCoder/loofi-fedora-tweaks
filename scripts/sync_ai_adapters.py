@@ -22,7 +22,35 @@ from typing import Iterable
 
 ROOT = Path(__file__).resolve().parent.parent
 STATS_FILE = ROOT / ".project-stats.json"
+PREV_STATS_FILE = ROOT / ".project-stats.prev.json"
 TEMPLATE_VAR_RE = re.compile(r"\{\{(\w+)\}\}")
+
+# Patterns for finding rendered stat values in prose text.
+# Each entry: (stats_key, list of regex templates where {} is the value)
+STAT_REFRESH_PATTERNS: list[tuple[str, list[str]]] = [
+    ("version", [
+        r"v{}\s",
+        r'v{}"',
+        r"v{}\b",
+    ]),
+    ("codename", [
+        r'"{}"',
+        r"\"{}\"\s",
+    ]),
+    ("tab_count", [
+        r"{}\s+(?:UI\s+)?(?:feature\s+)?tabs",
+    ]),
+    ("test_file_count", [
+        r"{}\s+test\s+files",
+    ]),
+    ("utils_module_count", [
+        r"{}\s+utils\s+modules",
+    ]),
+    ("coverage", [
+        r"{}%\s+coverage",
+        r"cov-fail-under[= ]+{}",
+    ]),
+]
 
 
 @dataclass(frozen=True)
@@ -197,6 +225,7 @@ RENDERABLE_FILES = [
     ".github/agents/Planner.agent.md",
     ".github/agents/Sculptor.agent.md",
     ".github/agents/Test.agent.md",
+    ".github/agents/FedoraExpert.agent.md",
     ".github/instructions/primary.instructions.md",
     ".github/instructions/workflow.instructions.md",
     ".github/copilot-instructions.md",
@@ -256,6 +285,72 @@ def render_templates(check: bool) -> list[str]:
     return diffs
 
 
+def save_prev_stats() -> None:
+    """Snapshot current stats as .project-stats.prev.json before regeneration."""
+    if STATS_FILE.exists():
+        shutil.copy2(str(STATS_FILE), str(PREV_STATS_FILE))
+
+
+def refresh_rendered_stats(check: bool) -> list[str]:
+    """Replace old stat values with new ones in renderable files.
+
+    Unlike render_templates() which substitutes {{var}} placeholders,
+    this function finds previously rendered literal values (e.g. "28 tabs")
+    and replaces them with current stats (e.g. "30 tabs"). This makes the
+    system survive repeated version bumps without requiring {{var}} markers.
+
+    Requires .project-stats.prev.json (old values) and .project-stats.json
+    (new values). Run save_prev_stats() before regenerating stats.
+    """
+    if not PREV_STATS_FILE.exists():
+        return ["refresh: no .project-stats.prev.json — skipping (first run?)"]
+
+    old_stats = {
+        k: str(v)
+        for k, v in json.loads(PREV_STATS_FILE.read_text(encoding="utf-8")).items()
+        if not isinstance(v, list)
+    }
+    new_stats = load_stats()
+    diffs: list[str] = []
+
+    for rel_path in RENDERABLE_FILES:
+        full_path = ROOT / rel_path
+        if not full_path.exists():
+            continue
+
+        text = full_path.read_text(encoding="utf-8")
+        original = text
+
+        for key, patterns in STAT_REFRESH_PATTERNS:
+            old_val = old_stats.get(key, "")
+            new_val = new_stats.get(key, "")
+            if not old_val or not new_val or old_val == new_val:
+                continue
+
+            for pat_template in patterns:
+                old_pattern = pat_template.format(re.escape(old_val))
+                try:
+                    regex = re.compile(old_pattern)
+                except re.error:
+                    continue
+
+                def _replacer(m: re.Match[str], _old: str = old_val, _new: str = new_val) -> str:
+                    return m.group(0).replace(_old, _new)
+
+                text = regex.sub(_replacer, text)
+
+        if text != original:
+            # Count changed lines for reporting
+            orig_lines = set(original.splitlines())
+            new_lines = set(text.splitlines())
+            changed = len(orig_lines.symmetric_difference(new_lines))
+            diffs.append(f"refreshed stats in {rel_path} ({changed} lines changed)")
+            if not check:
+                full_path.write_text(text, encoding="utf-8")
+
+    return diffs
+
+
 def run(check: bool) -> list[str]:
     diffs: list[str] = []
 
@@ -282,11 +377,30 @@ def main() -> int:
         action="store_true",
         help="Substitute {{variable}} templates using .project-stats.json",
     )
+    parser.add_argument(
+        "--refresh",
+        action="store_true",
+        help="Replace old stat values with current ones (uses .project-stats.prev.json)",
+    )
+    parser.add_argument(
+        "--save-prev",
+        action="store_true",
+        help="Snapshot current .project-stats.json as .prev before regeneration",
+    )
     args = parser.parse_args()
 
     all_diffs: list[str] = []
 
-    if args.render:
+    if args.save_prev:
+        save_prev_stats()
+        print("[sync-ai] Saved .project-stats.prev.json")
+        if not args.render and not args.refresh:
+            return 0
+
+    if args.refresh:
+        refresh_diffs = refresh_rendered_stats(check=args.check)
+        all_diffs.extend(refresh_diffs)
+    elif args.render:
         render_diffs = render_templates(check=args.check)
         all_diffs.extend(render_diffs)
     else:
@@ -294,7 +408,7 @@ def main() -> int:
         all_diffs.extend(sync_diffs)
 
     if not all_diffs:
-        mode = "render" if args.render else "sync"
+        mode = "refresh" if args.refresh else ("render" if args.render else "sync")
         print(f"[sync-ai] OK: {mode} — no changes needed")
         return 0
 
@@ -304,7 +418,7 @@ def main() -> int:
             print(f"- {item}")
         return 1
 
-    action = "Rendered" if args.render else "Updated"
+    action = "Refreshed" if args.refresh else ("Rendered" if args.render else "Updated")
     print(f"[sync-ai] {action} adapter files:")
     for item in all_diffs:
         print(f"- {item}")

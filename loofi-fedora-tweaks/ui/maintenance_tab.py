@@ -39,7 +39,7 @@ from ui.tooltips import MAINT_CLEANUP, MAINT_JOURNAL, MAINT_ORPHANS
 # ---------------------------------------------------------------------------
 
 
-class _UpdatesSubTab(QWidget):
+class _UpdatesSubTab(BaseTab):
     """Sub-tab containing all system update functionality.
 
     Preserves every feature from the original UpdatesTab:
@@ -62,9 +62,7 @@ class _UpdatesSubTab(QWidget):
         layout.addWidget(header)
 
         # Update All Button (Prominent)
-        self.btn_update_all = QPushButton(
-            self.tr("\U0001f504 Update All (DNF + Flatpak + Firmware)")
-        )
+        self.btn_update_all = QPushButton(self.tr("\U0001f504 Update All (DNF + Flatpak + Firmware)"))
         self.btn_update_all.setAccessibleName(self.tr("Update All (DNF + Flatpak + Firmware)"))
         self.btn_update_all.setObjectName("maintUpdateAllBtn")
         self.btn_update_all.clicked.connect(self.run_update_all)
@@ -100,12 +98,7 @@ class _UpdatesSubTab(QWidget):
 
         btn_list_kernels = QPushButton(self.tr("List Installed Kernels"))
         btn_list_kernels.setAccessibleName(self.tr("List Installed Kernels"))
-        btn_list_kernels.clicked.connect(
-            lambda: self.run_single_command(
-                "rpm", ["-qa", "kernel"],
-                self.tr("Listing Installed Kernels...")
-            )
-        )
+        btn_list_kernels.clicked.connect(lambda: self.run_single_command("rpm", ["-qa", "kernel"], self.tr("Listing Installed Kernels...")))
         kernel_layout.addWidget(btn_list_kernels)
 
         btn_remove_old = QPushButton(self.tr("Remove Old Kernels"))
@@ -172,18 +165,11 @@ class _UpdatesSubTab(QWidget):
             QMessageBox.warning(
                 self,
                 self.tr("Update Locked"),
-                self.tr(
-                    "Another package manager (DNF/RPM) is currently running.\n"
-                    "Please wait for it to finish."
-                ),
+                self.tr("Another package manager (DNF/RPM) is currently running.\nPlease wait for it to finish."),
             )
             return
 
-        action_name = (
-            self.tr("System Upgrade (rpm-ostree)")
-            if self.package_manager == "rpm-ostree"
-            else self.tr("System Update (DNF)")
-        )
+        action_name = self.tr("System Upgrade (rpm-ostree)") if self.package_manager == "rpm-ostree" else self.tr("System Update (DNF)")
 
         if not SafetyManager.confirm_action(self, action_name):
             return
@@ -227,10 +213,8 @@ class _UpdatesSubTab(QWidget):
         self.start_process()
         self.update_queue = [
             self._system_update_step(self.package_manager),
-            ("flatpak", ["update", "-y"],
-             self.tr("Starting Flatpak Update...")),
-            ("pkexec", ["fwupdmgr", "update", "-y"],
-             self.tr("Starting Firmware Update...")),
+            ("flatpak", ["update", "-y"], self.tr("Starting Flatpak Update...")),
+            ("pkexec", ["fwupdmgr", "update", "-y"], self.tr("Starting Firmware Update...")),
         ]
         self.current_update_index = 0
         cmd, args, desc = self.update_queue[0]
@@ -249,22 +233,15 @@ class _UpdatesSubTab(QWidget):
         self.btn_update_all.setEnabled(False)
 
     def append_output(self, text):
-        self.output_area.moveCursor(
-            self.output_area.textCursor().MoveOperation.End
-        )
+        self.output_area.moveCursor(self.output_area.textCursor().MoveOperation.End)
         self.output_area.insertPlainText(text)
-        self.output_area.moveCursor(
-            self.output_area.textCursor().MoveOperation.End
-        )
+        self.output_area.moveCursor(self.output_area.textCursor().MoveOperation.End)
 
     def command_finished(self, exit_code):
-        self.append_output(
-            self.tr("\nCommand finished with exit code: {}").format(exit_code)
-        )
+        self.append_output(self.tr("\nCommand finished with exit code: {}").format(exit_code))
 
         # Handle sequential update-all queue
-        if (self.update_queue
-                and self.current_update_index < len(self.update_queue) - 1):
+        if self.update_queue and self.current_update_index < len(self.update_queue) - 1:
             self.current_update_index += 1
             cmd, args, desc = self.update_queue[self.current_update_index]
             self.append_output(f"\n\n{desc}\n")
@@ -281,9 +258,9 @@ class _UpdatesSubTab(QWidget):
             self.progress_bar.setValue(100)
             self.progress_bar.setFormat(self.tr("100% - Done"))
             if exit_code == 0:
-                self.show_success("Maintenance", self.tr("Update completed successfully"))
+                self.show_success(self.tr("Update completed successfully"))
             else:
-                self.show_error("Maintenance", self.tr("Update failed (exit code {})").format(exit_code))
+                self.show_error(self.tr("Update failed (exit code {})").format(exit_code))
 
     def run_single_command(self, cmd, args, description):
         self.output_area.clear()
@@ -291,12 +268,13 @@ class _UpdatesSubTab(QWidget):
         self.append_output(f"{description}\n")
         self.runner.run_command(cmd, args)
 
+
 # ---------------------------------------------------------------------------
 # Sub-tab: Cleanup
 # ---------------------------------------------------------------------------
 
 
-class _CleanupSubTab(QWidget):
+class _CleanupSubTab(BaseTab):
     """Sub-tab containing all cleanup and maintenance functionality.
 
     Preserves every feature from the original CleanupTab:
@@ -349,12 +327,7 @@ class _CleanupSubTab(QWidget):
         btn_journal = QPushButton(self.tr("Vacuum Journal (2 weeks)"))
         btn_journal.setAccessibleName(self.tr("Vacuum Journal"))
         btn_journal.setToolTip(MAINT_JOURNAL)
-        btn_journal.clicked.connect(
-            lambda: self.run_command(
-                "pkexec", ["journalctl", "--vacuum-time=2weeks"],
-                self.tr("Vacuuming Journal...")
-            )
-        )
+        btn_journal.clicked.connect(lambda: self.run_command("pkexec", ["journalctl", "--vacuum-time=2weeks"], self.tr("Vacuuming Journal...")))
         cleanup_layout.addWidget(btn_journal)
 
         layout.addWidget(cleanup_group)
@@ -366,22 +339,12 @@ class _CleanupSubTab(QWidget):
 
         btn_trim = QPushButton(self.tr("SSD Trim (fstrim)"))
         btn_trim.setAccessibleName(self.tr("SSD Trim"))
-        btn_trim.clicked.connect(
-            lambda: self.run_command(
-                "pkexec", ["fstrim", "-av"],
-                self.tr("Trimming SSD...")
-            )
-        )
+        btn_trim.clicked.connect(lambda: self.run_command("pkexec", ["fstrim", "-av"], self.tr("Trimming SSD...")))
         maint_layout.addWidget(btn_trim)
 
         btn_rpmdb = QPushButton(self.tr("Rebuild RPM Database"))
         btn_rpmdb.setAccessibleName(self.tr("Rebuild RPM Database"))
-        btn_rpmdb.clicked.connect(
-            lambda: self.run_command(
-                "pkexec", ["rpm", "--rebuilddb"],
-                self.tr("Rebuilding RPM Database...")
-            )
-        )
+        btn_rpmdb.clicked.connect(lambda: self.run_command("pkexec", ["rpm", "--rebuilddb"], self.tr("Rebuilding RPM Database...")))
         maint_layout.addWidget(btn_rpmdb)
 
         # Timeshift Check
@@ -398,14 +361,9 @@ class _CleanupSubTab(QWidget):
 
     def check_timeshift(self):
         if shutil.which("timeshift"):
-            self.run_command(
-                "pkexec", ["timeshift", "--list"],
-                self.tr("Checking Timeshift Snapshots...")
-            )
+            self.run_command("pkexec", ["timeshift", "--list"], self.tr("Checking Timeshift Snapshots..."))
         else:
-            self.append_output(
-                self.tr("Timeshift not found. Please install it for system safety.\n")
-            )
+            self.append_output(self.tr("Timeshift not found. Please install it for system safety.\n"))
 
     def run_autoremove(self):
         from services.security import SafetyManager
@@ -418,9 +376,7 @@ class _CleanupSubTab(QWidget):
             )
             return
 
-        if SafetyManager.confirm_action(
-            self, self.tr("Remove Unused Packages (Risky)")
-        ):
+        if SafetyManager.confirm_action(self, self.tr("Remove Unused Packages (Risky)")):
             self.run_command(
                 *PrivilegedCommand.dnf("autoremove"),
             )
@@ -431,27 +387,22 @@ class _CleanupSubTab(QWidget):
         self.runner.run_command(cmd, args)
 
     def append_output(self, text):
-        self.output_area.moveCursor(
-            self.output_area.textCursor().MoveOperation.End
-        )
+        self.output_area.moveCursor(self.output_area.textCursor().MoveOperation.End)
         self.output_area.insertPlainText(text)
-        self.output_area.moveCursor(
-            self.output_area.textCursor().MoveOperation.End
-        )
+        self.output_area.moveCursor(self.output_area.textCursor().MoveOperation.End)
 
     def command_finished(self, exit_code):
-        self.append_output(
-            self.tr("\nCommand finished with exit code: {}").format(exit_code)
-        )
+        self.append_output(self.tr("\nCommand finished with exit code: {}").format(exit_code))
         if exit_code == 0:
-            self.show_success("Cleaning", self.tr("Cleanup completed successfully"))
+            self.show_success(self.tr("Cleanup completed successfully"))
         else:
-            self.show_error("Cleaning", self.tr("Cleanup failed (exit code {})").format(exit_code))
+            self.show_error(self.tr("Cleanup failed (exit code {})").format(exit_code))
 
 
 # ---------------------------------------------------------------------------
 # Sub-tab: Overlays (Atomic / rpm-ostree only)
 # ---------------------------------------------------------------------------
+
 
 class _OverlaysSubTab(QWidget):
     """Sub-tab for managing rpm-ostree layered packages.
@@ -490,23 +441,16 @@ class _OverlaysSubTab(QWidget):
         info_layout = QVBoxLayout(info_frame)
 
         variant = SystemManager.get_variant_name()
-        info_label = QLabel(
-            self.tr("\U0001f4e6 System: Fedora {} (Immutable)").format(variant)
-        )
+        info_label = QLabel(self.tr("\U0001f4e6 System: Fedora {} (Immutable)").format(variant))
         info_label.setObjectName("maintOverlayInfoLabel")
         info_layout.addWidget(info_label)
 
-        desc_label = QLabel(self.tr(
-            "Layered packages are RPMs installed on top of the base OS image.\n"
-            "Changes require a reboot to fully apply."
-        ))
+        desc_label = QLabel(self.tr("Layered packages are RPMs installed on top of the base OS image.\nChanges require a reboot to fully apply."))
         desc_label.setObjectName("maintOverlayDesc")
         info_layout.addWidget(desc_label)
 
         # Pending Reboot Warning
-        self.reboot_warning = QLabel(
-            self.tr("\u26a0\ufe0f Pending changes require reboot!")
-        )
+        self.reboot_warning = QLabel(self.tr("\u26a0\ufe0f Pending changes require reboot!"))
         self.reboot_warning.setObjectName("maintRebootWarning")
         self.reboot_warning.setVisible(False)
         info_layout.addWidget(self.reboot_warning)
@@ -547,9 +491,7 @@ class _OverlaysSubTab(QWidget):
         layout.addWidget(packages_group)
 
         # Reboot Button
-        self.btn_reboot = QPushButton(
-            self.tr("\U0001f501 Reboot to Apply Changes")
-        )
+        self.btn_reboot = QPushButton(self.tr("\U0001f501 Reboot to Apply Changes"))
         self.btn_reboot.setAccessibleName(self.tr("Reboot to Apply Changes"))
         self.btn_reboot.setObjectName("maintRebootBtn")
         self.btn_reboot.clicked.connect(self.reboot_system)
@@ -569,9 +511,7 @@ class _OverlaysSubTab(QWidget):
                 item = QListWidgetItem(f"\U0001f4e6 {pkg}")
                 self.packages_list.addItem(item)
         else:
-            item = QListWidgetItem(
-                self.tr("No layered packages (clean base image)")
-            )
+            item = QListWidgetItem(self.tr("No layered packages (clean base image)"))
             item.setForeground(QColor("#9da7bf"))
             self.packages_list.addItem(item)
 
@@ -600,18 +540,14 @@ class _OverlaysSubTab(QWidget):
         reply = QMessageBox.question(
             self,
             self.tr("Confirm Removal"),
-            self.tr(
-                "Remove '{}' from system overlays?\n\nThis requires a reboot."
-            ).format(pkg_name),
+            self.tr("Remove '{}' from system overlays?\n\nThis requires a reboot.").format(pkg_name),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
 
         if reply == QMessageBox.StandardButton.Yes:
             result = self.pkg_manager.remove([pkg_name])
             if result.success:
-                QMessageBox.information(
-                    self, self.tr("Success"), result.message
-                )
+                QMessageBox.information(self, self.tr("Success"), result.message)
                 self.refresh_list()
             else:
                 QMessageBox.critical(self, self.tr("Error"), result.message)
@@ -621,10 +557,7 @@ class _OverlaysSubTab(QWidget):
         reply = QMessageBox.warning(
             self,
             self.tr("\u26a0\ufe0f Reset to Base Image"),
-            self.tr(
-                "This will REMOVE ALL layered packages and reset to the "
-                "clean base image.\n\nAre you absolutely sure?"
-            ),
+            self.tr("This will REMOVE ALL layered packages and reset to the clean base image.\n\nAre you absolutely sure?"),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
@@ -635,10 +568,7 @@ class _OverlaysSubTab(QWidget):
                 QMessageBox.information(
                     self,
                     self.tr("Reset Complete"),
-                    self.tr(
-                        "System reset to base image.\n\n"
-                        "Please reboot to apply changes."
-                    ),
+                    self.tr("System reset to base image.\n\nPlease reboot to apply changes."),
                 )
                 self.refresh_list()
             else:
@@ -729,64 +659,49 @@ class _SmartUpdatesSubTab(QWidget):
 
         self.runner = CommandRunner()
         self.runner.output_received.connect(self._append_output)
-        self.runner.finished.connect(
-            lambda ec: self._append_output(
-                self.tr("\nCommand finished with exit code: {}\n").format(ec)
-            )
-        )
+        self.runner.finished.connect(lambda ec: self._append_output(self.tr("\nCommand finished with exit code: {}\n").format(ec)))
 
         layout.addStretch()
 
     def _append_output(self, text):
-        self.output_area.moveCursor(
-            self.output_area.textCursor().MoveOperation.End
-        )
+        self.output_area.moveCursor(self.output_area.textCursor().MoveOperation.End)
         self.output_area.insertPlainText(text)
-        self.output_area.moveCursor(
-            self.output_area.textCursor().MoveOperation.End
-        )
+        self.output_area.moveCursor(self.output_area.textCursor().MoveOperation.End)
 
     def _check_updates(self):
         """Check for available updates."""
         try:
             from utils.update_manager import UpdateManager
+
             updates = UpdateManager.check_updates()
             self.updates_list.clear()
             for u in updates:
-                item = QListWidgetItem(
-                    f"{u.name}  {u.old_version} → {u.new_version}  ({u.source})"
-                )
+                item = QListWidgetItem(f"{u.name}  {u.old_version} → {u.new_version}  ({u.source})")
                 self.updates_list.addItem(item)
             if not updates:
-                self.updates_list.addItem(
-                    QListWidgetItem(self.tr("System is up to date."))
-                )
-            self._append_output(
-                self.tr("Found {} available updates.\n").format(len(updates))
-            )
+                self.updates_list.addItem(QListWidgetItem(self.tr("System is up to date.")))
+            self._append_output(self.tr("Found {} available updates.\n").format(len(updates)))
         except (RuntimeError, OSError, ValueError) as e:
             self._append_output(f"[ERROR] {e}\n")
 
     def _preview_conflicts(self):
         try:
             from utils.update_manager import UpdateManager
+
             conflicts = UpdateManager.preview_conflicts()
             self.updates_list.clear()
             for c in conflicts:
-                item = QListWidgetItem(
-                    f"⚠ {c.package}: {c.conflict_type} — {c.description}"
-                )
+                item = QListWidgetItem(f"⚠ {c.package}: {c.conflict_type} — {c.description}")
                 self.updates_list.addItem(item)
             if not conflicts:
-                self.updates_list.addItem(
-                    QListWidgetItem(self.tr("No conflicts detected."))
-                )
+                self.updates_list.addItem(QListWidgetItem(self.tr("No conflicts detected.")))
         except (RuntimeError, OSError, ValueError) as e:
             self._append_output(f"[ERROR] {e}\n")
 
     def _schedule_update(self):
         try:
             from utils.update_manager import UpdateManager
+
             scheduled = UpdateManager.schedule_update("02:00")
             cmds = UpdateManager.get_schedule_commands(scheduled)
             for binary, args, desc in cmds:
@@ -798,6 +713,7 @@ class _SmartUpdatesSubTab(QWidget):
     def _rollback_last(self):
         try:
             from utils.update_manager import UpdateManager
+
             binary, args, desc = UpdateManager.rollback_last()
             self._append_output(f"{desc}\n")
             self.runner.run_command(binary, args)
@@ -808,6 +724,7 @@ class _SmartUpdatesSubTab(QWidget):
 # ---------------------------------------------------------------------------
 # Main consolidated tab
 # ---------------------------------------------------------------------------
+
 
 class MaintenanceTab(BaseTab):
     """Consolidated maintenance tab merging Updates, Cleanup, and Overlays.

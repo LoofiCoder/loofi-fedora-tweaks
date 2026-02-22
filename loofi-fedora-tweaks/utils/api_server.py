@@ -1,5 +1,6 @@
 """Loofi Web API server (FastAPI + Uvicorn)."""
 
+import os
 import threading
 from pathlib import Path
 from typing import Optional
@@ -27,19 +28,14 @@ class APIServer:
 
     def _create_app(self) -> FastAPI:
         app = FastAPI(title="Loofi Web API", version="20.0.0")
-        # v29.0: CORS restricted to localhost (was wildcard)
-        allowed_origins = [
+        configured_origins = os.getenv("LOOFI_CORS_ORIGINS", "").strip()
+        default_origins = [
             f"http://{self.host}:{self.port}",
             "http://localhost:8000",
             "http://127.0.0.1:8000",
         ]
-        app.add_middleware(
-            CORSMiddleware,
-            allow_origins=allowed_origins,
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"]
-        )
+        allowed_origins = [origin.strip() for origin in configured_origins.split(",") if origin.strip()] or default_origins
+        app.add_middleware(CORSMiddleware, allow_origins=allowed_origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
         # API routes
         app.include_router(system_routes.router, prefix="/api")

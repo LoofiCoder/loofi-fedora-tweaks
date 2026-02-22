@@ -7,10 +7,11 @@ Updates version across all files that reference it:
 2. loofi-fedora-tweaks.spec        (Version:)
 3. pyproject.toml                  (version)
 4. .workflow/specs/.race-lock.json (target_version)
-5. Regenerates project stats       (scripts/project_stats.py)
-6. Re-renders templates            (scripts/sync_ai_adapters.py --render)
-7. Scaffolds release notes         (docs/releases/RELEASE-NOTES-vX.Y.Z.md)
-8. Scans tests for hardcoded versions (warns if found)
+5. Snapshots old stats             (.project-stats.prev.json)
+6. Regenerates project stats       (scripts/project_stats.py)
+7. Re-renders templates + refreshes old stat values
+8. Scaffolds release notes         (docs/releases/RELEASE-NOTES-vX.Y.Z.md)
+9. Scans tests for hardcoded versions (warns if found)
 
 Usage:
     python3 scripts/bump_version.py 41.0.0 --codename "Scaffold"
@@ -169,12 +170,28 @@ def update_race_lock(new_version: str, dry_run: bool) -> list[str]:
 
 
 def regenerate_stats(dry_run: bool) -> list[str]:
-    """Run project_stats.py to refresh cached stats."""
+    """Run project_stats.py to refresh cached stats.
+
+    Saves a snapshot of the previous stats first so that
+    sync_ai_adapters.py --refresh can diff old → new values.
+    """
     if dry_run:
         return ["  stats: would regenerate .project-stats.json"]
 
     if not STATS_SCRIPT.exists():
         return ["  stats: script not found (skipped)"]
+
+    # Snapshot old stats before overwriting
+    try:
+        subprocess.run(
+            [sys.executable, str(SYNC_SCRIPT), "--save-prev"],
+            cwd=str(PROJECT_ROOT),
+            check=True,
+            capture_output=True,
+            timeout=10,
+        )
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
+        pass  # first run — no prev stats to save
 
     try:
         subprocess.run(
@@ -190,13 +207,16 @@ def regenerate_stats(dry_run: bool) -> list[str]:
 
 
 def render_templates(dry_run: bool) -> list[str]:
-    """Run sync_ai_adapters.py --render to update template variables."""
+    """Run sync_ai_adapters.py --render and --refresh to update all stats."""
     if dry_run:
-        return ["  templates: would re-render"]
+        return ["  templates: would re-render and refresh"]
 
     if not SYNC_SCRIPT.exists():
         return ["  templates: script not found (skipped)"]
 
+    results: list[str] = []
+
+    # First: render any remaining {{var}} templates
     try:
         result = subprocess.run(
             [sys.executable, str(SYNC_SCRIPT), "--render"],
@@ -206,10 +226,29 @@ def render_templates(dry_run: bool) -> list[str]:
             text=True,
             timeout=30,
         )
-        rendered_count = result.stdout.count("Rendered")
-        return [f"  templates: re-rendered ({rendered_count} files)"]
+        rendered_count = result.stdout.count("rendered")
+        if rendered_count:
+            results.append(f"  templates: rendered ({rendered_count} files)")
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
-        return [f"  templates: failed ({e})"]
+        results.append(f"  templates: render failed ({e})")
+
+    # Then: refresh old stat values → new stat values
+    try:
+        result = subprocess.run(
+            [sys.executable, str(SYNC_SCRIPT), "--refresh"],
+            cwd=str(PROJECT_ROOT),
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        refreshed_count = result.stdout.count("refreshed")
+        if refreshed_count:
+            results.append(f"  templates: refreshed stats ({refreshed_count} files)")
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
+        results.append(f"  templates: refresh failed ({e})")
+
+    return results or ["  templates: no changes needed"]
 
 
 def scaffold_release_notes(

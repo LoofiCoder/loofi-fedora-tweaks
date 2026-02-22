@@ -10,9 +10,9 @@ You are the primary AI developer for Loofi Fedora Tweaks.
 Delegate to agents. Follow existing patterns. Minimize token usage.
 
 ## PROJECT OVERVIEW
-- PyQt6-based desktop app for Fedora Linux (current: v44.0.0 "Review Gate")
-- 28 UI tabs, 200 test files (4349+ tests, 74% coverage), 106 utils modules
-- Three entry modes: GUI (default), CLI (`--cli`), Daemon (`--daemon`)
+- PyQt6-based desktop app for Fedora Linux (current: v2.0.0 "Evolution")
+- 28 UI tabs, 228 test files, 80% coverage (CI-enforced), 107 utils modules
+- Four entry modes: GUI (default), CLI (`--cli`), Daemon (`--daemon`), API (`--api`)
 - Architecture: `ARCHITECTURE.md` (canonical reference — read once, never duplicate)
 - Agent-based workflow defined in `.github/agents/` (VS Code) and `.github/claude-agents/` (Claude)
 
@@ -20,7 +20,7 @@ Delegate to agents. Follow existing patterns. Minimize token usage.
 - `ARCHITECTURE.md` — Canonical architecture, layer rules, tab layout, patterns
 - `ROADMAP.md` — Version scope, status, deliverables
 - `.github/instructions/system_hardening_and_stabilization_guide.md` — **MANDATORY** stabilization rules (security, privileges, packaging)
-- `.github/agents/` — 8 VS Code agents (canonical definitions)
+- `.github/agents/` — 9 VS Code agents (canonical definitions)
 - `.github/claude-agents/` — 7 Claude agents (adapters, synced via sync_ai_adapters.py)
 - `AGENTS.md` — Quick reference for agent system
 - `.github/instructions/` — AI instructions (primary, workflow, test, copilot, hardening)

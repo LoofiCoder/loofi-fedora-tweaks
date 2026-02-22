@@ -108,6 +108,23 @@ PYTHONPATH=loofi-fedora-tweaks python3 loofi-fedora-tweaks/main.py
 | Daemon  | `loofi-fedora-tweaks --daemon`        | Background scheduled tasks  |
 | Web API | `loofi-fedora-tweaks --web`           | Headless/remote integration |
 
+### Web API network configuration
+
+The Web API reads these optional environment variables:
+
+- `LOOFI_API_HOST` (default: `127.0.0.1`)
+- `LOOFI_API_PORT` (default: `8000`)
+- `LOOFI_CORS_ORIGINS` (comma-separated origin allowlist)
+
+Example for LAN host `192.168.1.3`:
+
+```bash
+export LOOFI_API_HOST=0.0.0.0
+export LOOFI_API_PORT=18001
+export LOOFI_CORS_ORIGINS="http://192.168.1.3:18001"
+loofi-fedora-tweaks --web
+```
+
 Optional shell alias for convenience:
 
 ```bash
