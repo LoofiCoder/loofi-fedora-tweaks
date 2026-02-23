@@ -9,12 +9,12 @@ Migrated from utils/sandbox.py in v2.0.0.
 
 import logging
 import os
-import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
+from services.system.system import cached_which
 from utils.commands import PrivilegedCommand
 
 logger = logging.getLogger(__name__)
@@ -93,12 +93,12 @@ class SandboxManager:
     @classmethod
     def is_firejail_installed(cls) -> bool:
         """Check if Firejail is installed."""
-        return shutil.which("firejail") is not None
+        return cached_which("firejail") is not None
 
     @classmethod
     def is_bubblewrap_installed(cls) -> bool:
         """Check if Bubblewrap is installed."""
-        return shutil.which("bwrap") is not None
+        return cached_which("bwrap") is not None
 
     @classmethod
     def install_firejail(cls) -> Result:
@@ -292,7 +292,7 @@ class BubblewrapManager:
     @classmethod
     def is_installed(cls) -> bool:
         """Check if Bubblewrap is installed."""
-        return shutil.which("bwrap") is not None
+        return cached_which("bwrap") is not None
 
     @classmethod
     def run_minimal_sandbox(cls, command: list[str], share_paths: Optional[list[str]] = None) -> Result:

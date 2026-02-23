@@ -9,10 +9,11 @@ Migrated from utils/ports.py in v2.0.0.
 
 import logging
 import re
-import shutil
 import subprocess
 from dataclasses import dataclass
 from typing import Optional
+
+from services.system.system import cached_which
 
 logger = logging.getLogger(__name__)
 
@@ -202,7 +203,7 @@ class PortAuditor:
             port: Port number to block
             protocol: tcp or udp
         """
-        if not shutil.which("firewall-cmd"):
+        if not cached_which("firewall-cmd"):
             return Result(False, "firewall-cmd not found")
 
         if not cls.is_firewalld_running():
@@ -231,7 +232,7 @@ class PortAuditor:
             port: Port number to allow
             protocol: tcp or udp
         """
-        if not shutil.which("firewall-cmd"):
+        if not cached_which("firewall-cmd"):
             return Result(False, "firewall-cmd not found")
 
         if not cls.is_firewalld_running():

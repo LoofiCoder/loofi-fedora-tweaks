@@ -6,9 +6,10 @@ Handles CPU governors, GPU modes, fan control, and thermal management.
 import glob
 import logging
 import os
-import shutil
 import subprocess
 from typing import Any, Optional
+
+from services.system.system import cached_which
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +92,7 @@ done
         """Check if this is a hybrid GPU laptop (NVIDIA Optimus, AMD Switchable)."""
         # Check for NVIDIA
         nvidia_present = os.path.exists("/proc/driver/nvidia") or \
-            shutil.which("nvidia-smi") is not None
+            cached_which("nvidia-smi") is not None
 
         # Check for integrated GPU as well
         intel_present = any("intel" in p.lower() for p in glob.glob("/sys/class/drm/card*/device/vendor"))
@@ -106,7 +107,7 @@ done
         Returns: 'integrated', 'hybrid', 'nvidia', or 'unknown'
         """
         # Check envycontrol first
-        if shutil.which("envycontrol"):
+        if cached_which("envycontrol"):
             try:
                 result = subprocess.run(
                     ["envycontrol", "--query"],
@@ -123,7 +124,7 @@ done
                 logger.debug("envycontrol query failed: %s", e)
 
         # Check supergfxctl (ASUS)
-        if shutil.which("supergfxctl"):
+        if cached_which("supergfxctl"):
             try:
                 result = subprocess.run(
                     ["supergfxctl", "-g"],
@@ -151,7 +152,7 @@ done
             return (False, f"Invalid mode. Choose from: {valid_modes}")
 
         # Try envycontrol
-        if shutil.which("envycontrol"):
+        if cached_which("envycontrol"):
             try:
                 result = subprocess.run(
                     ["pkexec", "envycontrol", "--switch", mode],
@@ -165,7 +166,7 @@ done
                 return (False, str(e))
 
         # Try supergfxctl
-        if shutil.which("supergfxctl"):
+        if cached_which("supergfxctl"):
             mode_map = {"integrated": "Integrated", "hybrid": "Hybrid", "nvidia": "Dedicated"}
             try:
                 result = subprocess.run(
@@ -185,9 +186,9 @@ done
     def get_available_gpu_tools(cls) -> list:
         """Get list of available GPU switching tools."""
         tools = []
-        if shutil.which("envycontrol"):
+        if cached_which("envycontrol"):
             tools.append("envycontrol")
-        if shutil.which("supergfxctl"):
+        if cached_which("supergfxctl"):
             tools.append("supergfxctl")
         return tools
 
@@ -196,7 +197,7 @@ done
     @classmethod
     def is_nbfc_available(cls) -> bool:
         """Check if nbfc-linux is installed."""
-        return shutil.which("nbfc") is not None
+        return cached_which("nbfc") is not None
 
     @classmethod
     def get_nbfc_profiles(cls) -> list:
@@ -310,7 +311,7 @@ done
     @classmethod
     def is_power_profiles_available(cls) -> bool:
         """Check if power-profiles-daemon is available."""
-        return shutil.which("powerprofilesctl") is not None
+        return cached_which("powerprofilesctl") is not None
 
     @classmethod
     def get_power_profile(cls) -> str:
@@ -399,7 +400,7 @@ done
         }
 
         # 1. Check NVIDIA CUDA
-        if shutil.which("nvidia-smi"):
+        if cached_which("nvidia-smi"):
             try:
                 result = subprocess.run(
                     ["nvidia-smi", "-L"],
@@ -417,7 +418,7 @@ done
                 logger.debug("nvidia-smi check failed: %s", e)
 
         # 2. Check AMD ROCm
-        if shutil.which("rocminfo"):
+        if cached_which("rocminfo"):
             try:
                 result = subprocess.run(
                     ["rocminfo"],
@@ -432,7 +433,7 @@ done
                 logger.debug("rocminfo check failed: %s", e)
 
         # Alternative AMD check via hip
-        if not caps["rocm"] and shutil.which("hipconfig"):
+        if not caps["rocm"] and cached_which("hipconfig"):
             try:
                 result = subprocess.run(
                     ["hipconfig", "--platform"],

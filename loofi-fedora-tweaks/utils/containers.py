@@ -7,12 +7,12 @@ from __future__ import annotations
 
 import logging
 import re
-import shutil
 import subprocess
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
 
+from services.system.system import cached_which
 from utils.install_hints import build_install_hint
 
 logger = logging.getLogger(__name__)
@@ -67,7 +67,7 @@ class ContainerManager:
     @classmethod
     def is_available(cls) -> bool:
         """Check if distrobox is installed."""
-        return shutil.which("distrobox") is not None
+        return cached_which("distrobox") is not None
 
     @classmethod
     def list_containers(cls) -> list[Container]:

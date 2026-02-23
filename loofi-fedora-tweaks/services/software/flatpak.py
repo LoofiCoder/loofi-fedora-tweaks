@@ -8,11 +8,11 @@ Migrated from utils/flatpak_manager.py in v2.0.0 "Evolution".
 """
 
 import logging
-import shutil
 import subprocess
 from dataclasses import dataclass
 from typing import List
 
+from services.system.system import cached_which
 from utils.commands import CommandTuple
 
 logger = logging.getLogger(__name__)
@@ -57,7 +57,7 @@ class FlatpakManager:
     @staticmethod
     def is_available() -> bool:
         """Check if flatpak is installed."""
-        return shutil.which("flatpak") is not None
+        return cached_which("flatpak") is not None
 
     @staticmethod
     def get_flatpak_sizes() -> List[FlatpakSizeEntry]:

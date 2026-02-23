@@ -10,7 +10,7 @@ hardcoded dnf calls.  All user-visible strings are wrapped in self.tr()
 for i18n readiness.
 """
 
-import shutil
+from services.system.system import cached_which
 
 from PyQt6.QtGui import QColor, QIcon
 from PyQt6.QtWidgets import (
@@ -95,7 +95,7 @@ class DependencyDoctor(QDialog):
 
         for tool, desc in self.tools.items():
             item = QListWidgetItem(f"{tool} - {desc}")
-            path = shutil.which(tool)
+            path = cached_which(tool)
 
             if path:
                 item.setIcon(QIcon.fromTheme("emblem-default"))

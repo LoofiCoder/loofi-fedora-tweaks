@@ -4,6 +4,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.0] - 2026-02-23 "Velocity" (Performance & Stability)
+
+### Performance
+
+- **`cached_which()` utility** — `@lru_cache`-backed `shutil.which()` wrapper in `services/system/system.py`, eliminating ~132 redundant PATH lookups per session across 44 source files
+- **Static subprocess caching** — `@lru_cache` on `get_cpu_model()`, `_get_lspci_output()`, `_cached_keyboard_layout()`, and class-level cache on `FirewallManager.is_available()` — avoids repeated one-shot system queries
+- **SystemManager caching verified** — `is_atomic()` already cached via `_is_atomic_cached`; `is_flatpak_available()` updated to use `cached_which()`
+
+### Testing
+
+- **`test_cached_which.py`** — 7 unit tests for cache hit/miss, `cache_clear`, `cache_info`, None caching
+- **`test_service_desktop.py`** — 52 tests for `WaylandDisplayManager`, `KWinManager` (display detection, scaling, keybindings, tiling presets, KWin reconfigure)
+- **`test_service_hardware.py`** — 45 tests for `BatteryManager`, `DiskManager`, `TemperatureManager` (set_limit, disk health, sensor reading, classification)
+- **`test_service_security.py`** — 31 tests for `FirewallManager`, `SecureBootManager` (availability, zones, ports, services, key management, module signing)
+- **`test_service_network.py`** — 22 tests for `NetworkUtils` (WiFi scan, VPN, DNS detection, hostname privacy)
+- **`test_service_virtualization.py`** — 28 tests for `VMManager` (availability, flavors, VM lifecycle, create/start/stop/delete)
+- **`test_service_package.py`** — 30 tests for `DnfPackageService`, `RpmOstreePackageService`, factory function
+
+### Internal
+
+- Version bump: `version.py`, `pyproject.toml`, `loofi-fedora-tweaks.spec` → 2.2.0
+
 ## [2.0.0] - 2026-02-21 "Evolution" (Service Layer Migration)
 
 ### Architecture — Service Layer Migration

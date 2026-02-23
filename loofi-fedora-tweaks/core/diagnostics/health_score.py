@@ -4,12 +4,12 @@ Aggregates system metrics into a single 0–100 health score.
 """
 
 import logging
-import shutil
 from dataclasses import dataclass, field
 from typing import List
 
 from services.hardware import DiskManager
 from services.system import SystemManager
+from services.system.system import cached_which
 from utils.monitor import SystemMonitor
 
 logger = logging.getLogger(__name__)
@@ -151,7 +151,7 @@ class HealthScoreManager:
                     return 50, None
             else:
                 package_manager = SystemManager.get_package_manager()
-                if not shutil.which(package_manager):
+                if not cached_which(package_manager):
                     return 75, None  # Can't check — dnf not available
                 result = subprocess.run(
                     [package_manager, "check-update", "--quiet"],

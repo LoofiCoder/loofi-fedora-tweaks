@@ -22,22 +22,22 @@ from services.security.sandbox import SandboxManager, BubblewrapManager, PluginI
 class TestDetection(unittest.TestCase):
     """Tests for sandbox tool availability detection."""
 
-    @patch('services.security.sandbox.shutil.which', return_value='/usr/bin/firejail')
+    @patch('services.security.sandbox.cached_which', return_value='/usr/bin/firejail')
     def test_firejail_installed(self, mock_which):
         """is_firejail_installed returns True when firejail found."""
         self.assertTrue(SandboxManager.is_firejail_installed())
 
-    @patch('services.security.sandbox.shutil.which', return_value=None)
+    @patch('services.security.sandbox.cached_which', return_value=None)
     def test_firejail_not_installed(self, mock_which):
         """is_firejail_installed returns False when firejail missing."""
         self.assertFalse(SandboxManager.is_firejail_installed())
 
-    @patch('services.security.sandbox.shutil.which', return_value='/usr/bin/bwrap')
+    @patch('services.security.sandbox.cached_which', return_value='/usr/bin/bwrap')
     def test_bubblewrap_installed(self, mock_which):
         """is_bubblewrap_installed returns True when bwrap found."""
         self.assertTrue(SandboxManager.is_bubblewrap_installed())
 
-    @patch('services.security.sandbox.shutil.which', return_value=None)
+    @patch('services.security.sandbox.cached_which', return_value=None)
     def test_bubblewrap_not_installed(self, mock_which):
         """is_bubblewrap_installed returns False when bwrap missing."""
         self.assertFalse(SandboxManager.is_bubblewrap_installed())
@@ -178,7 +178,7 @@ class TestGetSandboxStatus(unittest.TestCase):
 class TestBubblewrapManager(unittest.TestCase):
     """Tests for BubblewrapManager."""
 
-    @patch('services.security.sandbox.shutil.which', return_value='/usr/bin/bwrap')
+    @patch('services.security.sandbox.cached_which', return_value='/usr/bin/bwrap')
     def test_is_installed(self, mock_which):
         """is_installed returns True when bwrap found."""
         self.assertTrue(BubblewrapManager.is_installed())

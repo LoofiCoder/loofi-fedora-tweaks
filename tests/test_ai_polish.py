@@ -69,7 +69,7 @@ class TestAIModelManager(unittest.TestCase):
         rec = AIModelManager.get_recommended_model(500)
         self.assertEqual(rec, {})
 
-    @patch('utils.ai_models.shutil.which', return_value=None)
+    @patch('utils.ai_models.cached_which', return_value=None)
     def test_download_model_ollama_not_installed(self, mock_which):
         """download_model fails gracefully when ollama is not installed."""
         result = AIModelManager.download_model("llama3.2:1b")
@@ -77,7 +77,7 @@ class TestAIModelManager(unittest.TestCase):
         self.assertIn("not installed", result.message)
 
     @patch('utils.ai_models.subprocess.Popen')
-    @patch('utils.ai_models.shutil.which', return_value="/usr/bin/ollama")
+    @patch('utils.ai_models.cached_which', return_value="/usr/bin/ollama")
     def test_download_model_success(self, mock_which, mock_popen):
         """download_model succeeds with a valid model ID."""
         mock_proc = MagicMock()
@@ -91,7 +91,7 @@ class TestAIModelManager(unittest.TestCase):
         self.assertIn("llama3.2:1b", result.message)
 
     @patch('utils.ai_models.subprocess.Popen')
-    @patch('utils.ai_models.shutil.which', return_value="/usr/bin/ollama")
+    @patch('utils.ai_models.cached_which', return_value="/usr/bin/ollama")
     def test_download_model_with_callback(self, mock_which, mock_popen):
         """download_model invokes the progress callback."""
         mock_proc = MagicMock()
@@ -105,7 +105,7 @@ class TestAIModelManager(unittest.TestCase):
         self.assertTrue(len(messages) >= 1)
 
     @patch('utils.ai_models.subprocess.Popen')
-    @patch('utils.ai_models.shutil.which', return_value="/usr/bin/ollama")
+    @patch('utils.ai_models.cached_which', return_value="/usr/bin/ollama")
     def test_download_model_failure(self, mock_which, mock_popen):
         """download_model reports failure when ollama returns non-zero."""
         mock_proc = MagicMock()
@@ -118,14 +118,14 @@ class TestAIModelManager(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("failed", result.message.lower())
 
-    @patch('utils.ai_models.shutil.which', return_value=None)
+    @patch('utils.ai_models.cached_which', return_value=None)
     def test_get_installed_models_no_ollama(self, mock_which):
         """get_installed_models returns empty when ollama is not installed."""
         models = AIModelManager.get_installed_models()
         self.assertEqual(models, [])
 
     @patch('utils.ai_models.subprocess.run')
-    @patch('utils.ai_models.shutil.which', return_value="/usr/bin/ollama")
+    @patch('utils.ai_models.cached_which', return_value="/usr/bin/ollama")
     def test_get_installed_models_parses_output(self, mock_which, mock_run):
         """get_installed_models correctly parses ollama list output."""
         mock_run.return_value = MagicMock(
@@ -140,7 +140,7 @@ class TestAIModelManager(unittest.TestCase):
         self.assertEqual(models[1]["name"], "gemma2:2b")
 
     @patch('utils.ai_models.subprocess.run')
-    @patch('utils.ai_models.shutil.which', return_value="/usr/bin/ollama")
+    @patch('utils.ai_models.cached_which', return_value="/usr/bin/ollama")
     def test_get_installed_models_empty_list(self, mock_which, mock_run):
         """get_installed_models handles empty model list."""
         mock_run.return_value = MagicMock(
@@ -193,12 +193,12 @@ class TestAIModelManager(unittest.TestCase):
 class TestVoiceManager(unittest.TestCase):
     """Tests for the Voice Manager providing speech-to-text."""
 
-    @patch('utils.voice.shutil.which', return_value="/usr/bin/whisper-cpp")
+    @patch('utils.voice.cached_which', return_value="/usr/bin/whisper-cpp")
     def test_is_available_found(self, mock_which):
         """is_available returns True when whisper-cpp is on PATH."""
         self.assertTrue(VoiceManager.is_available())
 
-    @patch('utils.voice.shutil.which', return_value=None)
+    @patch('utils.voice.cached_which', return_value=None)
     def test_is_available_not_found(self, mock_which):
         """is_available returns False when no whisper binary is found."""
         self.assertFalse(VoiceManager.is_available())
@@ -225,7 +225,7 @@ class TestVoiceManager(unittest.TestCase):
                    "  Subdevices: 1/1\n"
         )
 
-        with patch('utils.voice.shutil.which', return_value="/usr/bin/arecord"):
+        with patch('utils.voice.cached_which', return_value="/usr/bin/arecord"):
             info = VoiceManager.check_microphone()
             self.assertTrue(info["available"])
             self.assertTrue(len(info["devices"]) >= 0)
@@ -236,7 +236,7 @@ class TestVoiceManager(unittest.TestCase):
         """check_microphone returns no devices when nothing is detected."""
         mock_run.return_value = MagicMock(returncode=1, stdout="")
 
-        with patch('utils.voice.shutil.which', return_value=None):
+        with patch('utils.voice.cached_which', return_value=None):
             info = VoiceManager.check_microphone()
             self.assertFalse(info["available"])
 
@@ -255,7 +255,7 @@ class TestVoiceManager(unittest.TestCase):
         model = VoiceManager.get_recommended_model(1000)
         self.assertIn(model, ["small", "base"])
 
-    @patch('utils.voice.shutil.which', return_value=None)
+    @patch('utils.voice.cached_which', return_value=None)
     def test_transcribe_no_whisper(self, mock_which):
         """transcribe fails when whisper-cpp is not installed."""
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
@@ -274,7 +274,7 @@ class TestVoiceManager(unittest.TestCase):
         self.assertIn("not found", result.message)
 
     @patch('utils.voice.subprocess.run')
-    @patch('utils.voice.shutil.which', return_value="/usr/bin/whisper-cpp")
+    @patch('utils.voice.cached_which', return_value="/usr/bin/whisper-cpp")
     def test_transcribe_success(self, mock_which, mock_run):
         """transcribe returns text on success."""
         mock_run.return_value = MagicMock(
@@ -296,25 +296,25 @@ class TestVoiceManager(unittest.TestCase):
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
             tmppath = f.name
         try:
-            with patch('utils.voice.shutil.which', return_value="/usr/bin/whisper-cpp"):
+            with patch('utils.voice.cached_which', return_value="/usr/bin/whisper-cpp"):
                 result = VoiceManager.transcribe(tmppath, model="gigantic")
                 self.assertFalse(result.success)
                 self.assertIn("Unknown model", result.message)
         finally:
             os.unlink(tmppath)
 
-    @patch('utils.voice.shutil.which', side_effect=lambda x: "/usr/bin/arecord" if x == "arecord" else None)
+    @patch('utils.voice.cached_which', side_effect=lambda x: "/usr/bin/arecord" if x == "arecord" else None)
     def test_is_recording_available_arecord(self, mock_which):
         """is_recording_available returns True when arecord is found."""
         self.assertTrue(VoiceManager.is_recording_available())
 
-    @patch('utils.voice.shutil.which', return_value=None)
+    @patch('utils.voice.cached_which', return_value=None)
     def test_is_recording_available_nothing(self, mock_which):
         """is_recording_available returns False when no tools found."""
         self.assertFalse(VoiceManager.is_recording_available())
 
     @patch('utils.voice.subprocess.run')
-    @patch('utils.voice.shutil.which', side_effect=lambda x: "/usr/bin/arecord" if x == "arecord" else None)
+    @patch('utils.voice.cached_which', side_effect=lambda x: "/usr/bin/arecord" if x == "arecord" else None)
     def test_record_audio_success(self, mock_which, mock_run):
         """record_audio returns a file path on success."""
         output_path = os.path.join(tempfile.gettempdir(), "test_record.wav")

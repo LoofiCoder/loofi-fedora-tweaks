@@ -68,7 +68,7 @@ class TestGetDisplays(unittest.TestCase):
         self.assertGreaterEqual(len(result), 0)
 
     @patch.dict(os.environ, {"XDG_SESSION_TYPE": "wayland", "XDG_CURRENT_DESKTOP": "KDE"})
-    @patch("services.desktop.display.shutil.which", return_value="/usr/bin/kscreen-doctor")
+    @patch("services.desktop.display.cached_which", return_value="/usr/bin/kscreen-doctor")
     @patch("services.desktop.display.subprocess.run")
     def test_get_displays_kde(self, mock_run, mock_which):
         mock_run.return_value = MagicMock(
@@ -87,7 +87,7 @@ class TestGetDisplays(unittest.TestCase):
         self.assertTrue(result[0].primary)
 
     @patch.dict(os.environ, {"XDG_SESSION_TYPE": "x11", "XDG_CURRENT_DESKTOP": "GNOME"})
-    @patch("services.desktop.display.shutil.which", return_value="/usr/bin/xrandr")
+    @patch("services.desktop.display.cached_which", return_value="/usr/bin/xrandr")
     @patch("services.desktop.display.subprocess.run")
     def test_get_displays_xrandr_fallback(self, mock_run, mock_which):
         mock_run.return_value = MagicMock(
@@ -104,7 +104,7 @@ class TestGetDisplays(unittest.TestCase):
         self.assertFalse(result[1].primary)
 
     @patch.dict(os.environ, {"XDG_SESSION_TYPE": "x11"})
-    @patch("services.desktop.display.shutil.which", return_value=None)
+    @patch("services.desktop.display.cached_which", return_value=None)
     def test_get_displays_no_tools(self, mock_which):
         result = WaylandDisplayManager.get_displays()
         self.assertEqual(len(result), 0)

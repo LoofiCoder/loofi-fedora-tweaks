@@ -109,17 +109,17 @@ class TestMeshDiscoveryNetwork(unittest.TestCase):
 class TestMeshDiscoveryAvahi(unittest.TestCase):
     """Tests for Avahi availability and peer discovery."""
 
-    @patch('services.network.mesh.shutil.which', return_value='/usr/bin/avahi-browse')
+    @patch('services.network.mesh.cached_which', return_value='/usr/bin/avahi-browse')
     def test_avahi_available(self, mock_which):
         """Returns True when avahi-browse is on PATH."""
         self.assertTrue(MeshDiscovery.is_avahi_available())
 
-    @patch('services.network.mesh.shutil.which', return_value=None)
+    @patch('services.network.mesh.cached_which', return_value=None)
     def test_avahi_not_available(self, mock_which):
         """Returns False when avahi-browse is missing."""
         self.assertFalse(MeshDiscovery.is_avahi_available())
 
-    @patch('services.network.mesh.shutil.which', return_value='/usr/bin/avahi-browse')
+    @patch('services.network.mesh.cached_which', return_value='/usr/bin/avahi-browse')
     @patch('services.network.mesh.subprocess.run')
     def test_discover_peers_parses_avahi_output(self, mock_run, mock_which):
         """Parses avahi-browse resolved output into PeerDevice objects."""
@@ -137,7 +137,7 @@ class TestMeshDiscoveryAvahi(unittest.TestCase):
         self.assertEqual(peers[0].platform, "linux")
         self.assertIn("clipboard", peers[0].capabilities)
 
-    @patch('services.network.mesh.shutil.which', return_value='/usr/bin/avahi-browse')
+    @patch('services.network.mesh.cached_which', return_value='/usr/bin/avahi-browse')
     @patch('services.network.mesh.subprocess.run')
     def test_discover_peers_empty_output(self, mock_run, mock_which):
         """Returns empty list when avahi-browse finds no services."""
@@ -145,7 +145,7 @@ class TestMeshDiscoveryAvahi(unittest.TestCase):
         peers = MeshDiscovery.discover_peers()
         self.assertEqual(peers, [])
 
-    @patch('services.network.mesh.shutil.which', return_value='/usr/bin/avahi-browse')
+    @patch('services.network.mesh.cached_which', return_value='/usr/bin/avahi-browse')
     @patch('services.network.mesh.subprocess.run')
     def test_discover_peers_timeout_returns_empty(self, mock_run, mock_which):
         """Returns empty list on subprocess timeout."""
@@ -153,13 +153,13 @@ class TestMeshDiscoveryAvahi(unittest.TestCase):
         peers = MeshDiscovery.discover_peers(timeout=5)
         self.assertEqual(peers, [])
 
-    @patch('services.network.mesh.shutil.which', return_value=None)
+    @patch('services.network.mesh.cached_which', return_value=None)
     def test_discover_peers_no_avahi(self, mock_which):
         """Returns empty list when avahi-browse is not installed."""
         peers = MeshDiscovery.discover_peers()
         self.assertEqual(peers, [])
 
-    @patch('services.network.mesh.shutil.which', return_value='/usr/bin/avahi-browse')
+    @patch('services.network.mesh.cached_which', return_value='/usr/bin/avahi-browse')
     @patch('services.network.mesh.subprocess.run')
     def test_discover_peers_nonzero_exit(self, mock_run, mock_which):
         """Returns empty list when avahi-browse exits with error."""
@@ -189,7 +189,7 @@ class TestMeshDiscoveryServiceInfo(unittest.TestCase):
 class TestMeshDiscoveryServiceRegistration(unittest.TestCase):
     """Tests for mDNS service registration/unregistration."""
 
-    @patch('services.network.mesh.shutil.which', return_value='/usr/bin/avahi-publish')
+    @patch('services.network.mesh.cached_which', return_value='/usr/bin/avahi-publish')
     @patch('services.network.mesh.subprocess.Popen')
     @patch('services.network.mesh.MeshDiscovery.build_service_info', return_value={"device_id": "x"})
     @patch('services.network.mesh.MeshDiscovery.get_device_name', return_value='host')
@@ -202,7 +202,7 @@ class TestMeshDiscoveryServiceRegistration(unittest.TestCase):
         # Clean up
         MeshDiscovery._publish_process = None
 
-    @patch('services.network.mesh.shutil.which', return_value=None)
+    @patch('services.network.mesh.cached_which', return_value=None)
     def test_register_service_no_avahi_publish(self, mock_which):
         """Registration fails when avahi-publish is not installed."""
         MeshDiscovery._publish_process = None
@@ -216,7 +216,7 @@ class TestMeshDiscoveryServiceRegistration(unittest.TestCase):
         result = MeshDiscovery.unregister_service()
         self.assertFalse(result.success)
 
-    @patch('services.network.mesh.shutil.which', return_value='/usr/bin/avahi-publish')
+    @patch('services.network.mesh.cached_which', return_value='/usr/bin/avahi-publish')
     def test_register_service_already_registered(self, mock_which):
         """Registration fails when a service is already active."""
         MeshDiscovery._publish_process = MagicMock()
@@ -294,7 +294,7 @@ class TestClipboardSyncDisplayServer(unittest.TestCase):
 class TestClipboardSyncToolAvailability(unittest.TestCase):
     """Tests for clipboard tool availability detection."""
 
-    @patch('utils.clipboard_sync.shutil.which')
+    @patch('utils.clipboard_sync.cached_which')
     def test_x11_tools_available(self, mock_which):
         """Detects X11 clipboard tools."""
         mock_which.side_effect = lambda cmd: '/usr/bin/xclip' if cmd == 'xclip' else None
@@ -302,7 +302,7 @@ class TestClipboardSyncToolAvailability(unittest.TestCase):
         self.assertTrue(result["x11"])
         self.assertFalse(result["wayland"])
 
-    @patch('utils.clipboard_sync.shutil.which')
+    @patch('utils.clipboard_sync.cached_which')
     def test_wayland_tools_available(self, mock_which):
         """Detects Wayland clipboard tools."""
         def which_side_effect(cmd):
@@ -314,7 +314,7 @@ class TestClipboardSyncToolAvailability(unittest.TestCase):
         self.assertFalse(result["x11"])
         self.assertTrue(result["wayland"])
 
-    @patch('utils.clipboard_sync.shutil.which', return_value=None)
+    @patch('utils.clipboard_sync.cached_which', return_value=None)
     def test_no_tools_available(self, mock_which):
         """Both x11 and wayland are False when no tools installed."""
         result = ClipboardSync.is_clipboard_tool_available()
@@ -408,7 +408,7 @@ class TestClipboardSyncReadWrite(unittest.TestCase):
     """Tests for reading/setting clipboard content."""
 
     @patch('utils.clipboard_sync.ClipboardSync.detect_display_server', return_value='x11')
-    @patch('utils.clipboard_sync.shutil.which', return_value='/usr/bin/xclip')
+    @patch('utils.clipboard_sync.cached_which', return_value='/usr/bin/xclip')
     @patch('utils.clipboard_sync.subprocess.run')
     def test_get_clipboard_x11(self, mock_run, mock_which, mock_display):
         """Reads clipboard via xclip on X11."""
@@ -417,7 +417,7 @@ class TestClipboardSyncReadWrite(unittest.TestCase):
         self.assertEqual(result, "clipboard text")
 
     @patch('utils.clipboard_sync.ClipboardSync.detect_display_server', return_value='wayland')
-    @patch('utils.clipboard_sync.shutil.which', return_value='/usr/bin/wl-paste')
+    @patch('utils.clipboard_sync.cached_which', return_value='/usr/bin/wl-paste')
     @patch('utils.clipboard_sync.subprocess.run')
     def test_get_clipboard_wayland(self, mock_run, mock_which, mock_display):
         """Reads clipboard via wl-paste on Wayland."""
@@ -426,7 +426,7 @@ class TestClipboardSyncReadWrite(unittest.TestCase):
         self.assertEqual(result, "wayland text")
 
     @patch('utils.clipboard_sync.ClipboardSync.detect_display_server', return_value='x11')
-    @patch('utils.clipboard_sync.shutil.which', return_value='/usr/bin/xclip')
+    @patch('utils.clipboard_sync.cached_which', return_value='/usr/bin/xclip')
     @patch('utils.clipboard_sync.subprocess.run')
     def test_set_clipboard_x11(self, mock_run, mock_which, mock_display):
         """Sets clipboard via xclip on X11."""
@@ -434,14 +434,14 @@ class TestClipboardSyncReadWrite(unittest.TestCase):
         self.assertTrue(ClipboardSync.set_clipboard_content("test"))
 
     @patch('utils.clipboard_sync.ClipboardSync.detect_display_server', return_value='unknown')
-    @patch('utils.clipboard_sync.shutil.which', return_value=None)
+    @patch('utils.clipboard_sync.cached_which', return_value=None)
     def test_get_clipboard_no_tools(self, mock_which, mock_display):
         """Returns empty string when no clipboard tools are available."""
         result = ClipboardSync.get_clipboard_content()
         self.assertEqual(result, "")
 
     @patch('utils.clipboard_sync.ClipboardSync.detect_display_server', return_value='unknown')
-    @patch('utils.clipboard_sync.shutil.which', return_value=None)
+    @patch('utils.clipboard_sync.cached_which', return_value=None)
     def test_set_clipboard_no_tools(self, mock_which, mock_display):
         """Returns False when no clipboard tools are available."""
         self.assertFalse(ClipboardSync.set_clipboard_content("test"))

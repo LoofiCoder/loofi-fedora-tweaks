@@ -6,13 +6,13 @@ Supports DNF (traditional), rpm-ostree (atomic), and Flatpak.
 """
 
 import logging
-import shutil
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import List, Optional
 
 from services.system import SystemManager
+from services.system.system import cached_which
 
 from utils.commands import PrivilegedCommand
 
@@ -79,7 +79,7 @@ class PackageExplorer:
     def _search_dnf(cls, query: str) -> List[PackageInfo]:
         """Search packages via DNF/rpm-ostree."""
         try:
-            if not shutil.which("dnf"):
+            if not cached_which("dnf"):
                 return []
             cmd = ["dnf", "search", "--quiet", query]
             result = subprocess.run(
@@ -334,7 +334,7 @@ class PackageExplorer:
     @classmethod
     def recently_installed(cls, days: int = 30) -> List[PackageInfo]:
         """Get packages installed in the last N days via DNF history."""
-        if not shutil.which("dnf"):
+        if not cached_which("dnf"):
             return []
         try:
             cmd = ["dnf", "history", "list", "--reverse"]
@@ -378,7 +378,7 @@ class PackageExplorer:
     @classmethod
     def get_package_info(cls, name: str) -> Optional[PackageInfo]:
         """Get detailed info for a specific package."""
-        if not shutil.which("dnf"):
+        if not cached_which("dnf"):
             return None
         try:
             cmd = ["dnf", "info", "--quiet", name]

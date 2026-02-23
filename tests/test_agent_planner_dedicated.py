@@ -407,7 +407,7 @@ class TestAgentPlannerPlanWithOllama(unittest.TestCase):
         mock_result.stdout = json.dumps(data)
         return mock_result
 
-    @patch("shutil.which")
+    @patch("utils.agent_planner.cached_which")
     def test_no_ollama_binary_returns_none(self, mock_which):
         """Should return None when ollama is not installed."""
         mock_which.return_value = None
@@ -415,7 +415,7 @@ class TestAgentPlannerPlanWithOllama(unittest.TestCase):
         self.assertIsNone(result)
 
     @patch("utils.agent_planner.subprocess.run")
-    @patch("shutil.which")
+    @patch("utils.agent_planner.cached_which")
     def test_ollama_success(self, mock_which, mock_run):
         """Should return an AgentPlan when ollama returns valid JSON."""
         mock_which.return_value = "/usr/bin/ollama"
@@ -436,7 +436,7 @@ class TestAgentPlannerPlanWithOllama(unittest.TestCase):
         self.assertEqual(plan.confidence, 0.7)
 
     @patch("utils.agent_planner.subprocess.run")
-    @patch("shutil.which")
+    @patch("utils.agent_planner.cached_which")
     def test_ollama_nonzero_returncode(self, mock_which, mock_run):
         """Should return None when ollama exits with non-zero returncode."""
         mock_which.return_value = "/usr/bin/ollama"
@@ -445,7 +445,7 @@ class TestAgentPlannerPlanWithOllama(unittest.TestCase):
         self.assertIsNone(result)
 
     @patch("utils.agent_planner.subprocess.run")
-    @patch("shutil.which")
+    @patch("utils.agent_planner.cached_which")
     def test_ollama_timeout(self, mock_which, mock_run):
         """Should return None when ollama subprocess times out."""
         mock_which.return_value = "/usr/bin/ollama"
@@ -454,7 +454,7 @@ class TestAgentPlannerPlanWithOllama(unittest.TestCase):
         self.assertIsNone(result)
 
     @patch("utils.agent_planner.subprocess.run")
-    @patch("shutil.which")
+    @patch("utils.agent_planner.cached_which")
     def test_ollama_invalid_json(self, mock_which, mock_run):
         """Should return None when ollama returns non-JSON output."""
         mock_which.return_value = "/usr/bin/ollama"
@@ -463,7 +463,7 @@ class TestAgentPlannerPlanWithOllama(unittest.TestCase):
         self.assertIsNone(result)
 
     @patch("utils.agent_planner.subprocess.run")
-    @patch("shutil.which")
+    @patch("utils.agent_planner.cached_which")
     def test_ollama_os_error(self, mock_which, mock_run):
         """Should return None when subprocess raises OSError."""
         mock_which.return_value = "/usr/bin/ollama"
@@ -472,7 +472,7 @@ class TestAgentPlannerPlanWithOllama(unittest.TestCase):
         self.assertIsNone(result)
 
     @patch("utils.agent_planner.subprocess.run")
-    @patch("shutil.which")
+    @patch("utils.agent_planner.cached_which")
     def test_ollama_no_valid_operations(self, mock_which, mock_run):
         """Should return None when ollama returns operations not in catalog."""
         mock_which.return_value = "/usr/bin/ollama"
@@ -489,7 +489,7 @@ class TestAgentPlannerPlanWithOllama(unittest.TestCase):
         self.assertIsNone(result)
 
     @patch("utils.agent_planner.subprocess.run")
-    @patch("shutil.which")
+    @patch("utils.agent_planner.cached_which")
     def test_ollama_json_in_markdown_codeblock(self, mock_which, mock_run):
         """Should extract JSON from markdown code block wrapping."""
         mock_which.return_value = "/usr/bin/ollama"
@@ -511,7 +511,7 @@ class TestAgentPlannerPlanWithOllama(unittest.TestCase):
         self.assertEqual(plan.agent_name, "Extracted Agent")
 
     @patch("utils.agent_planner.subprocess.run")
-    @patch("shutil.which")
+    @patch("utils.agent_planner.cached_which")
     def test_ollama_interval_clamped_min(self, mock_which, mock_run):
         """Interval should be clamped to minimum 30 seconds."""
         mock_which.return_value = "/usr/bin/ollama"
@@ -529,7 +529,7 @@ class TestAgentPlannerPlanWithOllama(unittest.TestCase):
         self.assertEqual(plan.trigger.config["seconds"], 30)
 
     @patch("utils.agent_planner.subprocess.run")
-    @patch("shutil.which")
+    @patch("utils.agent_planner.cached_which")
     def test_ollama_interval_clamped_max(self, mock_which, mock_run):
         """Interval should be clamped to maximum 86400 seconds."""
         mock_which.return_value = "/usr/bin/ollama"
@@ -547,7 +547,7 @@ class TestAgentPlannerPlanWithOllama(unittest.TestCase):
         self.assertEqual(plan.trigger.config["seconds"], 86400)
 
     @patch("utils.agent_planner.subprocess.run")
-    @patch("shutil.which")
+    @patch("utils.agent_planner.cached_which")
     def test_ollama_name_truncated_to_60(self, mock_which, mock_run):
         """Agent name from ollama should be truncated to 60 chars."""
         mock_which.return_value = "/usr/bin/ollama"
@@ -565,7 +565,7 @@ class TestAgentPlannerPlanWithOllama(unittest.TestCase):
         self.assertLessEqual(len(plan.agent_name), 60)
 
     @patch("utils.agent_planner.subprocess.run")
-    @patch("shutil.which")
+    @patch("utils.agent_planner.cached_which")
     def test_ollama_description_truncated_to_200(self, mock_which, mock_run):
         """Description from ollama should be truncated to 200 chars."""
         mock_which.return_value = "/usr/bin/ollama"
@@ -583,7 +583,7 @@ class TestAgentPlannerPlanWithOllama(unittest.TestCase):
         self.assertLessEqual(len(plan.description), 200)
 
     @patch("utils.agent_planner.subprocess.run")
-    @patch("shutil.which")
+    @patch("utils.agent_planner.cached_which")
     def test_ollama_missing_agent_name_uses_fallback(self, mock_which, mock_run):
         """Missing agent_name should use a fallback with the goal text."""
         mock_which.return_value = "/usr/bin/ollama"
@@ -600,7 +600,7 @@ class TestAgentPlannerPlanWithOllama(unittest.TestCase):
         self.assertIn("AI Agent", plan.agent_name)
 
     @patch("utils.agent_planner.subprocess.run")
-    @patch("shutil.which")
+    @patch("utils.agent_planner.cached_which")
     def test_ollama_step_severity_from_catalog(self, mock_which, mock_run):
         """Steps should get severity from OPERATION_CATALOG, not hardcoded."""
         mock_which.return_value = "/usr/bin/ollama"
@@ -618,7 +618,7 @@ class TestAgentPlannerPlanWithOllama(unittest.TestCase):
         self.assertEqual(plan.steps[0].severity, ActionSeverity.MEDIUM)
 
     @patch("utils.agent_planner.subprocess.run")
-    @patch("shutil.which")
+    @patch("utils.agent_planner.cached_which")
     def test_ollama_subprocess_called_with_timeout(self, mock_which, mock_run):
         """subprocess.run should be called with timeout=30."""
         mock_which.return_value = "/usr/bin/ollama"
@@ -777,7 +777,7 @@ class TestAgentPlannerIntegration(unittest.TestCase):
         config = plan.to_agent_config()
         self.assertEqual(config.agent_type, AgentType.SECURITY_GUARD)
 
-    @patch("shutil.which")
+    @patch("utils.agent_planner.cached_which")
     def test_unknown_goal_no_ollama(self, mock_which):
         """Unknown goal without ollama -> generic fallback with 0.3 confidence."""
         mock_which.return_value = None

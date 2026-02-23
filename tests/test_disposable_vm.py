@@ -51,27 +51,27 @@ class TestCreateBaseImage(unittest.TestCase):
     @patch('services.virtualization.disposable_vm.subprocess.run')
     @patch('services.virtualization.disposable_vm.os.path.isfile', return_value=True)
     @patch('services.virtualization.disposable_vm.DisposableVMManager.get_base_image_path', return_value="/tmp/base.qcow2")
-    @patch('services.virtualization.disposable_vm.shutil.which', return_value="/usr/bin/qemu-img")
+    @patch('services.virtualization.disposable_vm.cached_which', return_value="/usr/bin/qemu-img")
     def test_create_base_image_success(self, mock_which, mock_path, mock_isfile, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         result = DisposableVMManager.create_base_image("/tmp/fedora.iso", size_gb=20)
         self.assertTrue(result.success)
         self.assertIn("Base image created", result.message)
 
-    @patch('services.virtualization.disposable_vm.shutil.which', return_value=None)
+    @patch('services.virtualization.disposable_vm.cached_which', return_value=None)
     def test_create_base_image_no_qemu_img(self, mock_which):
         result = DisposableVMManager.create_base_image("/tmp/fedora.iso")
         self.assertFalse(result.success)
         self.assertIn("qemu-img", result.message)
 
     @patch('services.virtualization.disposable_vm.os.path.isfile', return_value=False)
-    @patch('services.virtualization.disposable_vm.shutil.which', return_value="/usr/bin/qemu-img")
+    @patch('services.virtualization.disposable_vm.cached_which', return_value="/usr/bin/qemu-img")
     def test_create_base_image_iso_not_found(self, mock_which, mock_isfile):
         result = DisposableVMManager.create_base_image("/nonexistent.iso")
         self.assertFalse(result.success)
         self.assertIn("ISO file not found", result.message)
 
-    @patch('services.virtualization.disposable_vm.shutil.which', return_value="/usr/bin/qemu-img")
+    @patch('services.virtualization.disposable_vm.cached_which', return_value="/usr/bin/qemu-img")
     def test_create_base_image_empty_iso(self, mock_which):
         result = DisposableVMManager.create_base_image("")
         self.assertFalse(result.success)
@@ -79,7 +79,7 @@ class TestCreateBaseImage(unittest.TestCase):
     @patch('services.virtualization.disposable_vm.subprocess.run')
     @patch('services.virtualization.disposable_vm.os.path.isfile', return_value=True)
     @patch('services.virtualization.disposable_vm.DisposableVMManager.get_base_image_path', return_value="/tmp/base.qcow2")
-    @patch('services.virtualization.disposable_vm.shutil.which', return_value="/usr/bin/qemu-img")
+    @patch('services.virtualization.disposable_vm.cached_which', return_value="/usr/bin/qemu-img")
     def test_create_base_image_command_failure(self, mock_which, mock_path, mock_isfile, mock_run):
         mock_run.return_value = MagicMock(returncode=1, stderr="Error", stdout="")
         result = DisposableVMManager.create_base_image("/tmp/fedora.iso")
@@ -89,7 +89,7 @@ class TestCreateBaseImage(unittest.TestCase):
     @patch('services.virtualization.disposable_vm.subprocess.run')
     @patch('services.virtualization.disposable_vm.os.path.isfile', return_value=True)
     @patch('services.virtualization.disposable_vm.DisposableVMManager.get_base_image_path', return_value="/tmp/base.qcow2")
-    @patch('services.virtualization.disposable_vm.shutil.which', return_value="/usr/bin/qemu-img")
+    @patch('services.virtualization.disposable_vm.cached_which', return_value="/usr/bin/qemu-img")
     def test_create_base_image_timeout(self, mock_which, mock_path, mock_isfile, mock_run):
         mock_run.side_effect = subprocess.TimeoutExpired(cmd="qemu-img", timeout=30)
         result = DisposableVMManager.create_base_image("/tmp/fedora.iso")
@@ -99,7 +99,7 @@ class TestCreateBaseImage(unittest.TestCase):
     @patch('services.virtualization.disposable_vm.subprocess.run')
     @patch('services.virtualization.disposable_vm.os.path.isfile', return_value=True)
     @patch('services.virtualization.disposable_vm.DisposableVMManager.get_base_image_path', return_value="/tmp/base.qcow2")
-    @patch('services.virtualization.disposable_vm.shutil.which', return_value="/usr/bin/qemu-img")
+    @patch('services.virtualization.disposable_vm.cached_which', return_value="/usr/bin/qemu-img")
     def test_create_base_image_os_error(self, mock_which, mock_path, mock_isfile, mock_run):
         mock_run.side_effect = OSError("disk full")
         result = DisposableVMManager.create_base_image("/tmp/fedora.iso")
@@ -111,21 +111,21 @@ class TestCreateSnapshotOverlay(unittest.TestCase):
 
     @patch('services.virtualization.disposable_vm.subprocess.run')
     @patch('services.virtualization.disposable_vm.DisposableVMManager._get_storage_dir', return_value="/tmp/vms")
-    @patch('services.virtualization.disposable_vm.shutil.which', return_value="/usr/bin/qemu-img")
+    @patch('services.virtualization.disposable_vm.cached_which', return_value="/usr/bin/qemu-img")
     def test_create_overlay_success(self, mock_which, mock_storage, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         result = DisposableVMManager.create_snapshot_overlay("/tmp/base.qcow2")
         self.assertTrue(result.endswith(".qcow2"))
         self.assertIn("disposable-", result)
 
-    @patch('services.virtualization.disposable_vm.shutil.which', return_value=None)
+    @patch('services.virtualization.disposable_vm.cached_which', return_value=None)
     def test_create_overlay_no_qemu_img(self, mock_which):
         result = DisposableVMManager.create_snapshot_overlay("/tmp/base.qcow2")
         self.assertEqual(result, "")
 
     @patch('services.virtualization.disposable_vm.subprocess.run')
     @patch('services.virtualization.disposable_vm.DisposableVMManager._get_storage_dir', return_value="/tmp/vms")
-    @patch('services.virtualization.disposable_vm.shutil.which', return_value="/usr/bin/qemu-img")
+    @patch('services.virtualization.disposable_vm.cached_which', return_value="/usr/bin/qemu-img")
     def test_create_overlay_command_failure(self, mock_which, mock_storage, mock_run):
         mock_run.return_value = MagicMock(returncode=1)
         result = DisposableVMManager.create_snapshot_overlay("/tmp/base.qcow2")
@@ -133,7 +133,7 @@ class TestCreateSnapshotOverlay(unittest.TestCase):
 
     @patch('services.virtualization.disposable_vm.subprocess.run')
     @patch('services.virtualization.disposable_vm.DisposableVMManager._get_storage_dir', return_value="/tmp/vms")
-    @patch('services.virtualization.disposable_vm.shutil.which', return_value="/usr/bin/qemu-img")
+    @patch('services.virtualization.disposable_vm.cached_which', return_value="/usr/bin/qemu-img")
     def test_create_overlay_timeout(self, mock_which, mock_storage, mock_run):
         mock_run.side_effect = subprocess.TimeoutExpired(cmd="qemu-img", timeout=15)
         result = DisposableVMManager.create_snapshot_overlay("/tmp/base.qcow2")
@@ -141,7 +141,7 @@ class TestCreateSnapshotOverlay(unittest.TestCase):
 
     @patch('services.virtualization.disposable_vm.subprocess.run')
     @patch('services.virtualization.disposable_vm.DisposableVMManager._get_storage_dir', return_value="/tmp/vms")
-    @patch('services.virtualization.disposable_vm.shutil.which', return_value="/usr/bin/qemu-img")
+    @patch('services.virtualization.disposable_vm.cached_which', return_value="/usr/bin/qemu-img")
     def test_create_overlay_os_error(self, mock_which, mock_storage, mock_run):
         mock_run.side_effect = OSError("fail")
         result = DisposableVMManager.create_snapshot_overlay("/tmp/base.qcow2")
@@ -152,7 +152,7 @@ class TestLaunchDisposable(unittest.TestCase):
     """Tests for launch_disposable()."""
 
     @patch('services.virtualization.disposable_vm.subprocess.run')
-    @patch('services.virtualization.disposable_vm.shutil.which')
+    @patch('services.virtualization.disposable_vm.cached_which')
     @patch('services.virtualization.disposable_vm.DisposableVMManager.create_snapshot_overlay', return_value="/tmp/overlay.qcow2")
     @patch('services.virtualization.disposable_vm.DisposableVMManager.get_base_image_path', return_value="/tmp/base.qcow2")
     @patch('services.virtualization.disposable_vm.DisposableVMManager.is_base_image_available', return_value=True)
@@ -169,21 +169,21 @@ class TestLaunchDisposable(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("No base image", result.message)
 
-    @patch('services.virtualization.disposable_vm.shutil.which', return_value=None)
+    @patch('services.virtualization.disposable_vm.cached_which', return_value=None)
     @patch('services.virtualization.disposable_vm.DisposableVMManager.is_base_image_available', return_value=True)
     def test_launch_no_virsh(self, mock_base, mock_which):
         result = DisposableVMManager.launch_disposable()
         self.assertFalse(result.success)
         self.assertIn("virsh", result.message)
 
-    @patch('services.virtualization.disposable_vm.shutil.which', return_value="/usr/bin/virsh")
+    @patch('services.virtualization.disposable_vm.cached_which', return_value="/usr/bin/virsh")
     @patch('services.virtualization.disposable_vm.DisposableVMManager.is_base_image_available', return_value=True)
     def test_launch_invalid_name(self, mock_base, mock_which):
         result = DisposableVMManager.launch_disposable(name="bad name!@#")
         self.assertFalse(result.success)
         self.assertIn("Invalid VM name", result.message)
 
-    @patch('services.virtualization.disposable_vm.shutil.which')
+    @patch('services.virtualization.disposable_vm.cached_which')
     @patch('services.virtualization.disposable_vm.DisposableVMManager.create_snapshot_overlay', return_value="")
     @patch('services.virtualization.disposable_vm.DisposableVMManager.get_base_image_path', return_value="/tmp/base.qcow2")
     @patch('services.virtualization.disposable_vm.DisposableVMManager.is_base_image_available', return_value=True)
@@ -194,7 +194,7 @@ class TestLaunchDisposable(unittest.TestCase):
         self.assertIn("overlay", result.message.lower())
 
     @patch('services.virtualization.disposable_vm.subprocess.run')
-    @patch('services.virtualization.disposable_vm.shutil.which')
+    @patch('services.virtualization.disposable_vm.cached_which')
     @patch('services.virtualization.disposable_vm.DisposableVMManager.create_snapshot_overlay', return_value="/tmp/overlay.qcow2")
     @patch('services.virtualization.disposable_vm.DisposableVMManager.get_base_image_path', return_value="/tmp/base.qcow2")
     @patch('services.virtualization.disposable_vm.DisposableVMManager.is_base_image_available', return_value=True)
@@ -239,7 +239,7 @@ class TestListActiveDisposables(unittest.TestCase):
     """Tests for list_active_disposables()."""
 
     @patch('services.virtualization.disposable_vm.subprocess.run')
-    @patch('services.virtualization.disposable_vm.shutil.which', return_value="/usr/bin/virsh")
+    @patch('services.virtualization.disposable_vm.cached_which', return_value="/usr/bin/virsh")
     def test_list_active_success(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(
             returncode=0,
@@ -249,27 +249,27 @@ class TestListActiveDisposables(unittest.TestCase):
         self.assertEqual(len(result), 2)
         self.assertTrue(all(n.startswith("disposable-") for n in result))
 
-    @patch('services.virtualization.disposable_vm.shutil.which', return_value=None)
+    @patch('services.virtualization.disposable_vm.cached_which', return_value=None)
     def test_list_active_no_virsh(self, mock_which):
         result = DisposableVMManager.list_active_disposables()
         self.assertEqual(result, [])
 
     @patch('services.virtualization.disposable_vm.subprocess.run')
-    @patch('services.virtualization.disposable_vm.shutil.which', return_value="/usr/bin/virsh")
+    @patch('services.virtualization.disposable_vm.cached_which', return_value="/usr/bin/virsh")
     def test_list_active_command_failure(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=1, stdout="")
         result = DisposableVMManager.list_active_disposables()
         self.assertEqual(result, [])
 
     @patch('services.virtualization.disposable_vm.subprocess.run')
-    @patch('services.virtualization.disposable_vm.shutil.which', return_value="/usr/bin/virsh")
+    @patch('services.virtualization.disposable_vm.cached_which', return_value="/usr/bin/virsh")
     def test_list_active_timeout(self, mock_which, mock_run):
         mock_run.side_effect = subprocess.TimeoutExpired(cmd="virsh", timeout=10)
         result = DisposableVMManager.list_active_disposables()
         self.assertEqual(result, [])
 
     @patch('services.virtualization.disposable_vm.subprocess.run')
-    @patch('services.virtualization.disposable_vm.shutil.which', return_value="/usr/bin/virsh")
+    @patch('services.virtualization.disposable_vm.cached_which', return_value="/usr/bin/virsh")
     def test_list_active_empty(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout="\n")
         result = DisposableVMManager.list_active_disposables()

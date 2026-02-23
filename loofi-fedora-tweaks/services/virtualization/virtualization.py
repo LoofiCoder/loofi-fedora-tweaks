@@ -8,9 +8,10 @@ Migrated from utils/virtualization.py in v2.0.0.
 """
 
 import os
-import shutil
 import subprocess
 from dataclasses import dataclass, field
+
+from services.system.system import cached_which
 
 
 @dataclass
@@ -171,7 +172,7 @@ class VirtualizationManager:
     @classmethod
     def _get_lspci_description(cls, slot: str) -> str:
         """Get human-readable device description from lspci."""
-        if not shutil.which("lspci"):
+        if not cached_which("lspci"):
             return ""
         try:
             result = subprocess.run(["lspci", "-s", slot], capture_output=True, text=True, timeout=5)
@@ -260,12 +261,12 @@ class VirtualizationManager:
         Returns dict mapping tool names to booleans.
         """
         tools = {
-            "libvirtd": shutil.which("libvirtd") is not None,
-            "virsh": shutil.which("virsh") is not None,
-            "virt-install": shutil.which("virt-install") is not None,
-            "virt-manager": shutil.which("virt-manager") is not None,
-            "qemu-system-x86_64": shutil.which("qemu-system-x86_64") is not None,
-            "swtpm": shutil.which("swtpm") is not None,
+            "libvirtd": cached_which("libvirtd") is not None,
+            "virsh": cached_which("virsh") is not None,
+            "virt-install": cached_which("virt-install") is not None,
+            "virt-manager": cached_which("virt-manager") is not None,
+            "qemu-system-x86_64": cached_which("qemu-system-x86_64") is not None,
+            "swtpm": cached_which("swtpm") is not None,
         }
         return tools
 

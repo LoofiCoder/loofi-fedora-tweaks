@@ -137,13 +137,13 @@ class TestGetUserPackages(unittest.TestCase):
 
 class TestGetFlatpakApps(unittest.TestCase):
 
-    @patch("shutil.which", return_value=None)
+    @patch("core.export.kickstart.cached_which", return_value=None)
     def test_no_flatpak(self, mock_which):
         apps = KickstartGenerator._get_flatpak_apps()
         self.assertEqual(apps, [])
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/flatpak")
+    @patch("core.export.kickstart.cached_which", return_value="/usr/bin/flatpak")
     def test_success(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(
             returncode=0,
@@ -153,13 +153,13 @@ class TestGetFlatpakApps(unittest.TestCase):
         self.assertEqual(apps, ["org.mozilla.firefox", "org.gimp.GIMP"])
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/flatpak")
+    @patch("core.export.kickstart.cached_which", return_value="/usr/bin/flatpak")
     def test_failure(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=1)
         apps = KickstartGenerator._get_flatpak_apps()
         self.assertEqual(apps, [])
 
-    @patch("shutil.which", return_value="/usr/bin/flatpak")
+    @patch("core.export.kickstart.cached_which", return_value="/usr/bin/flatpak")
     @patch("subprocess.run", side_effect=OSError("fail"))
     def test_exception(self, mock_run, mock_which):
         apps = KickstartGenerator._get_flatpak_apps()
@@ -227,27 +227,27 @@ class TestSaveKickstart(unittest.TestCase):
 
 class TestValidateKickstart(unittest.TestCase):
 
-    @patch("shutil.which", return_value=None)
+    @patch("core.export.kickstart.cached_which", return_value=None)
     def test_no_ksvalidator(self, mock_which):
         r = KickstartGenerator.validate_kickstart(Path("/tmp/test.ks"))
         self.assertTrue(r.success)
         self.assertIn("unable to validate", r.message)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/ksvalidator")
+    @patch("core.export.kickstart.cached_which", return_value="/usr/bin/ksvalidator")
     def test_valid(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         r = KickstartGenerator.validate_kickstart(Path("/tmp/test.ks"))
         self.assertTrue(r.success)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/ksvalidator")
+    @patch("core.export.kickstart.cached_which", return_value="/usr/bin/ksvalidator")
     def test_invalid(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=1, stderr="errors found")
         r = KickstartGenerator.validate_kickstart(Path("/tmp/test.ks"))
         self.assertFalse(r.success)
 
-    @patch("shutil.which", return_value="/usr/bin/ksvalidator")
+    @patch("core.export.kickstart.cached_which", return_value="/usr/bin/ksvalidator")
     @patch("subprocess.run", side_effect=OSError("fail"))
     def test_exception(self, mock_run, mock_which):
         r = KickstartGenerator.validate_kickstart(Path("/tmp/test.ks"))

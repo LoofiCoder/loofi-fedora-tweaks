@@ -24,7 +24,7 @@ class TestCompositorDetection(unittest.TestCase):
         self.assertTrue(TilingManager.is_hyprland())
 
     @patch.dict(os.environ, {"XDG_CURRENT_DESKTOP": ""})
-    @patch("services.desktop.tiling.shutil.which", return_value="/usr/bin/hyprctl")
+    @patch("services.desktop.tiling.cached_which", return_value="/usr/bin/hyprctl")
     def test_is_hyprland_from_which(self, mock_which):
         self.assertTrue(TilingManager.is_hyprland())
 
@@ -33,7 +33,7 @@ class TestCompositorDetection(unittest.TestCase):
         self.assertTrue(TilingManager.is_sway())
 
     @patch.dict(os.environ, {"XDG_CURRENT_DESKTOP": ""})
-    @patch("services.desktop.tiling.shutil.which", return_value=None)
+    @patch("services.desktop.tiling.cached_which", return_value=None)
     def test_neither_compositor(self, mock_which):
         self.assertFalse(TilingManager.is_hyprland())
         self.assertFalse(TilingManager.is_sway())

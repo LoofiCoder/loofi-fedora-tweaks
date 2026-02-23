@@ -153,7 +153,7 @@ class TestBlockAllowPort(unittest.TestCase):
 
     @patch('services.network.ports.subprocess.run')
     @patch.object(PortAuditor, 'is_firewalld_running', return_value=True)
-    @patch('services.network.ports.shutil.which', return_value='/usr/bin/firewall-cmd')
+    @patch('services.network.ports.cached_which', return_value='/usr/bin/firewall-cmd')
     def test_block_port_success(self, mock_which, mock_firewalld, mock_run):
         """block_port returns success when firewall-cmd succeeds."""
         mock_run.return_value = MagicMock(returncode=0)
@@ -162,13 +162,13 @@ class TestBlockAllowPort(unittest.TestCase):
         self.assertTrue(result.success)
 
     @patch.object(PortAuditor, 'is_firewalld_running', return_value=False)
-    @patch('services.network.ports.shutil.which', return_value='/usr/bin/firewall-cmd')
+    @patch('services.network.ports.cached_which', return_value='/usr/bin/firewall-cmd')
     def test_block_port_firewalld_not_running(self, mock_which, mock_firewalld):
         """block_port fails when firewalld is not running."""
         result = PortAuditor.block_port(8080)
         self.assertFalse(result.success)
 
-    @patch('services.network.ports.shutil.which', return_value=None)
+    @patch('services.network.ports.cached_which', return_value=None)
     def test_block_port_firewall_cmd_missing(self, mock_which):
         """block_port fails when firewall-cmd not found."""
         result = PortAuditor.block_port(8080)
@@ -177,7 +177,7 @@ class TestBlockAllowPort(unittest.TestCase):
 
     @patch('services.network.ports.subprocess.run')
     @patch.object(PortAuditor, 'is_firewalld_running', return_value=True)
-    @patch('services.network.ports.shutil.which', return_value='/usr/bin/firewall-cmd')
+    @patch('services.network.ports.cached_which', return_value='/usr/bin/firewall-cmd')
     def test_allow_port_success(self, mock_which, mock_firewalld, mock_run):
         """allow_port returns success when firewall-cmd succeeds."""
         mock_run.return_value = MagicMock(returncode=0)

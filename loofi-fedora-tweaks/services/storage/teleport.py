@@ -11,7 +11,6 @@ import hashlib
 import json
 import os
 import platform
-import shutil
 import subprocess
 import time
 import uuid
@@ -19,6 +18,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Optional
 
+from services.system.system import cached_which
 from utils.containers import Result
 from utils.install_hints import build_install_hint
 from utils.log import get_logger
@@ -118,7 +118,7 @@ class StateTeleportManager:
                 logger.warning("Could not parse .vscode/settings.json")
 
         # List installed extensions via `code --list-extensions`
-        if shutil.which("code"):
+        if cached_which("code"):
             try:
                 result = subprocess.run(
                     ["code", "--list-extensions"],
@@ -166,7 +166,7 @@ class StateTeleportManager:
             "unpushed_count": 0,
         }
 
-        if not shutil.which("git"):
+        if not cached_which("git"):
             return state
 
         def _git(*args: str) -> Optional[str]:
@@ -424,7 +424,7 @@ class StateTeleportManager:
         if not ws_path:
             return Result(False, "No workspace path in VS Code state.")
 
-        if not shutil.which("code"):
+        if not cached_which("code"):
             return Result(
                 False,
                 f"VS Code is not installed. {build_install_hint('code')}",
@@ -464,7 +464,7 @@ class StateTeleportManager:
         if not branch:
             return Result(False, "No branch information in git state.")
 
-        if not shutil.which("git"):
+        if not cached_which("git"):
             return Result(False, "Git is not installed.")
 
         # Check for local changes first

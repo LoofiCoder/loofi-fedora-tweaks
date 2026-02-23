@@ -6,11 +6,25 @@ Handles detection of Fedora Atomic variants (Silverblue, Kinoite, etc.)
 import os
 import shutil
 import subprocess
-from typing import Any
+from functools import lru_cache
+from typing import Any, Optional
 
 from utils.log import get_logger
 
 logger = get_logger(__name__)
+
+
+@lru_cache(maxsize=64)
+def cached_which(tool: str) -> Optional[str]:
+    """Cached wrapper around shutil.which() to avoid repeated PATH lookups.
+
+    Args:
+        tool: Name of the executable to find.
+
+    Returns:
+        Full path to the executable, or None if not found.
+    """
+    return shutil.which(tool)
 
 
 class SystemManager:
@@ -138,7 +152,7 @@ class SystemManager:
     @classmethod
     def is_flatpak_available(cls) -> bool:
         """Check if Flatpak is installed and available."""
-        return shutil.which("flatpak") is not None
+        return cached_which("flatpak") is not None
 
     @classmethod
     def is_flathub_enabled(cls) -> bool:

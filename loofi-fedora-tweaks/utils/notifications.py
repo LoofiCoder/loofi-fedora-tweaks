@@ -4,8 +4,9 @@ Uses notify-send for maximum compatibility.
 """
 
 import logging
-import shutil
 import subprocess
+
+from services.system.system import cached_which
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ class NotificationManager:
     @classmethod
     def is_available(cls) -> bool:
         """Check if notifications can be sent."""
-        return shutil.which("notify-send") is not None
+        return cached_which("notify-send") is not None
 
     @classmethod
     def send(

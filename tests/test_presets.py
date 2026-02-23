@@ -159,18 +159,18 @@ class TestGetGsettings(unittest.TestCase):
         self.pm = PresetManager()
 
     @patch('utils.presets.subprocess.check_output', return_value="'Adwaita'\n")
-    @patch('utils.presets.shutil.which', return_value="/usr/bin/gsettings")
+    @patch('utils.presets.cached_which', return_value="/usr/bin/gsettings")
     def test_returns_value(self, mock_which, mock_check):
         result = self.pm._get_gsettings("org.gnome.desktop.interface", "gtk-theme")
         self.assertEqual(result, "Adwaita")
 
-    @patch('utils.presets.shutil.which', return_value=None)
+    @patch('utils.presets.cached_which', return_value=None)
     def test_returns_none_when_missing(self, mock_which):
         result = self.pm._get_gsettings("org.gnome.desktop.interface", "gtk-theme")
         self.assertIsNone(result)
 
     @patch('utils.presets.subprocess.check_output', side_effect=subprocess.CalledProcessError(1, "gsettings"))
-    @patch('utils.presets.shutil.which', return_value="/usr/bin/gsettings")
+    @patch('utils.presets.cached_which', return_value="/usr/bin/gsettings")
     def test_returns_none_on_error(self, mock_which, mock_check):
         result = self.pm._get_gsettings("org.gnome.desktop.interface", "bad-key")
         self.assertIsNone(result)
@@ -184,12 +184,12 @@ class TestGetPowerProfile(unittest.TestCase):
         self.pm = PresetManager()
 
     @patch('utils.presets.subprocess.check_output', return_value="performance\n")
-    @patch('utils.presets.shutil.which', return_value="/usr/bin/powerprofilesctl")
+    @patch('utils.presets.cached_which', return_value="/usr/bin/powerprofilesctl")
     def test_returns_profile(self, mock_which, mock_check):
         result = self.pm._get_power_profile()
         self.assertEqual(result, "performance")
 
-    @patch('utils.presets.shutil.which', return_value=None)
+    @patch('utils.presets.cached_which', return_value=None)
     def test_returns_balanced_when_missing(self, mock_which):
         result = self.pm._get_power_profile()
         self.assertEqual(result, "balanced")

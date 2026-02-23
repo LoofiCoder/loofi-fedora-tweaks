@@ -56,40 +56,40 @@ class TestKWinIsWayland(unittest.TestCase):
 
 class TestGetKwriteconfig(unittest.TestCase):
 
-    @patch("shutil.which", side_effect=lambda c: "/usr/bin/kwriteconfig6" if c == "kwriteconfig6" else None)
+    @patch("services.desktop.kwin.cached_which", side_effect=lambda c: "/usr/bin/kwriteconfig6" if c == "kwriteconfig6" else None)
     def test_finds_kwriteconfig6(self, mock_which):
         self.assertEqual(KWinManager.get_kwriteconfig(), "kwriteconfig6")
 
-    @patch("shutil.which", side_effect=lambda c: "/usr/bin/kwriteconfig5" if c == "kwriteconfig5" else None)
+    @patch("services.desktop.kwin.cached_which", side_effect=lambda c: "/usr/bin/kwriteconfig5" if c == "kwriteconfig5" else None)
     def test_finds_kwriteconfig5(self, mock_which):
         self.assertEqual(KWinManager.get_kwriteconfig(), "kwriteconfig5")
 
-    @patch("shutil.which", return_value=None)
+    @patch("services.desktop.kwin.cached_which", return_value=None)
     def test_not_found(self, mock_which):
         self.assertIsNone(KWinManager.get_kwriteconfig())
 
 
 class TestGetKreadconfig(unittest.TestCase):
 
-    @patch("shutil.which", side_effect=lambda c: "/usr/bin/kreadconfig6" if c == "kreadconfig6" else None)
+    @patch("services.desktop.kwin.cached_which", side_effect=lambda c: "/usr/bin/kreadconfig6" if c == "kreadconfig6" else None)
     def test_finds_kreadconfig6(self, mock_which):
         self.assertEqual(KWinManager.get_kreadconfig(), "kreadconfig6")
 
-    @patch("shutil.which", return_value=None)
+    @patch("services.desktop.kwin.cached_which", return_value=None)
     def test_not_found(self, mock_which):
         self.assertIsNone(KWinManager.get_kreadconfig())
 
 
 class TestEnableQuickTiling(unittest.TestCase):
 
-    @patch("shutil.which", return_value=None)
+    @patch("services.desktop.kwin.cached_which", return_value=None)
     def test_no_kwriteconfig(self, mock_which):
         r = KWinManager.enable_quick_tiling()
         self.assertFalse(r.success)
         self.assertIn("not found", r.message)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/kwriteconfig6")
+    @patch("services.desktop.kwin.cached_which", return_value="/usr/bin/kwriteconfig6")
     def test_success(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         r = KWinManager.enable_quick_tiling()
@@ -97,13 +97,13 @@ class TestEnableQuickTiling(unittest.TestCase):
         self.assertIn("Quick tiling enabled", r.message)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/kwriteconfig6")
+    @patch("services.desktop.kwin.cached_which", return_value="/usr/bin/kwriteconfig6")
     def test_failure(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=1, stderr="err")
         r = KWinManager.enable_quick_tiling()
         self.assertFalse(r.success)
 
-    @patch("shutil.which", return_value="/usr/bin/kwriteconfig6")
+    @patch("services.desktop.kwin.cached_which", return_value="/usr/bin/kwriteconfig6")
     @patch("subprocess.run", side_effect=OSError("boom"))
     def test_exception(self, mock_run, mock_which):
         r = KWinManager.enable_quick_tiling()
@@ -118,13 +118,13 @@ class TestSetKeybinding(unittest.TestCase):
         self.assertFalse(r.success)
         self.assertIn("Unknown action", r.message)
 
-    @patch("shutil.which", return_value=None)
+    @patch("services.desktop.kwin.cached_which", return_value=None)
     def test_no_kwriteconfig(self, mock_which):
         r = KWinManager.set_keybinding("Meta+H", "left")
         self.assertFalse(r.success)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/kwriteconfig6")
+    @patch("services.desktop.kwin.cached_which", return_value="/usr/bin/kwriteconfig6")
     def test_success(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         r = KWinManager.set_keybinding("Meta+H", "left")
@@ -132,13 +132,13 @@ class TestSetKeybinding(unittest.TestCase):
         self.assertIn("Bound", r.message)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/kwriteconfig6")
+    @patch("services.desktop.kwin.cached_which", return_value="/usr/bin/kwriteconfig6")
     def test_failure(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=1, stderr="err")
         r = KWinManager.set_keybinding("Meta+H", "left")
         self.assertFalse(r.success)
 
-    @patch("shutil.which", return_value="/usr/bin/kwriteconfig6")
+    @patch("services.desktop.kwin.cached_which", return_value="/usr/bin/kwriteconfig6")
     @patch("subprocess.run", side_effect=OSError("fail"))
     def test_exception(self, mock_run, mock_which):
         r = KWinManager.set_keybinding("Meta+H", "left")
@@ -148,7 +148,7 @@ class TestSetKeybinding(unittest.TestCase):
 class TestApplyTilingPreset(unittest.TestCase):
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/kwriteconfig6")
+    @patch("services.desktop.kwin.cached_which", return_value="/usr/bin/kwriteconfig6")
     def test_vim_preset(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         r = KWinManager.apply_tiling_preset("vim")
@@ -157,7 +157,7 @@ class TestApplyTilingPreset(unittest.TestCase):
         self.assertIn("bindings", r.data)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/kwriteconfig6")
+    @patch("services.desktop.kwin.cached_which", return_value="/usr/bin/kwriteconfig6")
     def test_arrows_preset(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         r = KWinManager.apply_tiling_preset("arrows")
@@ -169,7 +169,7 @@ class TestApplyTilingPreset(unittest.TestCase):
         self.assertIn("Unknown preset", r.message)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/kwriteconfig6")
+    @patch("services.desktop.kwin.cached_which", return_value="/usr/bin/kwriteconfig6")
     def test_preset_partial_failure(self, mock_which, mock_run):
         # First call succeeds, second fails
         mock_run.side_effect = [
@@ -213,7 +213,7 @@ class TestReconfigureKwin(unittest.TestCase):
 class TestAddWindowRule(unittest.TestCase):
 
     @patch("subprocess.run")
-    @patch("shutil.which", side_effect=lambda c: "/usr/bin/" + c if "kwrite" in c or "kread" in c else None)
+    @patch("services.desktop.kwin.cached_which", side_effect=lambda c: "/usr/bin/" + c if "kwrite" in c or "kread" in c else None)
     def test_add_rule_basic(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout="0")
         r = KWinManager.add_window_rule("firefox")
@@ -221,25 +221,25 @@ class TestAddWindowRule(unittest.TestCase):
         self.assertIn("firefox", r.message)
 
     @patch("subprocess.run")
-    @patch("shutil.which", side_effect=lambda c: "/usr/bin/" + c if "kwrite" in c or "kread" in c else None)
+    @patch("services.desktop.kwin.cached_which", side_effect=lambda c: "/usr/bin/" + c if "kwrite" in c or "kread" in c else None)
     def test_add_rule_with_workspace(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout="2")
         r = KWinManager.add_window_rule("code", workspace=2)
         self.assertTrue(r.success)
 
     @patch("subprocess.run")
-    @patch("shutil.which", side_effect=lambda c: "/usr/bin/" + c if "kwrite" in c or "kread" in c else None)
+    @patch("services.desktop.kwin.cached_which", side_effect=lambda c: "/usr/bin/" + c if "kwrite" in c or "kread" in c else None)
     def test_add_rule_maximized(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout="0")
         r = KWinManager.add_window_rule("steam", maximized=True)
         self.assertTrue(r.success)
 
-    @patch("shutil.which", return_value=None)
+    @patch("services.desktop.kwin.cached_which", return_value=None)
     def test_no_kwriteconfig(self, mock_which):
         r = KWinManager.add_window_rule("app")
         self.assertFalse(r.success)
 
-    @patch("shutil.which", side_effect=lambda c: "/usr/bin/kwriteconfig6" if "kwrite" in c else None)
+    @patch("services.desktop.kwin.cached_which", side_effect=lambda c: "/usr/bin/kwriteconfig6" if "kwrite" in c else None)
     @patch("subprocess.run", side_effect=OSError("fail"))
     def test_exception(self, mock_run, mock_which):
         r = KWinManager.add_window_rule("app")

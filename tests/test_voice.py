@@ -17,18 +17,18 @@ from utils.voice import VoiceManager, WHISPER_MODELS  # noqa: E402
 class TestIsAvailable(unittest.TestCase):
     """Tests for VoiceManager.is_available()."""
 
-    @patch('utils.voice.shutil.which')
+    @patch('utils.voice.cached_which')
     def test_available_whisper_cpp(self, mock_which):
         def side_effect(name):
             return "/usr/bin/whisper-cpp" if name == "whisper-cpp" else None
         mock_which.side_effect = side_effect
         self.assertTrue(VoiceManager.is_available())
 
-    @patch('utils.voice.shutil.which', return_value=None)
+    @patch('utils.voice.cached_which', return_value=None)
     def test_not_available(self, mock_which):
         self.assertFalse(VoiceManager.is_available())
 
-    @patch('utils.voice.shutil.which')
+    @patch('utils.voice.cached_which')
     def test_available_main_binary(self, mock_which):
         def side_effect(name):
             return "/usr/local/bin/main" if name == "main" else None
@@ -39,7 +39,7 @@ class TestIsAvailable(unittest.TestCase):
 class TestGetWhisperBinary(unittest.TestCase):
     """Tests for VoiceManager._get_whisper_binary()."""
 
-    @patch('utils.voice.shutil.which')
+    @patch('utils.voice.cached_which')
     def test_finds_whisper_cpp(self, mock_which):
         def side_effect(name):
             return "/usr/bin/whisper-cpp" if name == "whisper-cpp" else None
@@ -47,7 +47,7 @@ class TestGetWhisperBinary(unittest.TestCase):
         result = VoiceManager._get_whisper_binary()
         self.assertEqual(result, "whisper-cpp")
 
-    @patch('utils.voice.shutil.which', return_value=None)
+    @patch('utils.voice.cached_which', return_value=None)
     def test_returns_empty_when_not_found(self, mock_which):
         result = VoiceManager._get_whisper_binary()
         self.assertEqual(result, "")
@@ -71,7 +71,7 @@ class TestGetAvailableModels(unittest.TestCase):
 class TestCheckMicrophone(unittest.TestCase):
     """Tests for VoiceManager.check_microphone()."""
 
-    @patch('utils.voice.shutil.which', return_value="/usr/bin/arecord")
+    @patch('utils.voice.cached_which', return_value="/usr/bin/arecord")
     @patch('utils.voice.subprocess.run')
     @patch('builtins.open', mock_open(read_data="0 [PCH]: HDA-Intel\n"))
     @patch('utils.voice.os.path.exists', return_value=True)
@@ -84,7 +84,7 @@ class TestCheckMicrophone(unittest.TestCase):
         self.assertTrue(result["available"])
         self.assertGreater(len(result["devices"]), 0)
 
-    @patch('utils.voice.shutil.which', return_value=None)
+    @patch('utils.voice.cached_which', return_value=None)
     @patch('utils.voice.os.path.exists', return_value=False)
     def test_check_microphone_no_devices(self, mock_exists, mock_which):
         result = VoiceManager.check_microphone()
@@ -92,7 +92,7 @@ class TestCheckMicrophone(unittest.TestCase):
         self.assertEqual(result["devices"], [])
         self.assertIsNone(result["default"])
 
-    @patch('utils.voice.shutil.which', return_value="/usr/bin/arecord")
+    @patch('utils.voice.cached_which', return_value="/usr/bin/arecord")
     @patch('utils.voice.subprocess.run')
     @patch('utils.voice.os.path.exists', return_value=True)
     @patch('builtins.open', mock_open(read_data="--- no soundcards ---"))
@@ -101,7 +101,7 @@ class TestCheckMicrophone(unittest.TestCase):
         result = VoiceManager.check_microphone()
         self.assertEqual(result["devices"], [])
 
-    @patch('utils.voice.shutil.which', return_value="/usr/bin/arecord")
+    @patch('utils.voice.cached_which', return_value="/usr/bin/arecord")
     @patch('utils.voice.subprocess.run')
     @patch('utils.voice.os.path.exists', return_value=False)
     def test_check_microphone_arecord_timeout(self, mock_exists, mock_run, mock_which):
@@ -138,7 +138,7 @@ class TestTranscribe(unittest.TestCase):
     """Tests for VoiceManager.transcribe()."""
 
     @patch('utils.voice.subprocess.run')
-    @patch('utils.voice.shutil.which')
+    @patch('utils.voice.cached_which')
     @patch('utils.voice.os.path.isfile', return_value=True)
     def test_transcribe_success(self, mock_isfile, mock_which, mock_run):
         def which_side(name):
@@ -157,14 +157,14 @@ class TestTranscribe(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("not found", result.message)
 
-    @patch('utils.voice.shutil.which', return_value=None)
+    @patch('utils.voice.cached_which', return_value=None)
     @patch('utils.voice.os.path.isfile', return_value=True)
     def test_transcribe_no_whisper(self, mock_isfile, mock_which):
         result = VoiceManager.transcribe("/tmp/audio.wav")
         self.assertFalse(result.success)
         self.assertIn("not installed", result.message)
 
-    @patch('utils.voice.shutil.which')
+    @patch('utils.voice.cached_which')
     @patch('utils.voice.os.path.isfile', return_value=True)
     def test_transcribe_invalid_model(self, mock_isfile, mock_which):
         def which_side(name):
@@ -176,7 +176,7 @@ class TestTranscribe(unittest.TestCase):
         self.assertIn("Unknown model", result.message)
 
     @patch('utils.voice.subprocess.run')
-    @patch('utils.voice.shutil.which')
+    @patch('utils.voice.cached_which')
     @patch('utils.voice.os.path.isfile', return_value=True)
     def test_transcribe_command_failure(self, mock_isfile, mock_which, mock_run):
         def which_side(name):
@@ -189,7 +189,7 @@ class TestTranscribe(unittest.TestCase):
         self.assertIn("failed", result.message.lower())
 
     @patch('utils.voice.subprocess.run')
-    @patch('utils.voice.shutil.which')
+    @patch('utils.voice.cached_which')
     @patch('utils.voice.os.path.isfile', return_value=True)
     def test_transcribe_timeout(self, mock_isfile, mock_which, mock_run):
         def which_side(name):
@@ -202,7 +202,7 @@ class TestTranscribe(unittest.TestCase):
         self.assertIn("timed out", result.message)
 
     @patch('utils.voice.subprocess.run')
-    @patch('utils.voice.shutil.which')
+    @patch('utils.voice.cached_which')
     @patch('utils.voice.os.path.isfile', return_value=True)
     def test_transcribe_os_error(self, mock_isfile, mock_which, mock_run):
         def which_side(name):
@@ -219,7 +219,7 @@ class TestRecordAudio(unittest.TestCase):
 
     @patch('utils.voice.os.path.isfile', return_value=True)
     @patch('utils.voice.subprocess.run')
-    @patch('utils.voice.shutil.which')
+    @patch('utils.voice.cached_which')
     def test_record_audio_arecord_success(self, mock_which, mock_run, mock_isfile):
         def which_side(name):
             return "/usr/bin/arecord" if name == "arecord" else None
@@ -230,7 +230,7 @@ class TestRecordAudio(unittest.TestCase):
         self.assertEqual(result, "/tmp/test.wav")
 
     @patch('utils.voice.subprocess.run')
-    @patch('utils.voice.shutil.which')
+    @patch('utils.voice.cached_which')
     def test_record_audio_arecord_failure_parecord_fallback(self, mock_which, mock_run):
         def which_side(name):
             if name == "arecord":
@@ -250,7 +250,7 @@ class TestRecordAudio(unittest.TestCase):
             result = VoiceManager.record_audio(duration_seconds=3, output_path="/tmp/test.wav")
             self.assertEqual(result, "/tmp/test.wav")
 
-    @patch('utils.voice.shutil.which', return_value=None)
+    @patch('utils.voice.cached_which', return_value=None)
     def test_record_audio_no_tools(self, mock_which):
         result = VoiceManager.record_audio(duration_seconds=3, output_path="/tmp/test.wav")
         self.assertEqual(result, "")
@@ -259,7 +259,7 @@ class TestRecordAudio(unittest.TestCase):
     @patch('utils.voice.tempfile.mkstemp', return_value=(5, "/tmp/loofi_voice_abc.wav"))
     @patch('utils.voice.os.path.isfile', return_value=True)
     @patch('utils.voice.subprocess.run')
-    @patch('utils.voice.shutil.which')
+    @patch('utils.voice.cached_which')
     def test_record_audio_auto_temp_file(self, mock_which, mock_run, mock_isfile, mock_mkstemp, mock_close):
         def which_side(name):
             return "/usr/bin/arecord" if name == "arecord" else None
@@ -270,7 +270,7 @@ class TestRecordAudio(unittest.TestCase):
         self.assertIn("loofi_voice", result)
 
     @patch('utils.voice.subprocess.run')
-    @patch('utils.voice.shutil.which')
+    @patch('utils.voice.cached_which')
     def test_record_audio_timeout(self, mock_which, mock_run):
         def which_side(name):
             return "/usr/bin/arecord" if name == "arecord" else None
@@ -284,21 +284,21 @@ class TestRecordAudio(unittest.TestCase):
 class TestIsRecordingAvailable(unittest.TestCase):
     """Tests for VoiceManager.is_recording_available()."""
 
-    @patch('utils.voice.shutil.which')
+    @patch('utils.voice.cached_which')
     def test_arecord_available(self, mock_which):
         def side_effect(name):
             return "/usr/bin/arecord" if name == "arecord" else None
         mock_which.side_effect = side_effect
         self.assertTrue(VoiceManager.is_recording_available())
 
-    @patch('utils.voice.shutil.which')
+    @patch('utils.voice.cached_which')
     def test_parecord_available(self, mock_which):
         def side_effect(name):
             return "/usr/bin/parecord" if name == "parecord" else None
         mock_which.side_effect = side_effect
         self.assertTrue(VoiceManager.is_recording_available())
 
-    @patch('utils.voice.shutil.which', return_value=None)
+    @patch('utils.voice.cached_which', return_value=None)
     def test_no_recording_tools(self, mock_which):
         self.assertFalse(VoiceManager.is_recording_available())
 

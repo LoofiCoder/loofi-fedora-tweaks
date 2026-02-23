@@ -58,7 +58,7 @@ class TestGetClipboardContent(unittest.TestCase):
     """Tests for get_clipboard_content with mocked tools."""
 
     @patch('utils.clipboard_sync.subprocess.run')
-    @patch('utils.clipboard_sync.shutil.which', return_value='/usr/bin/wl-paste')
+    @patch('utils.clipboard_sync.cached_which', return_value='/usr/bin/wl-paste')
     @patch.object(ClipboardSync, 'detect_display_server', return_value='wayland')
     def test_read_wayland_wl_paste(self, mock_display, mock_which, mock_run):
         """Reads clipboard via wl-paste on Wayland."""
@@ -68,7 +68,7 @@ class TestGetClipboardContent(unittest.TestCase):
         self.assertEqual(result, "clipboard text")
 
     @patch('utils.clipboard_sync.subprocess.run')
-    @patch('utils.clipboard_sync.shutil.which')
+    @patch('utils.clipboard_sync.cached_which')
     @patch.object(ClipboardSync, 'detect_display_server', return_value='x11')
     def test_read_x11_xclip(self, mock_display, mock_which, mock_run):
         """Reads clipboard via xclip on X11."""
@@ -78,7 +78,7 @@ class TestGetClipboardContent(unittest.TestCase):
         result = ClipboardSync.get_clipboard_content()
         self.assertEqual(result, "x11 text")
 
-    @patch('utils.clipboard_sync.shutil.which', return_value=None)
+    @patch('utils.clipboard_sync.cached_which', return_value=None)
     @patch.object(ClipboardSync, 'detect_display_server', return_value='x11')
     def test_read_no_tools_returns_empty(self, mock_display, mock_which):
         """Returns empty string when no tools available."""
@@ -94,7 +94,7 @@ class TestSetClipboardContent(unittest.TestCase):
     """Tests for set_clipboard_content with mocked tools."""
 
     @patch('utils.clipboard_sync.subprocess.run')
-    @patch('utils.clipboard_sync.shutil.which', return_value='/usr/bin/wl-copy')
+    @patch('utils.clipboard_sync.cached_which', return_value='/usr/bin/wl-copy')
     @patch.object(ClipboardSync, 'detect_display_server', return_value='wayland')
     def test_write_wayland_wl_copy(self, mock_display, mock_which, mock_run):
         """Writes clipboard via wl-copy on Wayland."""
@@ -103,7 +103,7 @@ class TestSetClipboardContent(unittest.TestCase):
         result = ClipboardSync.set_clipboard_content("hello")
         self.assertTrue(result)
 
-    @patch('utils.clipboard_sync.shutil.which', return_value=None)
+    @patch('utils.clipboard_sync.cached_which', return_value=None)
     @patch.object(ClipboardSync, 'detect_display_server', return_value='unknown')
     def test_write_no_tools_returns_false(self, mock_display, mock_which):
         """Returns False when no clipboard tools available."""
@@ -118,7 +118,7 @@ class TestSetClipboardContent(unittest.TestCase):
 class TestIsClipboardToolAvailable(unittest.TestCase):
     """Tests for is_clipboard_tool_available."""
 
-    @patch('utils.clipboard_sync.shutil.which')
+    @patch('utils.clipboard_sync.cached_which')
     def test_both_available(self, mock_which):
         """Detects both X11 and Wayland tools."""
         mock_which.side_effect = lambda name: f'/usr/bin/{name}'
@@ -127,7 +127,7 @@ class TestIsClipboardToolAvailable(unittest.TestCase):
         self.assertTrue(tools["x11"])
         self.assertTrue(tools["wayland"])
 
-    @patch('utils.clipboard_sync.shutil.which', return_value=None)
+    @patch('utils.clipboard_sync.cached_which', return_value=None)
     def test_none_available(self, mock_which):
         """Returns False for both when no tools installed."""
         tools = ClipboardSync.is_clipboard_tool_available()

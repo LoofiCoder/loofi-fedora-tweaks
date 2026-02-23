@@ -8,7 +8,7 @@ import subprocess
 
 class TestSafety(unittest.TestCase):
     
-    @patch('shutil.which')
+    @patch('services.security.safety.cached_which')
     def test_check_snapshot_tool(self, mock_which):
         mock_which.return_value = "/usr/bin/timeshift"
         self.assertEqual(SafetyManager.check_snapshot_tool(), "timeshift")

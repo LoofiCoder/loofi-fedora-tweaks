@@ -2,8 +2,9 @@
 import json
 import logging
 import os
-import shutil
 import subprocess
+
+from services.system.system import cached_which
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +109,7 @@ class PresetManager:
 
     # --- Helpers ---
     def _get_gsettings(self, schema, key):
-        if not shutil.which("gsettings"):
+        if not cached_which("gsettings"):
             return None
         try:
             return (
@@ -122,7 +123,7 @@ class PresetManager:
             return None
 
     def _set_gsettings(self, schema, key, value):
-        if value and shutil.which("gsettings"):
+        if value and cached_which("gsettings"):
             try:
                 subprocess.run(
                     ["gsettings", "set", schema, key, value], check=False, timeout=15
@@ -139,7 +140,7 @@ class PresetManager:
             return 100
 
     def _get_power_profile(self):
-        if not shutil.which("powerprofilesctl"):
+        if not cached_which("powerprofilesctl"):
             return "balanced"
         try:
             return subprocess.check_output(

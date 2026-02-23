@@ -11,13 +11,13 @@ Provides:
 
 import logging
 import os
-import shutil
 import subprocess
 import threading
 import time
 from typing import Any, Callable, Dict, List, Optional
 
 from services.system import SystemManager
+from services.system.system import cached_which
 from utils.arbitrator import AgentRequest, Arbitrator, Priority
 
 from core.agents.agents import (
@@ -545,7 +545,7 @@ class AgentExecutor:
                 )
             else:
                 package_manager = SystemManager.get_package_manager()
-                if not shutil.which(package_manager):
+                if not cached_which(package_manager):
                     return AgentResult(
                         success=True,
                         message="DNF not available on this system",
@@ -611,7 +611,7 @@ class AgentExecutor:
     @staticmethod
     def _op_clean_dnf_cache(settings: Dict[str, Any]) -> AgentResult:
         """Report DNF cache size (actual cleanup requires pkexec)."""
-        cache_path = "/var/cache/dnf" if shutil.which("dnf") else "/var/cache/rpm-ostree"
+        cache_path = "/var/cache/dnf" if cached_which("dnf") else "/var/cache/rpm-ostree"
         try:
             result = subprocess.run(
                 ["du", "-sh", cache_path],

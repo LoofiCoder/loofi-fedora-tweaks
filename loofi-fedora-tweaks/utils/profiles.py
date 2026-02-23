@@ -10,13 +10,13 @@ compositor settings, notification rules, and services.
 import json
 import logging
 import os
-import shutil
 import subprocess
 import time
 
 from core.profiles.models import ProfileRecord
 from core.profiles.storage import ProfileStore
 
+from services.system.system import cached_which
 from utils.containers import Result
 from utils.snapshot_manager import SnapshotManager
 
@@ -356,7 +356,7 @@ class ProfileManager:
     @staticmethod
     def _set_governor(governor: str) -> bool:
         """Set CPU governor using cpupower."""
-        if not shutil.which("cpupower"):
+        if not cached_which("cpupower"):
             return False
         try:
             result = subprocess.run(

@@ -12,12 +12,12 @@ import hmac
 import logging
 import os
 import random
-import shutil
 import socket
 import struct
 import subprocess
 import threading
 
+from services.system.system import cached_which
 from utils.rate_limiter import TokenBucketRateLimiter
 
 logger = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ class ClipboardSync:
 
         if display == "wayland":
             # Try wl-paste first
-            if shutil.which("wl-paste"):
+            if cached_which("wl-paste"):
                 try:
                     result = subprocess.run(
                         ["wl-paste", "--no-newline"],
@@ -53,7 +53,7 @@ class ClipboardSync:
                     logger.debug("wl-paste failed: %s", e)
 
         # X11 / fallback
-        if shutil.which("xclip"):
+        if cached_which("xclip"):
             try:
                 result = subprocess.run(
                     ["xclip", "-selection", "clipboard", "-o"],
@@ -66,7 +66,7 @@ class ClipboardSync:
             except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError) as e:
                 logger.debug("xclip read failed: %s", e)
 
-        if shutil.which("xsel"):
+        if cached_which("xsel"):
             try:
                 result = subprocess.run(
                     ["xsel", "--clipboard", "--output"],
@@ -93,7 +93,7 @@ class ClipboardSync:
         """
         display = ClipboardSync.detect_display_server()
 
-        if display == "wayland" and shutil.which("wl-copy"):
+        if display == "wayland" and cached_which("wl-copy"):
             try:
                 result = subprocess.run(
                     ["wl-copy"],
@@ -106,7 +106,7 @@ class ClipboardSync:
             except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError) as e:
                 logger.debug("wl-copy failed: %s", e)
 
-        if shutil.which("xclip"):
+        if cached_which("xclip"):
             try:
                 result = subprocess.run(
                     ["xclip", "-selection", "clipboard"],
@@ -119,7 +119,7 @@ class ClipboardSync:
             except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError) as e:
                 logger.debug("xclip write failed: %s", e)
 
-        if shutil.which("xsel"):
+        if cached_which("xsel"):
             try:
                 result = subprocess.run(
                     ["xsel", "--clipboard", "--input"],
@@ -141,8 +141,8 @@ class ClipboardSync:
         Returns:
             Dict with keys ``"x11"`` and ``"wayland"``, each a bool.
         """
-        x11 = (shutil.which("xclip") is not None) or (shutil.which("xsel") is not None)
-        wayland = shutil.which("wl-copy") is not None and shutil.which("wl-paste") is not None
+        x11 = (cached_which("xclip") is not None) or (cached_which("xsel") is not None)
+        wayland = cached_which("wl-copy") is not None and cached_which("wl-paste") is not None
         return {"x11": x11, "wayland": wayland}
 
     @staticmethod

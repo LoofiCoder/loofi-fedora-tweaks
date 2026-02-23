@@ -54,15 +54,20 @@ class FirewallManager:
     Write operations go through pkexec.
     """
 
+    _available_cached: bool | None = None
+
     # ------------------------------------------------------------ status
     @classmethod
     def is_available(cls) -> bool:
-        """Check if firewall-cmd is installed."""
+        """Check if firewall-cmd is installed (cached per session)."""
+        if cls._available_cached is not None:
+            return cls._available_cached
         try:
             result = subprocess.run(["firewall-cmd", "--version"], capture_output=True, text=True, timeout=5)
-            return result.returncode == 0
+            cls._available_cached = result.returncode == 0
         except (OSError, subprocess.TimeoutExpired):
-            return False
+            cls._available_cached = False
+        return cls._available_cached
 
     @classmethod
     def is_running(cls) -> bool:

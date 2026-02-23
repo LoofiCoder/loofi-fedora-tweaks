@@ -119,14 +119,14 @@ class TestCheckDnfLock(unittest.TestCase):
 class TestCheckSnapshotTool(unittest.TestCase):
     """Tests for SafetyManager.check_snapshot_tool."""
 
-    @patch("services.security.safety.shutil.which")
+    @patch("services.security.safety.cached_which")
     def test_timeshift_preferred_over_snapper(self, mock_which):
         """Returns 'timeshift' when both tools are available."""
         mock_which.side_effect = lambda x: f"/usr/bin/{x}"
         result = SafetyManager.check_snapshot_tool()
         self.assertEqual(result, "timeshift")
 
-    @patch("services.security.safety.shutil.which")
+    @patch("services.security.safety.cached_which")
     def test_returns_timeshift_when_only_timeshift(self, mock_which):
         """Returns 'timeshift' when only timeshift is installed."""
         mock_which.side_effect = lambda x: (
@@ -135,7 +135,7 @@ class TestCheckSnapshotTool(unittest.TestCase):
         result = SafetyManager.check_snapshot_tool()
         self.assertEqual(result, "timeshift")
 
-    @patch("services.security.safety.shutil.which")
+    @patch("services.security.safety.cached_which")
     def test_returns_snapper_when_only_snapper(self, mock_which):
         """Returns 'snapper' when only snapper is installed."""
         mock_which.side_effect = lambda x: (
@@ -144,20 +144,20 @@ class TestCheckSnapshotTool(unittest.TestCase):
         result = SafetyManager.check_snapshot_tool()
         self.assertEqual(result, "snapper")
 
-    @patch("services.security.safety.shutil.which", return_value=None)
+    @patch("services.security.safety.cached_which", return_value=None)
     def test_returns_none_when_no_tool(self, mock_which):
         """Returns None when neither tool is installed."""
         result = SafetyManager.check_snapshot_tool()
         self.assertIsNone(result)
 
-    @patch("services.security.safety.shutil.which")
+    @patch("services.security.safety.cached_which")
     def test_checks_timeshift_before_snapper(self, mock_which):
         """Checks timeshift first; does not check snapper if timeshift found."""
         mock_which.return_value = "/usr/bin/timeshift"
         SafetyManager.check_snapshot_tool()
         self.assertEqual(mock_which.call_args_list[0], call("timeshift"))
 
-    @patch("services.security.safety.shutil.which")
+    @patch("services.security.safety.cached_which")
     def test_return_type_is_string_or_none(self, mock_which):
         """Return value is always a string or None, never another type."""
         mock_which.return_value = None

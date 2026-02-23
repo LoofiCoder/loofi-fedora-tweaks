@@ -8,12 +8,12 @@ snapshots via Timeshift, Snapper, or raw Btrfs subvolumes.
 
 import logging
 import re
-import shutil
 import subprocess
 import time
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
+from services.system.system import cached_which
 from utils.commands import PrivilegedCommand  # noqa: F401 — keep for pattern consistency
 
 logger = logging.getLogger(__name__)
@@ -99,7 +99,7 @@ class SnapshotManager:
         backends: List[SnapshotBackend] = []
 
         for name in _BACKEND_PRIORITY:
-            cmd_path = shutil.which(name)
+            cmd_path = cached_which(name)
             available = cmd_path is not None
             version = ""
 
@@ -144,7 +144,7 @@ class SnapshotManager:
         Priority order: snapper → timeshift → btrfs.
         """
         for name in _BACKEND_PRIORITY:
-            if shutil.which(name) is not None:
+            if cached_which(name) is not None:
                 return name
         return None
 

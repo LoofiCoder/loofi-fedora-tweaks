@@ -71,26 +71,26 @@ class TestGpuControls(unittest.TestCase):
     """GPU detection and control tests."""
 
     @patch('services.hardware.hardware.glob.glob', return_value=['/sys/class/drm/card1/device/vendor_intel'])
-    @patch('services.hardware.hardware.shutil.which', return_value='/usr/bin/nvidia-smi')
+    @patch('services.hardware.hardware.cached_which', return_value='/usr/bin/nvidia-smi')
     @patch('services.hardware.hardware.os.path.exists', return_value=False)
     def test_is_hybrid_gpu_true_with_intel(self, _mock_exists, _mock_which, _mock_glob):
         self.assertTrue(HardwareManager.is_hybrid_gpu())
 
     @patch('services.hardware.hardware.glob.glob', return_value=[])
-    @patch('services.hardware.hardware.shutil.which', return_value=None)
+    @patch('services.hardware.hardware.cached_which', return_value=None)
     @patch('services.hardware.hardware.os.path.exists', return_value=False)
     def test_is_hybrid_gpu_false(self, _mock_exists, _mock_which, _mock_glob):
         self.assertFalse(HardwareManager.is_hybrid_gpu())
 
     @patch('services.hardware.hardware.subprocess.run')
-    @patch('services.hardware.hardware.shutil.which')
+    @patch('services.hardware.hardware.cached_which')
     def test_get_gpu_mode_envycontrol_integrated(self, mock_which, mock_run):
         mock_which.side_effect = lambda name: '/usr/bin/envycontrol' if name == 'envycontrol' else None
         mock_run.return_value = MagicMock(stdout='integrated\n')
         self.assertEqual(HardwareManager.get_gpu_mode(), 'integrated')
 
     @patch('services.hardware.hardware.subprocess.run')
-    @patch('services.hardware.hardware.shutil.which')
+    @patch('services.hardware.hardware.cached_which')
     def test_get_gpu_mode_supergfx_fallback(self, mock_which, mock_run):
         def which_side_effect(name):
             if name == 'envycontrol':
@@ -103,7 +103,7 @@ class TestGpuControls(unittest.TestCase):
         mock_run.return_value = MagicMock(stdout='Hybrid\n')
         self.assertEqual(HardwareManager.get_gpu_mode(), 'hybrid')
 
-    @patch('services.hardware.hardware.shutil.which', return_value=None)
+    @patch('services.hardware.hardware.cached_which', return_value=None)
     def test_get_gpu_mode_unknown(self, _mock_which):
         self.assertEqual(HardwareManager.get_gpu_mode(), 'unknown')
 
@@ -113,7 +113,7 @@ class TestGpuControls(unittest.TestCase):
         self.assertIn('Invalid mode', message)
 
     @patch('services.hardware.hardware.subprocess.run')
-    @patch('services.hardware.hardware.shutil.which')
+    @patch('services.hardware.hardware.cached_which')
     def test_set_gpu_mode_envycontrol_success(self, mock_which, mock_run):
         mock_which.side_effect = lambda name: '/usr/bin/envycontrol' if name == 'envycontrol' else None
         mock_run.return_value = MagicMock(returncode=0, stderr='')
@@ -121,7 +121,7 @@ class TestGpuControls(unittest.TestCase):
         self.assertTrue(success)
 
     @patch('services.hardware.hardware.subprocess.run')
-    @patch('services.hardware.hardware.shutil.which')
+    @patch('services.hardware.hardware.cached_which')
     def test_set_gpu_mode_supergfx_failure(self, mock_which, mock_run):
         def which_side_effect(name):
             if name == 'envycontrol':
@@ -136,13 +136,13 @@ class TestGpuControls(unittest.TestCase):
         self.assertFalse(success)
         self.assertEqual(message, 'failed')
 
-    @patch('services.hardware.hardware.shutil.which', return_value=None)
+    @patch('services.hardware.hardware.cached_which', return_value=None)
     def test_set_gpu_mode_no_tool(self, _mock_which):
         success, message = HardwareManager.set_gpu_mode('integrated')
         self.assertFalse(success)
         self.assertIn('No GPU switching tool found', message)
 
-    @patch('services.hardware.hardware.shutil.which')
+    @patch('services.hardware.hardware.cached_which')
     def test_get_available_gpu_tools(self, mock_which):
         mock_which.side_effect = lambda name: f'/usr/bin/{name}' if name in ('envycontrol', 'supergfxctl') else None
         self.assertEqual(HardwareManager.get_available_gpu_tools(), ['envycontrol', 'supergfxctl'])
@@ -151,7 +151,7 @@ class TestGpuControls(unittest.TestCase):
 class TestFanAndPowerProfiles(unittest.TestCase):
     """Fan and power profile tests."""
 
-    @patch('services.hardware.hardware.shutil.which', return_value='/usr/bin/nbfc')
+    @patch('services.hardware.hardware.cached_which', return_value='/usr/bin/nbfc')
     def test_nbfc_available(self, _mock_which):
         self.assertTrue(HardwareManager.is_nbfc_available())
 
@@ -203,7 +203,7 @@ class TestFanAndPowerProfiles(unittest.TestCase):
         self.assertEqual(status['speed'], 45.0)
         self.assertEqual(status['temperature'], 67.0)
 
-    @patch('services.hardware.hardware.shutil.which', return_value='/usr/bin/powerprofilesctl')
+    @patch('services.hardware.hardware.cached_which', return_value='/usr/bin/powerprofilesctl')
     def test_power_profiles_available(self, _mock_which):
         self.assertTrue(HardwareManager.is_power_profiles_available())
 
@@ -235,7 +235,7 @@ class TestAiCapabilities(unittest.TestCase):
     @patch('services.hardware.hardware.subprocess.run')
     @patch('services.hardware.hardware.os.path.exists')
     @patch('services.hardware.hardware.glob.glob')
-    @patch('services.hardware.hardware.shutil.which')
+    @patch('services.hardware.hardware.cached_which')
     def test_get_ai_capabilities_detects_all(self, mock_which, mock_glob, mock_exists, mock_run):
         def which_side_effect(name):
             return f'/usr/bin/{name}' if name in ('nvidia-smi', 'rocminfo') else None
@@ -261,7 +261,7 @@ class TestAiCapabilities(unittest.TestCase):
     @patch('services.hardware.hardware.subprocess.run', side_effect=OSError('boom'))
     @patch('services.hardware.hardware.os.path.exists', return_value=False)
     @patch('services.hardware.hardware.glob.glob', return_value=[])
-    @patch('services.hardware.hardware.shutil.which', return_value=None)
+    @patch('services.hardware.hardware.cached_which', return_value=None)
     def test_get_ai_capabilities_failures(self, _mock_which, _mock_glob, _mock_exists, _mock_run):
         caps = HardwareManager.get_ai_capabilities()
         self.assertFalse(caps['cuda'])

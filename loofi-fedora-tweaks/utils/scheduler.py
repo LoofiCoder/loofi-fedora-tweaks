@@ -5,7 +5,6 @@ Supports time-based and power-state triggers.
 
 import json
 import logging
-import shutil
 import subprocess
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
@@ -14,6 +13,7 @@ from pathlib import Path
 from typing import Optional
 
 from services.system import SystemManager
+from services.system.system import cached_which
 
 from services.security import AuditLogger
 from utils.commands import PrivilegedCommand
@@ -332,7 +332,7 @@ class TaskScheduler:
                     return (True, "System is up to date")
             else:
                 package_manager = SystemManager.get_package_manager()
-                if not shutil.which(package_manager):
+                if not cached_which(package_manager):
                     return (True, "System is up to date (dnf not available)")
                 result = subprocess.run(
                     [package_manager, "check-update", "-q"],

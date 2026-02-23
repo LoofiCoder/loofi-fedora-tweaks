@@ -38,14 +38,14 @@ class TestDetectDisplayServer(unittest.TestCase):
 class TestIsClipboardToolAvailable(unittest.TestCase):
     """Tests for is_clipboard_tool_available."""
 
-    @patch('utils.clipboard_sync.shutil.which')
+    @patch('utils.clipboard_sync.cached_which')
     def test_both_available(self, mock_which):
         mock_which.side_effect = lambda t: "/usr/bin/" + t
         result = ClipboardSync.is_clipboard_tool_available()
         self.assertTrue(result["x11"])
         self.assertTrue(result["wayland"])
 
-    @patch('utils.clipboard_sync.shutil.which')
+    @patch('utils.clipboard_sync.cached_which')
     def test_none_available(self, mock_which):
         mock_which.return_value = None
         result = ClipboardSync.is_clipboard_tool_available()
@@ -57,7 +57,7 @@ class TestGetClipboardContent(unittest.TestCase):
     """Tests for get_clipboard_content."""
 
     @patch.object(ClipboardSync, 'detect_display_server', return_value="wayland")
-    @patch('utils.clipboard_sync.shutil.which')
+    @patch('utils.clipboard_sync.cached_which')
     @patch('utils.clipboard_sync.subprocess.run')
     def test_wayland_wl_paste_success(self, mock_run, mock_which, _mock_detect):
         mock_which.return_value = "/usr/bin/wl-paste"
@@ -66,7 +66,7 @@ class TestGetClipboardContent(unittest.TestCase):
         self.assertEqual(result, "clipboard text")
 
     @patch.object(ClipboardSync, 'detect_display_server', return_value="x11")
-    @patch('utils.clipboard_sync.shutil.which')
+    @patch('utils.clipboard_sync.cached_which')
     @patch('utils.clipboard_sync.subprocess.run')
     def test_x11_xclip_success(self, mock_run, mock_which, _mock_detect):
         mock_which.side_effect = lambda t: "/usr/bin/xclip" if t == "xclip" else None
@@ -75,7 +75,7 @@ class TestGetClipboardContent(unittest.TestCase):
         self.assertEqual(result, "x11 text")
 
     @patch.object(ClipboardSync, 'detect_display_server', return_value="x11")
-    @patch('utils.clipboard_sync.shutil.which')
+    @patch('utils.clipboard_sync.cached_which')
     @patch('utils.clipboard_sync.subprocess.run')
     def test_xsel_fallback(self, mock_run, mock_which, _mock_detect):
         def which_side(t):
@@ -88,13 +88,13 @@ class TestGetClipboardContent(unittest.TestCase):
         self.assertEqual(result, "xsel text")
 
     @patch.object(ClipboardSync, 'detect_display_server', return_value="x11")
-    @patch('utils.clipboard_sync.shutil.which', return_value=None)
+    @patch('utils.clipboard_sync.cached_which', return_value=None)
     def test_no_tools_returns_empty(self, mock_which, _mock_detect):
         result = ClipboardSync.get_clipboard_content()
         self.assertEqual(result, "")
 
     @patch.object(ClipboardSync, 'detect_display_server', return_value="x11")
-    @patch('utils.clipboard_sync.shutil.which', return_value="/usr/bin/xclip")
+    @patch('utils.clipboard_sync.cached_which', return_value="/usr/bin/xclip")
     @patch('utils.clipboard_sync.subprocess.run')
     def test_subprocess_error_returns_empty(self, mock_run, mock_which, _mock_detect):
         mock_run.side_effect = OSError("not found")
@@ -106,7 +106,7 @@ class TestSetClipboardContent(unittest.TestCase):
     """Tests for set_clipboard_content."""
 
     @patch.object(ClipboardSync, 'detect_display_server', return_value="wayland")
-    @patch('utils.clipboard_sync.shutil.which')
+    @patch('utils.clipboard_sync.cached_which')
     @patch('utils.clipboard_sync.subprocess.run')
     def test_wayland_wl_copy_success(self, mock_run, mock_which, _mock_detect):
         mock_which.return_value = "/usr/bin/wl-copy"
@@ -115,13 +115,13 @@ class TestSetClipboardContent(unittest.TestCase):
         self.assertTrue(result)
 
     @patch.object(ClipboardSync, 'detect_display_server', return_value="x11")
-    @patch('utils.clipboard_sync.shutil.which', return_value=None)
+    @patch('utils.clipboard_sync.cached_which', return_value=None)
     def test_no_tools_returns_false(self, mock_which, _mock_detect):
         result = ClipboardSync.set_clipboard_content("hello")
         self.assertFalse(result)
 
     @patch.object(ClipboardSync, 'detect_display_server', return_value="x11")
-    @patch('utils.clipboard_sync.shutil.which', return_value="/usr/bin/xclip")
+    @patch('utils.clipboard_sync.cached_which', return_value="/usr/bin/xclip")
     @patch('utils.clipboard_sync.subprocess.run')
     def test_subprocess_error_returns_false(self, mock_run, mock_which, _mock_detect):
         mock_run.side_effect = OSError("broken")

@@ -161,7 +161,7 @@ class TestAnsibleExporter(unittest.TestCase):
     # ── _get_flatpak_apps ────────────────────────────────────────────────
 
     @patch("utils.ansible_export.subprocess.run")
-    @patch("utils.ansible_export.shutil.which", return_value="/usr/bin/flatpak")
+    @patch("utils.ansible_export.cached_which", return_value="/usr/bin/flatpak")
     def test_get_flatpak_apps_success(self, mock_which, mock_run):
         """Flatpak app listing parses app IDs."""
         mock_run.return_value = MagicMock(
@@ -171,13 +171,13 @@ class TestAnsibleExporter(unittest.TestCase):
         self.assertEqual(apps, ["org.foo.App", "org.bar.Tool"])
         mock_which.assert_called_once_with("flatpak")
 
-    @patch("utils.ansible_export.shutil.which", return_value=None)
+    @patch("utils.ansible_export.cached_which", return_value=None)
     def test_get_flatpak_apps_missing_binary(self, mock_which):
         """Flatpak listing is empty when tool is missing."""
         self.assertEqual(AnsibleExporter._get_flatpak_apps(), [])
 
     @patch("utils.ansible_export.subprocess.run")
-    @patch("utils.ansible_export.shutil.which", return_value="/usr/bin/flatpak")
+    @patch("utils.ansible_export.cached_which", return_value="/usr/bin/flatpak")
     def test_get_flatpak_apps_nonzero_returncode(self, mock_which, mock_run):
         """Flatpak listing returns empty list on non-zero return code."""
         mock_run.return_value = MagicMock(returncode=1, stdout="error output")
@@ -185,7 +185,7 @@ class TestAnsibleExporter(unittest.TestCase):
         self.assertEqual(apps, [])
 
     @patch("utils.ansible_export.subprocess.run")
-    @patch("utils.ansible_export.shutil.which", return_value="/usr/bin/flatpak")
+    @patch("utils.ansible_export.cached_which", return_value="/usr/bin/flatpak")
     def test_get_flatpak_apps_subprocess_exception(self, mock_which, mock_run):
         """Flatpak listing returns empty list on subprocess exception."""
         mock_run.side_effect = subprocess.SubprocessError("flatpak crashed")
@@ -193,7 +193,7 @@ class TestAnsibleExporter(unittest.TestCase):
         self.assertEqual(apps, [])
 
     @patch("utils.ansible_export.subprocess.run")
-    @patch("utils.ansible_export.shutil.which", return_value="/usr/bin/flatpak")
+    @patch("utils.ansible_export.cached_which", return_value="/usr/bin/flatpak")
     def test_get_flatpak_apps_empty_stdout(self, mock_which, mock_run):
         """Flatpak listing with empty stdout returns empty list."""
         mock_run.return_value = MagicMock(returncode=0, stdout="")
@@ -203,7 +203,7 @@ class TestAnsibleExporter(unittest.TestCase):
     # ── _get_gnome_settings ──────────────────────────────────────────────
 
     @patch("utils.ansible_export.subprocess.run")
-    @patch("utils.ansible_export.shutil.which", return_value="/usr/bin/gsettings")
+    @patch("utils.ansible_export.cached_which", return_value="/usr/bin/gsettings")
     def test_get_gnome_settings_collects_only_successful_keys(
         self, mock_which, mock_run
     ):
@@ -222,14 +222,14 @@ class TestAnsibleExporter(unittest.TestCase):
         self.assertIn("org.gnome.desktop.interface/cursor-theme", settings)
         self.assertNotIn("org.gnome.desktop.interface/icon-theme", settings)
 
-    @patch("utils.ansible_export.shutil.which", return_value=None)
+    @patch("utils.ansible_export.cached_which", return_value=None)
     def test_get_gnome_settings_missing_binary(self, mock_which):
         """GNOME settings returns empty dict when gsettings not installed."""
         settings = AnsibleExporter._get_gnome_settings()
         self.assertEqual(settings, {})
 
     @patch("utils.ansible_export.subprocess.run")
-    @patch("utils.ansible_export.shutil.which", return_value="/usr/bin/gsettings")
+    @patch("utils.ansible_export.cached_which", return_value="/usr/bin/gsettings")
     def test_get_gnome_settings_per_key_exception(self, mock_which, mock_run):
         """GNOME settings skips keys that raise exceptions and continues."""
         mock_run.side_effect = [
@@ -249,7 +249,7 @@ class TestAnsibleExporter(unittest.TestCase):
         self.assertEqual(len(settings), 2)
 
     @patch("utils.ansible_export.subprocess.run")
-    @patch("utils.ansible_export.shutil.which", return_value="/usr/bin/gsettings")
+    @patch("utils.ansible_export.cached_which", return_value="/usr/bin/gsettings")
     def test_get_gnome_settings_all_keys_succeed(self, mock_which, mock_run):
         """GNOME settings collects all 7 keys when all succeed."""
         mock_run.side_effect = [
@@ -266,7 +266,7 @@ class TestAnsibleExporter(unittest.TestCase):
         self.assertIn("org.gnome.desktop.wm.preferences/button-layout", settings)
 
     @patch("utils.ansible_export.subprocess.run")
-    @patch("utils.ansible_export.shutil.which", return_value="/usr/bin/gsettings")
+    @patch("utils.ansible_export.cached_which", return_value="/usr/bin/gsettings")
     def test_get_gnome_settings_strips_quotes(self, mock_which, mock_run):
         """GNOME settings strips surrounding single quotes from values."""
         mock_run.side_effect = [
@@ -632,7 +632,7 @@ class TestAnsibleExporter(unittest.TestCase):
 
     # ── validate_playbook ────────────────────────────────────────────────
 
-    @patch("utils.ansible_export.shutil.which", return_value=None)
+    @patch("utils.ansible_export.cached_which", return_value=None)
     def test_validate_playbook_yaml_syntax_ok_without_ansible_lint(self, mock_which):
         """Without ansible-lint, YAML syntax validation or unavailable message is returned."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -647,7 +647,7 @@ class TestAnsibleExporter(unittest.TestCase):
             )
 
     @patch("utils.ansible_export.subprocess.run")
-    @patch("utils.ansible_export.shutil.which", return_value="/usr/bin/ansible-lint")
+    @patch("utils.ansible_export.cached_which", return_value="/usr/bin/ansible-lint")
     def test_validate_playbook_ansible_lint_failure(self, mock_which, mock_run):
         """ansible-lint non-zero return is reported as validation issues."""
         mock_run.return_value = MagicMock(returncode=2, stdout="line too long")
@@ -656,7 +656,7 @@ class TestAnsibleExporter(unittest.TestCase):
         self.assertIn("validation issues", result.message.lower())
 
     @patch("utils.ansible_export.subprocess.run")
-    @patch("utils.ansible_export.shutil.which", return_value="/usr/bin/ansible-lint")
+    @patch("utils.ansible_export.cached_which", return_value="/usr/bin/ansible-lint")
     def test_validate_playbook_ansible_lint_success(self, mock_which, mock_run):
         """ansible-lint success (returncode=0) reports passed validation."""
         mock_run.return_value = MagicMock(returncode=0, stdout="")
@@ -665,7 +665,7 @@ class TestAnsibleExporter(unittest.TestCase):
         self.assertIn("passed", result.message.lower())
 
     @patch("utils.ansible_export.subprocess.run")
-    @patch("utils.ansible_export.shutil.which", return_value="/usr/bin/ansible-lint")
+    @patch("utils.ansible_export.cached_which", return_value="/usr/bin/ansible-lint")
     def test_validate_playbook_ansible_lint_exception(self, mock_which, mock_run):
         """ansible-lint exception returns failure result."""
         mock_run.side_effect = subprocess.SubprocessError("lint crashed")
@@ -673,7 +673,7 @@ class TestAnsibleExporter(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("validation failed", result.message.lower())
 
-    @patch("utils.ansible_export.shutil.which", return_value=None)
+    @patch("utils.ansible_export.cached_which", return_value=None)
     def test_validate_playbook_invalid_yaml(self, mock_which):
         """Invalid YAML returns syntax error when yaml module is available."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -687,7 +687,7 @@ class TestAnsibleExporter(unittest.TestCase):
                 self.assertIn("yaml syntax error", result.message.lower())
 
     @patch("builtins.__import__")
-    @patch("utils.ansible_export.shutil.which", return_value=None)
+    @patch("utils.ansible_export.cached_which", return_value=None)
     def test_validate_playbook_no_yaml_no_lint(self, mock_which, mock_import):
         """Without yaml AND ansible-lint, returns unable-to-validate message."""
         original_import = __import__
@@ -704,7 +704,7 @@ class TestAnsibleExporter(unittest.TestCase):
         self.assertIn("unable to validate", result.message.lower())
 
     @patch("utils.ansible_export.subprocess.run")
-    @patch("utils.ansible_export.shutil.which", return_value="/usr/bin/ansible-lint")
+    @patch("utils.ansible_export.cached_which", return_value="/usr/bin/ansible-lint")
     def test_validate_playbook_ansible_lint_includes_stdout(self, mock_which, mock_run):
         """ansible-lint failure includes stdout in the message."""
         mock_run.return_value = MagicMock(
@@ -715,7 +715,7 @@ class TestAnsibleExporter(unittest.TestCase):
         self.assertIn("bad task", result.message)
 
     @patch("utils.ansible_export.subprocess.run")
-    @patch("utils.ansible_export.shutil.which", return_value="/usr/bin/ansible-lint")
+    @patch("utils.ansible_export.cached_which", return_value="/usr/bin/ansible-lint")
     def test_validate_playbook_ansible_lint_timeout(self, mock_which, mock_run):
         """ansible-lint timeout exception returns failure."""
         mock_run.side_effect = subprocess.TimeoutExpired(cmd="ansible-lint", timeout=60)

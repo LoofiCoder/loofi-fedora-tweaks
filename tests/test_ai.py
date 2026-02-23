@@ -14,7 +14,7 @@ from utils.ai import AIConfigManager, LlamaCppManager, OllamaManager
 class TestOllamaManager(unittest.TestCase):
     """Coverage tests for OllamaManager."""
 
-    @patch("utils.ai.shutil.which", return_value="/usr/bin/ollama")
+    @patch("utils.ai.cached_which", return_value="/usr/bin/ollama")
     def test_is_installed_true(self, mock_which):
         self.assertTrue(OllamaManager.is_installed())
 
@@ -125,12 +125,12 @@ class TestOllamaManager(unittest.TestCase):
 class TestLlamaCppManager(unittest.TestCase):
     """Coverage tests for LlamaCppManager."""
 
-    @patch("utils.ai.shutil.which")
+    @patch("utils.ai.cached_which")
     def test_is_installed_checks_two_binaries(self, mock_which):
         mock_which.side_effect = [None, "/usr/bin/main"]
         self.assertTrue(LlamaCppManager.is_installed())
 
-    @patch("utils.ai.shutil.which", return_value="/usr/bin/dnf")
+    @patch("utils.ai.cached_which", return_value="/usr/bin/dnf")
     @patch("utils.ai.SystemManager.get_package_manager", return_value="dnf")
     @patch("utils.ai.subprocess.run")
     @patch("utils.ai.LlamaCppManager.is_installed", return_value=False)
@@ -144,14 +144,14 @@ class TestLlamaCppManager(unittest.TestCase):
 class TestAIConfigManager(unittest.TestCase):
     """Coverage tests for AIConfigManager."""
 
-    @patch("utils.ai.shutil.which", return_value=None)
+    @patch("utils.ai.cached_which", return_value=None)
     def test_configure_nvidia_for_ai_no_gpu(self, mock_which):
         result = AIConfigManager.configure_nvidia_for_ai()
         self.assertFalse(result.success)
         self.assertIn("not detected", result.message.lower())
 
     @patch("utils.ai.os.path.exists")
-    @patch("utils.ai.shutil.which", return_value="/usr/bin/nvidia-smi")
+    @patch("utils.ai.cached_which", return_value="/usr/bin/nvidia-smi")
     def test_configure_nvidia_for_ai_cuda_present(self, mock_which, mock_exists):
         mock_exists.side_effect = [False, True, False]
         result = AIConfigManager.configure_nvidia_for_ai()
@@ -159,7 +159,7 @@ class TestAIConfigManager(unittest.TestCase):
         self.assertIn("already configured", result.message.lower())
 
     @patch("utils.ai.subprocess.run")
-    @patch("utils.ai.shutil.which")
+    @patch("utils.ai.cached_which")
     def test_configure_rocm_for_ai_no_amd_gpu(self, mock_which, mock_run):
         mock_which.return_value = None
         mock_run.return_value = MagicMock(returncode=0, stdout="Intel VGA")
@@ -168,7 +168,7 @@ class TestAIConfigManager(unittest.TestCase):
         self.assertIn("amd gpu not detected", result.message.lower())
 
     @patch("utils.ai.subprocess.run")
-    @patch("utils.ai.shutil.which", return_value="/usr/bin/nvidia-smi")
+    @patch("utils.ai.cached_which", return_value="/usr/bin/nvidia-smi")
     def test_get_gpu_memory_parse(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout="8192, 2048, 6144\n")
         result = AIConfigManager.get_gpu_memory()

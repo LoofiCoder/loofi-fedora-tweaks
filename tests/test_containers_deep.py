@@ -25,23 +25,23 @@ from utils.containers import ContainerManager, ContainerStatus
 
 class TestIsAvailable(unittest.TestCase):
 
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_available(self, mock_which):
         self.assertTrue(ContainerManager.is_available())
 
-    @patch("shutil.which", return_value=None)
+    @patch("utils.containers.cached_which", return_value=None)
     def test_not_available(self, mock_which):
         self.assertFalse(ContainerManager.is_available())
 
 
 class TestListContainers(unittest.TestCase):
 
-    @patch("shutil.which", return_value=None)
+    @patch("utils.containers.cached_which", return_value=None)
     def test_not_available(self, mock_which):
         self.assertEqual(ContainerManager.list_containers(), [])
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_parse_output(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(
             returncode=0,
@@ -54,7 +54,7 @@ class TestListContainers(unittest.TestCase):
         self.assertEqual(containers[1].status, ContainerStatus.STOPPED)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_created_status(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(
             returncode=0,
@@ -64,7 +64,7 @@ class TestListContainers(unittest.TestCase):
         self.assertEqual(containers[0].status, ContainerStatus.CREATED)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_unknown_status(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(
             returncode=0,
@@ -74,7 +74,7 @@ class TestListContainers(unittest.TestCase):
         self.assertEqual(containers[0].status, ContainerStatus.UNKNOWN)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_parse_running_up(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(
             returncode=0,
@@ -84,29 +84,29 @@ class TestListContainers(unittest.TestCase):
         self.assertEqual(containers[0].status, ContainerStatus.RUNNING)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_command_failure(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=1)
         self.assertEqual(ContainerManager.list_containers(), [])
 
     @patch("subprocess.run", side_effect=OSError("fail"))
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_exception(self, mock_which, mock_run):
         self.assertEqual(ContainerManager.list_containers(), [])
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_empty_output(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout="ID | NAME | STATUS | IMAGE\n")
         self.assertEqual(ContainerManager.list_containers(), [])
 
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     @patch("subprocess.run", side_effect=__import__("subprocess").TimeoutExpired("distrobox", 30))
     def test_timeout(self, mock_run, mock_which):
         self.assertEqual(ContainerManager.list_containers(), [])
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_short_line_skipped(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(
             returncode=0,
@@ -117,7 +117,7 @@ class TestListContainers(unittest.TestCase):
 
 class TestCreateContainer(unittest.TestCase):
 
-    @patch("shutil.which", return_value=None)
+    @patch("utils.containers.cached_which", return_value=None)
     def test_not_available(self, mock_which):
         r = ContainerManager.create_container("test")
         self.assertFalse(r.success)
@@ -125,14 +125,14 @@ class TestCreateContainer(unittest.TestCase):
         self.assertIn("pkexec", r.message)
         self.assertNotIn("sudo ", r.message)
 
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_invalid_name(self, mock_which):
         r = ContainerManager.create_container("bad name!")
         self.assertFalse(r.success)
         self.assertIn("Invalid", r.message)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_success_default_image(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         r = ContainerManager.create_container("mybox")
@@ -141,14 +141,14 @@ class TestCreateContainer(unittest.TestCase):
         self.assertIn("fedora", " ".join(cmd))
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_success_custom_image(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         r = ContainerManager.create_container("mybox", image="ubuntu")
         self.assertTrue(r.success)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_success_no_home_sharing(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         r = ContainerManager.create_container("mybox", home_sharing=False)
@@ -157,7 +157,7 @@ class TestCreateContainer(unittest.TestCase):
         self.assertIn("--no-entry", cmd)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_with_additional_packages(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         r = ContainerManager.create_container("mybox", additional_packages=["vim", "git"])
@@ -166,20 +166,20 @@ class TestCreateContainer(unittest.TestCase):
         self.assertIn("--additional-packages", cmd)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_failure(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=1, stderr="image not found", stdout="")
         r = ContainerManager.create_container("mybox")
         self.assertFalse(r.success)
 
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     @patch("subprocess.run", side_effect=__import__("subprocess").TimeoutExpired("distrobox", 300))
     def test_timeout(self, mock_run, mock_which):
         r = ContainerManager.create_container("mybox")
         self.assertFalse(r.success)
         self.assertIn("timed out", r.message)
 
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     @patch("subprocess.run", side_effect=OSError("oops"))
     def test_exception(self, mock_run, mock_which):
         r = ContainerManager.create_container("mybox")
@@ -188,20 +188,20 @@ class TestCreateContainer(unittest.TestCase):
 
 class TestEnterContainer(unittest.TestCase):
 
-    @patch("shutil.which", return_value=None)
+    @patch("utils.containers.cached_which", return_value=None)
     def test_not_available(self, mock_which):
         result = ContainerManager.enter_container("test")
         self.assertIsNone(result)
 
     @patch("subprocess.Popen")
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_success(self, mock_which, mock_popen):
         mock_proc = MagicMock()
         mock_popen.return_value = mock_proc
         result = ContainerManager.enter_container("test")
         self.assertEqual(result, mock_proc)
 
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     @patch("subprocess.Popen", side_effect=OSError("fail"))
     def test_exception(self, mock_popen, mock_which):
         result = ContainerManager.enter_container("test")
@@ -217,20 +217,20 @@ class TestGetEnterCommand(unittest.TestCase):
 
 class TestDeleteContainer(unittest.TestCase):
 
-    @patch("shutil.which", return_value=None)
+    @patch("utils.containers.cached_which", return_value=None)
     def test_not_available(self, mock_which):
         r = ContainerManager.delete_container("test")
         self.assertFalse(r.success)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_success(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         r = ContainerManager.delete_container("test")
         self.assertTrue(r.success)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_force_delete(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         r = ContainerManager.delete_container("test", force=True)
@@ -239,19 +239,19 @@ class TestDeleteContainer(unittest.TestCase):
         self.assertIn("--force", cmd)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_failure(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=1, stderr="busy", stdout="")
         r = ContainerManager.delete_container("test")
         self.assertFalse(r.success)
 
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     @patch("subprocess.run", side_effect=__import__("subprocess").TimeoutExpired("distrobox", 60))
     def test_timeout(self, mock_run, mock_which):
         r = ContainerManager.delete_container("test")
         self.assertFalse(r.success)
 
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     @patch("subprocess.run", side_effect=OSError("fail"))
     def test_exception(self, mock_run, mock_which):
         r = ContainerManager.delete_container("test")
@@ -260,26 +260,26 @@ class TestDeleteContainer(unittest.TestCase):
 
 class TestStopContainer(unittest.TestCase):
 
-    @patch("shutil.which", return_value=None)
+    @patch("utils.containers.cached_which", return_value=None)
     def test_not_available(self, mock_which):
         r = ContainerManager.stop_container("test")
         self.assertFalse(r.success)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_success(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         r = ContainerManager.stop_container("test")
         self.assertTrue(r.success)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_failure(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=1, stderr="err", stdout="")
         r = ContainerManager.stop_container("test")
         self.assertFalse(r.success)
 
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     @patch("subprocess.run", side_effect=OSError("fail"))
     def test_exception(self, mock_run, mock_which):
         r = ContainerManager.stop_container("test")
@@ -299,13 +299,13 @@ class TestGetAvailableImages(unittest.TestCase):
 
 class TestExportApp(unittest.TestCase):
 
-    @patch("shutil.which", return_value=None)
+    @patch("utils.containers.cached_which", return_value=None)
     def test_not_available(self, mock_which):
         r = ContainerManager.export_app_from_container("test", "firefox")
         self.assertFalse(r.success)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_success(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         r = ContainerManager.export_app_from_container("mybox", "firefox")
@@ -313,13 +313,13 @@ class TestExportApp(unittest.TestCase):
         self.assertIn("firefox", r.message)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     def test_failure(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=1, stderr="not found", stdout="")
         r = ContainerManager.export_app_from_container("mybox", "firefox")
         self.assertFalse(r.success)
 
-    @patch("shutil.which", return_value="/usr/bin/distrobox")
+    @patch("utils.containers.cached_which", return_value="/usr/bin/distrobox")
     @patch("subprocess.run", side_effect=OSError("fail"))
     def test_exception(self, mock_run, mock_which):
         r = ContainerManager.export_app_from_container("mybox", "firefox")

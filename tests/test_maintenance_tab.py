@@ -784,7 +784,7 @@ class TestCleanupSubTab(unittest.TestCase):
 
     # -- check_timeshift --
 
-    @patch("ui.maintenance_tab.shutil.which", return_value="/usr/bin/timeshift")
+    @patch("ui.maintenance_tab.cached_which", return_value="/usr/bin/timeshift")
     def test_check_timeshift_found(self, mock_which):
         """check_timeshift() runs timeshift --list when installed."""
         self.tab.run_command = MagicMock()
@@ -794,7 +794,7 @@ class TestCleanupSubTab(unittest.TestCase):
         self.assertEqual(args[0], "pkexec")
         self.assertIn("timeshift", args[1])
 
-    @patch("ui.maintenance_tab.shutil.which", return_value=None)
+    @patch("ui.maintenance_tab.cached_which", return_value=None)
     def test_check_timeshift_not_found(self, mock_which):
         """check_timeshift() reports not found when timeshift missing."""
         self.tab.append_output = MagicMock()

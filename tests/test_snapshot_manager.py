@@ -109,7 +109,7 @@ class TestDetectBackends(unittest.TestCase):
     """Tests for SnapshotManager.detect_backends."""
 
     @patch('utils.snapshot_manager.subprocess.run')
-    @patch('utils.snapshot_manager.shutil.which')
+    @patch('utils.snapshot_manager.cached_which')
     def test_all_backends_available(self, mock_which, mock_run):
         """Test detection when snapper, timeshift, and btrfs are all available."""
         mock_which.side_effect = lambda name: f"/usr/bin/{name}"
@@ -129,7 +129,7 @@ class TestDetectBackends(unittest.TestCase):
         self.assertEqual(names, ["snapper", "timeshift", "btrfs"])
 
     @patch('utils.snapshot_manager.subprocess.run')
-    @patch('utils.snapshot_manager.shutil.which')
+    @patch('utils.snapshot_manager.cached_which')
     def test_no_backends(self, mock_which, mock_run):
         """Test detection when no backends are installed."""
         mock_which.return_value = None
@@ -144,7 +144,7 @@ class TestDetectBackends(unittest.TestCase):
         mock_run.assert_not_called()
 
     @patch('utils.snapshot_manager.subprocess.run')
-    @patch('utils.snapshot_manager.shutil.which')
+    @patch('utils.snapshot_manager.cached_which')
     def test_snapper_only(self, mock_which, mock_run):
         """Test detection when only snapper is installed."""
         def which_side_effect(name):
@@ -173,7 +173,7 @@ class TestDetectBackends(unittest.TestCase):
         mock_run.assert_called_once()
 
     @patch('utils.snapshot_manager.subprocess.run')
-    @patch('utils.snapshot_manager.shutil.which')
+    @patch('utils.snapshot_manager.cached_which')
     def test_version_detection(self, mock_which, mock_run):
         """Test that --version is called for each available backend."""
         mock_which.side_effect = lambda name: f"/usr/bin/{name}"
@@ -191,7 +191,7 @@ class TestDetectBackends(unittest.TestCase):
             self.assertEqual(cmd[1], "--version")
 
     @patch('utils.snapshot_manager.subprocess.run')
-    @patch('utils.snapshot_manager.shutil.which')
+    @patch('utils.snapshot_manager.cached_which')
     def test_version_detection_failure(self, mock_which, mock_run):
         """Test graceful handling when --version subprocess fails."""
         mock_which.return_value = "/usr/bin/snapper"
@@ -212,7 +212,7 @@ class TestDetectBackends(unittest.TestCase):
 class TestGetPreferredBackend(unittest.TestCase):
     """Tests for SnapshotManager.get_preferred_backend."""
 
-    @patch('utils.snapshot_manager.shutil.which')
+    @patch('utils.snapshot_manager.cached_which')
     def test_prefers_snapper(self, mock_which):
         """Test that snapper is preferred when both snapper and timeshift exist."""
         mock_which.side_effect = lambda name: f"/usr/bin/{name}"
@@ -221,7 +221,7 @@ class TestGetPreferredBackend(unittest.TestCase):
 
         self.assertEqual(result, "snapper")
 
-    @patch('utils.snapshot_manager.shutil.which')
+    @patch('utils.snapshot_manager.cached_which')
     def test_falls_to_timeshift(self, mock_which):
         """Test fallback to timeshift when snapper is not available."""
         def which_side_effect(name):
@@ -237,7 +237,7 @@ class TestGetPreferredBackend(unittest.TestCase):
 
         self.assertEqual(result, "timeshift")
 
-    @patch('utils.snapshot_manager.shutil.which')
+    @patch('utils.snapshot_manager.cached_which')
     def test_falls_to_btrfs(self, mock_which):
         """Test fallback to btrfs when snapper and timeshift are not available."""
         def which_side_effect(name):
@@ -251,7 +251,7 @@ class TestGetPreferredBackend(unittest.TestCase):
 
         self.assertEqual(result, "btrfs")
 
-    @patch('utils.snapshot_manager.shutil.which')
+    @patch('utils.snapshot_manager.cached_which')
     def test_returns_none(self, mock_which):
         """Test returns None when nothing is available."""
         mock_which.return_value = None
@@ -326,7 +326,7 @@ class TestListSnapshots(unittest.TestCase):
 
         self.assertEqual(snapshots, [])
 
-    @patch('utils.snapshot_manager.shutil.which')
+    @patch('utils.snapshot_manager.cached_which')
     def test_list_auto_detect_backend(self, mock_which):
         """Test auto-detection when backend is None and nothing is available."""
         mock_which.return_value = None
@@ -395,7 +395,7 @@ class TestCreateSnapshot(unittest.TestCase):
         self.assertNotIn(" ", safe[0])
         self.assertIn("Btrfs", desc)
 
-    @patch('utils.snapshot_manager.shutil.which')
+    @patch('utils.snapshot_manager.cached_which')
     def test_create_auto_backend(self, mock_which):
         """Test create auto-detects backend when not specified."""
         mock_which.side_effect = lambda name: "/usr/bin/timeshift" if name == "timeshift" else None
@@ -405,7 +405,7 @@ class TestCreateSnapshot(unittest.TestCase):
         self.assertEqual(cmd, "pkexec")
         self.assertIn("timeshift", args)
 
-    @patch('utils.snapshot_manager.shutil.which')
+    @patch('utils.snapshot_manager.cached_which')
     def test_create_no_backend(self, mock_which):
         """Test create returns echo error when no backend is available."""
         mock_which.return_value = None
@@ -459,7 +459,7 @@ class TestDeleteSnapshot(unittest.TestCase):
         self.assertIn("delete", args)
         self.assertIn("/.snapshots/my-snap", args)
 
-    @patch('utils.snapshot_manager.shutil.which')
+    @patch('utils.snapshot_manager.cached_which')
     def test_delete_auto_backend(self, mock_which):
         """Test delete auto-detects backend when not specified."""
         mock_which.side_effect = lambda name: "/usr/bin/snapper" if name == "snapper" else None
@@ -470,7 +470,7 @@ class TestDeleteSnapshot(unittest.TestCase):
         self.assertIn("snapper", args)
         self.assertIn("10", args)
 
-    @patch('utils.snapshot_manager.shutil.which')
+    @patch('utils.snapshot_manager.cached_which')
     def test_delete_no_backend(self, mock_which):
         """Test delete returns echo error when no backend is available."""
         mock_which.return_value = None
@@ -585,7 +585,7 @@ class TestApplyRetention(unittest.TestCase):
 
         self.assertEqual(ops, [])
 
-    @patch('utils.snapshot_manager.shutil.which')
+    @patch('utils.snapshot_manager.cached_which')
     def test_retention_no_backend(self, mock_which):
         """Test retention returns empty list when no backend is available."""
         mock_which.return_value = None
@@ -682,7 +682,7 @@ class TestVersionFromStderr(unittest.TestCase):
     """Test version detection from stderr (some tools print there)."""
 
     @patch('utils.snapshot_manager.subprocess.run')
-    @patch('utils.snapshot_manager.shutil.which')
+    @patch('utils.snapshot_manager.cached_which')
     def test_version_from_stderr(self, mock_which, mock_run):
         """Test version is read from stderr when stdout is empty."""
         mock_which.return_value = "/usr/bin/btrfs"

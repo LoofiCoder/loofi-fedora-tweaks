@@ -61,7 +61,7 @@ class TestGetGrubConfig(unittest.TestCase):
 class TestListKernels(unittest.TestCase):
     """Tests for BootConfigManager.list_kernels()."""
 
-    @patch("utils.boot_config.shutil.which", return_value="/usr/sbin/grubby")
+    @patch("utils.boot_config.cached_which", return_value="/usr/sbin/grubby")
     @patch("utils.boot_config.subprocess.run")
     def test_list_kernels_success(self, mock_run, mock_which):
         mock_run.side_effect = [
@@ -96,12 +96,12 @@ class TestListKernels(unittest.TestCase):
         self.assertFalse(result[1].default)
         self.assertIn("6.10", result[0].title)
 
-    @patch("utils.boot_config.shutil.which", return_value=None)
+    @patch("utils.boot_config.cached_which", return_value=None)
     def test_list_kernels_no_grubby(self, mock_which):
         result = BootConfigManager.list_kernels()
         self.assertEqual(len(result), 0)
 
-    @patch("utils.boot_config.shutil.which", return_value="/usr/sbin/grubby")
+    @patch("utils.boot_config.cached_which", return_value="/usr/sbin/grubby")
     @patch("utils.boot_config.subprocess.run")
     def test_list_kernels_timeout(self, mock_run, mock_which):
         import subprocess
@@ -154,7 +154,7 @@ class TestSetCommands(unittest.TestCase):
         binary, args, desc = BootConfigManager.set_timeout(0)
         self.assertEqual(binary, "pkexec")
 
-    @patch("utils.boot_config.shutil.which", return_value="/usr/sbin/grubby")
+    @patch("utils.boot_config.cached_which", return_value="/usr/sbin/grubby")
     def test_set_default_kernel_with_grubby(self, mock_which):
         binary, args, desc = BootConfigManager.set_default_kernel(
             "/boot/vmlinuz-6.10.0"
@@ -163,7 +163,7 @@ class TestSetCommands(unittest.TestCase):
         self.assertIn("grubby", args)
         self.assertIn("--set-default", args)
 
-    @patch("utils.boot_config.shutil.which", return_value=None)
+    @patch("utils.boot_config.cached_which", return_value=None)
     def test_set_default_kernel_no_grubby(self, mock_which):
         binary, args, desc = BootConfigManager.set_default_kernel("0")
         self.assertEqual(binary, "pkexec")

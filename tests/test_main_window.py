@@ -1700,21 +1700,21 @@ class TestCheckDependencies(unittest.TestCase):
     def setUp(self):
         self.win = _make_window(skip_init=True)
 
-    @patch("shutil.which", return_value="/usr/bin/dnf")
+    @patch("services.system.system.cached_which", return_value="/usr/bin/dnf")
     def test_all_deps_present(self, mock_which):
         """No doctor shown when all dependencies are present."""
         self.win.show_doctor = MagicMock()
         self.win.check_dependencies()
         self.win.show_doctor.assert_not_called()
 
-    @patch("shutil.which", return_value=None)
+    @patch("services.system.system.cached_which", return_value=None)
     def test_missing_deps_shows_doctor(self, mock_which):
         """Missing dependencies triggers doctor dialog."""
         self.win.show_doctor = MagicMock()
         self.win.check_dependencies()
         self.win.show_doctor.assert_called_once()
 
-    @patch("shutil.which", side_effect=lambda t: "/usr/bin/dnf" if t == "dnf" else None)
+    @patch("services.system.system.cached_which", side_effect=lambda t: "/usr/bin/dnf" if t == "dnf" else None)
     def test_partial_deps_missing(self, mock_which):
         """Missing pkexec alone triggers doctor."""
         self.win.show_doctor = MagicMock()

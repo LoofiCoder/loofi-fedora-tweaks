@@ -6,7 +6,6 @@ Tracks system state and alerts when it deviates from applied presets.
 import hashlib
 import json
 import logging
-import shutil
 import subprocess
 from dataclasses import asdict, dataclass
 from datetime import datetime
@@ -14,6 +13,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from services.system import SystemManager
+from services.system.system import cached_which
 
 logger = logging.getLogger(__name__)
 
@@ -267,7 +267,7 @@ class DriftDetector:
 
             # Fallback: get manually installed packages
             package_manager = SystemManager.get_package_manager()
-            if not shutil.which(package_manager):
+            if not cached_which(package_manager):
                 return []
             result = subprocess.run(
                 [package_manager, "repoquery", "--userinstalled", "--qf", "%{name}"],

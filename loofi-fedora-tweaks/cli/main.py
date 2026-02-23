@@ -7,10 +7,11 @@ import argparse
 import json as json_module
 import logging
 import os
-import shutil
 import subprocess
 import sys
 from typing import List, Optional
+
+from services.system.system import cached_which
 
 logger = logging.getLogger(__name__)
 
@@ -536,9 +537,9 @@ def cmd_doctor(_args):
     if _json_output:
         data = {"critical": {}, "optional": {}}
         for tool in critical_tools:
-            data["critical"][tool] = shutil.which(tool) is not None
+            data["critical"][tool] = cached_which(tool) is not None
         for tool in optional_tools:
-            data["optional"][tool] = shutil.which(tool) is not None
+            data["optional"][tool] = cached_which(tool) is not None
         data["all_critical_ok"] = all(data["critical"].values())
         all_ok = data["all_critical_ok"]
         _output_json(data)
@@ -550,7 +551,7 @@ def cmd_doctor(_args):
         _print("\nCritical Tools:")
         all_ok = True
         for tool in critical_tools:
-            found = shutil.which(tool) is not None
+            found = cached_which(tool) is not None
             icon = "✅" if found else "❌"
             _print(f"  {icon} {tool}")
             if not found:
@@ -558,7 +559,7 @@ def cmd_doctor(_args):
 
         _print("\nOptional Tools:")
         for tool in optional_tools:
-            found = shutil.which(tool) is not None
+            found = cached_which(tool) is not None
             icon = "✅" if found else "⚪"
             _print(f"  {icon} {tool}")
 

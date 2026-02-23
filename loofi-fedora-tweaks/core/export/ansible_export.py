@@ -7,7 +7,6 @@ allowing users to replicate their setup on any Fedora machine.
 """
 
 import json
-import shutil
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime
@@ -15,6 +14,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from services.system import SystemManager
+from services.system.system import cached_which
 from utils.log import get_logger
 
 logger = get_logger(__name__)
@@ -91,7 +91,7 @@ class AnsibleExporter:
     @classmethod
     def _get_flatpak_apps(cls) -> list[str]:
         """Get list of installed Flatpak apps."""
-        if not shutil.which("flatpak"):
+        if not cached_which("flatpak"):
             return []
 
         try:
@@ -113,7 +113,7 @@ class AnsibleExporter:
         """Get relevant GNOME/GTK settings."""
         settings: dict[str, Any] = {}
 
-        if not shutil.which("gsettings"):
+        if not cached_which("gsettings"):
             return settings
 
         gsettings_keys = [
@@ -376,7 +376,7 @@ Edit `site.yml` to add or remove packages, apps, or settings before running.
         Returns:
             Result with validation output.
         """
-        if not shutil.which("ansible-lint"):
+        if not cached_which("ansible-lint"):
             try:
                 import yaml
             except ImportError:

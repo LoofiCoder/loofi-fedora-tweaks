@@ -21,11 +21,11 @@ from services.software.flatpak import (
 class TestFlatpakManagerAvailability(unittest.TestCase):
     """Tests for FlatpakManager.is_available()."""
 
-    @patch("services.software.flatpak.shutil.which", return_value="/usr/bin/flatpak")
+    @patch("services.software.flatpak.cached_which", return_value="/usr/bin/flatpak")
     def test_flatpak_available(self, mock_which):
         self.assertTrue(FlatpakManager.is_available())
 
-    @patch("services.software.flatpak.shutil.which", return_value=None)
+    @patch("services.software.flatpak.cached_which", return_value=None)
     def test_flatpak_not_available(self, mock_which):
         self.assertFalse(FlatpakManager.is_available())
 
@@ -33,7 +33,7 @@ class TestFlatpakManagerAvailability(unittest.TestCase):
 class TestFlatpakSizes(unittest.TestCase):
     """Tests for FlatpakManager.get_flatpak_sizes()."""
 
-    @patch("services.software.flatpak.shutil.which", return_value="/usr/bin/flatpak")
+    @patch("services.software.flatpak.cached_which", return_value="/usr/bin/flatpak")
     @patch("services.software.flatpak.subprocess.run")
     def test_get_sizes(self, mock_run, mock_which):
         mock_run.return_value = MagicMock(
@@ -50,19 +50,19 @@ class TestFlatpakSizes(unittest.TestCase):
         self.assertEqual(result[0].name, "GIMP")
         self.assertGreater(result[0].size_bytes, result[1].size_bytes)
 
-    @patch("services.software.flatpak.shutil.which", return_value="/usr/bin/flatpak")
+    @patch("services.software.flatpak.cached_which", return_value="/usr/bin/flatpak")
     @patch("services.software.flatpak.subprocess.run")
     def test_get_sizes_empty(self, mock_run, mock_which):
         mock_run.return_value = MagicMock(returncode=0, stdout="")
         result = FlatpakManager.get_flatpak_sizes()
         self.assertEqual(len(result), 0)
 
-    @patch("services.software.flatpak.shutil.which", return_value=None)
+    @patch("services.software.flatpak.cached_which", return_value=None)
     def test_get_sizes_no_flatpak(self, mock_which):
         result = FlatpakManager.get_flatpak_sizes()
         self.assertEqual(len(result), 0)
 
-    @patch("services.software.flatpak.shutil.which", return_value="/usr/bin/flatpak")
+    @patch("services.software.flatpak.cached_which", return_value="/usr/bin/flatpak")
     @patch("services.software.flatpak.subprocess.run")
     def test_get_sizes_timeout(self, mock_run, mock_which):
         import subprocess
@@ -94,7 +94,7 @@ class TestParseSize(unittest.TestCase):
 class TestFlatpakPermissions(unittest.TestCase):
     """Tests for FlatpakManager.get_flatpak_permissions()."""
 
-    @patch("services.software.flatpak.shutil.which", return_value="/usr/bin/flatpak")
+    @patch("services.software.flatpak.cached_which", return_value="/usr/bin/flatpak")
     @patch("services.software.flatpak.subprocess.run")
     def test_get_permissions(self, mock_run, mock_which):
         mock_run.side_effect = [
@@ -115,12 +115,12 @@ class TestFlatpakPermissions(unittest.TestCase):
         categories = {p.category for p in result.permissions}
         self.assertIn("context", categories)
 
-    @patch("services.software.flatpak.shutil.which", return_value=None)
+    @patch("services.software.flatpak.cached_which", return_value=None)
     def test_get_permissions_no_flatpak(self, mock_which):
         result = FlatpakManager.get_flatpak_permissions("org.test")
         self.assertEqual(len(result.permissions), 0)
 
-    @patch("services.software.flatpak.shutil.which", return_value="/usr/bin/flatpak")
+    @patch("services.software.flatpak.cached_which", return_value="/usr/bin/flatpak")
     @patch("services.software.flatpak.subprocess.run")
     def test_get_permissions_timeout(self, mock_run, mock_which):
         import subprocess
@@ -133,7 +133,7 @@ class TestFlatpakPermissions(unittest.TestCase):
 class TestOrphanDetection(unittest.TestCase):
     """Tests for FlatpakManager.find_orphan_runtimes()."""
 
-    @patch("services.software.flatpak.shutil.which", return_value="/usr/bin/flatpak")
+    @patch("services.software.flatpak.cached_which", return_value="/usr/bin/flatpak")
     @patch("services.software.flatpak.subprocess.run")
     def test_find_orphans(self, mock_run, mock_which):
         mock_run.return_value = MagicMock(
@@ -143,7 +143,7 @@ class TestOrphanDetection(unittest.TestCase):
         result = FlatpakManager.find_orphan_runtimes()
         self.assertEqual(len(result), 2)
 
-    @patch("services.software.flatpak.shutil.which", return_value="/usr/bin/flatpak")
+    @patch("services.software.flatpak.cached_which", return_value="/usr/bin/flatpak")
     @patch("services.software.flatpak.subprocess.run")
     def test_find_no_orphans(self, mock_run, mock_which):
         mock_run.return_value = MagicMock(
@@ -153,7 +153,7 @@ class TestOrphanDetection(unittest.TestCase):
         result = FlatpakManager.find_orphan_runtimes()
         self.assertEqual(len(result), 0)
 
-    @patch("services.software.flatpak.shutil.which", return_value=None)
+    @patch("services.software.flatpak.cached_which", return_value=None)
     def test_find_orphans_no_flatpak(self, mock_which):
         result = FlatpakManager.find_orphan_runtimes()
         self.assertEqual(len(result), 0)

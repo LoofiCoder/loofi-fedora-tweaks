@@ -20,36 +20,36 @@ from utils.backup_wizard import BackupWizard, SnapshotEntry
 class TestToolDetection(unittest.TestCase):
     """Tests for detect_backup_tool() and get_available_tools()."""
 
-    @patch("utils.backup_wizard.shutil.which")
+    @patch("utils.backup_wizard.cached_which")
     def test_detect_timeshift(self, mock_which):
         mock_which.side_effect = lambda t: "/usr/bin/timeshift" if t == "timeshift" else None
         self.assertEqual(BackupWizard.detect_backup_tool(), "timeshift")
 
-    @patch("utils.backup_wizard.shutil.which")
+    @patch("utils.backup_wizard.cached_which")
     def test_detect_snapper(self, mock_which):
         mock_which.side_effect = lambda t: "/usr/bin/snapper" if t == "snapper" else None
         self.assertEqual(BackupWizard.detect_backup_tool(), "snapper")
 
-    @patch("utils.backup_wizard.shutil.which", return_value=None)
+    @patch("utils.backup_wizard.cached_which", return_value=None)
     def test_detect_none(self, mock_which):
         self.assertEqual(BackupWizard.detect_backup_tool(), "none")
 
-    @patch("utils.backup_wizard.shutil.which")
+    @patch("utils.backup_wizard.cached_which")
     def test_both_prefers_timeshift(self, mock_which):
         mock_which.return_value = "/usr/bin/tool"
         self.assertEqual(BackupWizard.detect_backup_tool(), "timeshift")
 
-    @patch("utils.backup_wizard.shutil.which")
+    @patch("utils.backup_wizard.cached_which")
     def test_get_available_tools(self, mock_which):
         mock_which.side_effect = lambda t: "/usr/bin/snapper" if t == "snapper" else None
         result = BackupWizard.get_available_tools()
         self.assertEqual(result, ["snapper"])
 
-    @patch("utils.backup_wizard.shutil.which", return_value=None)
+    @patch("utils.backup_wizard.cached_which", return_value=None)
     def test_is_available_false(self, mock_which):
         self.assertFalse(BackupWizard.is_available())
 
-    @patch("utils.backup_wizard.shutil.which", return_value="/usr/bin/timeshift")
+    @patch("utils.backup_wizard.cached_which", return_value="/usr/bin/timeshift")
     def test_is_available_true(self, mock_which):
         self.assertTrue(BackupWizard.is_available())
 
@@ -71,12 +71,12 @@ class TestCreateSnapshot(unittest.TestCase):
         self.assertIn("create", args)
         self.assertIn("--description", args)
 
-    @patch("utils.backup_wizard.shutil.which", return_value=None)
+    @patch("utils.backup_wizard.cached_which", return_value=None)
     def test_create_no_tool(self, mock_which):
         binary, args, desc = BackupWizard.create_snapshot()
         self.assertEqual(binary, "echo")
 
-    @patch("utils.backup_wizard.shutil.which", return_value="/usr/bin/timeshift")
+    @patch("utils.backup_wizard.cached_which", return_value="/usr/bin/timeshift")
     def test_create_auto_detect(self, mock_which):
         binary, args, desc = BackupWizard.create_snapshot(description="auto")
         self.assertEqual(binary, "pkexec")
@@ -140,7 +140,7 @@ class TestListSnapshots(unittest.TestCase):
         result = BackupWizard.list_snapshots(tool="snapper")
         self.assertEqual(len(result), 0)
 
-    @patch("utils.backup_wizard.shutil.which", return_value=None)
+    @patch("utils.backup_wizard.cached_which", return_value=None)
     def test_list_no_tool(self, mock_which):
         result = BackupWizard.list_snapshots()
         self.assertEqual(len(result), 0)
@@ -163,7 +163,7 @@ class TestRestoreSnapshot(unittest.TestCase):
         self.assertIn("undochange", args)
         self.assertIn("5..0", args)
 
-    @patch("utils.backup_wizard.shutil.which", return_value=None)
+    @patch("utils.backup_wizard.cached_which", return_value=None)
     def test_restore_no_tool(self, mock_which):
         binary, args, desc = BackupWizard.restore_snapshot("1")
         self.assertEqual(binary, "echo")
@@ -189,7 +189,7 @@ class TestDeleteSnapshot(unittest.TestCase):
 class TestBackupStatus(unittest.TestCase):
     """Tests for get_backup_status()."""
 
-    @patch("utils.backup_wizard.shutil.which", return_value=None)
+    @patch("utils.backup_wizard.cached_which", return_value=None)
     def test_status_no_tool(self, mock_which):
         status = BackupWizard.get_backup_status()
         self.assertEqual(status["tool"], "none")
@@ -197,7 +197,7 @@ class TestBackupStatus(unittest.TestCase):
         self.assertEqual(status["snapshot_count"], 0)
 
     @patch("utils.backup_wizard.BackupWizard.list_snapshots")
-    @patch("utils.backup_wizard.shutil.which", return_value="/usr/bin/timeshift")
+    @patch("utils.backup_wizard.cached_which", return_value="/usr/bin/timeshift")
     def test_status_with_snapshots(self, mock_which, mock_list):
         mock_list.return_value = [
             SnapshotEntry(id="1", date="2026-02-14", description="Test", tool="timeshift"),

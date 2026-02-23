@@ -12,13 +12,13 @@ import csv
 import json
 import logging
 import os
-import shutil
 import sqlite3
 import statistics
 import subprocess
 import time
 from typing import Optional
 
+from services.system.system import cached_which
 from utils.containers import Result
 
 logger = logging.getLogger(__name__)
@@ -444,7 +444,7 @@ class HealthTimeline:
             logger.debug("Failed to read thermal zone: %s", e)
 
         # Fallback: sensors command
-        if shutil.which("sensors"):
+        if cached_which("sensors"):
             try:
                 result = subprocess.run(
                     ["sensors"],

@@ -6,17 +6,33 @@ Generates Anaconda-compatible Kickstart files for automated
 Fedora installations with user's package selection.
 """
 
-import shutil
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
 from services.system import SystemManager
+from services.system.system import cached_which
 from utils.log import get_logger
 
 logger = get_logger(__name__)
+
+
+@lru_cache(maxsize=1)
+def _cached_keyboard_layout() -> str:
+    """Cached keyboard layout — static per session."""
+    try:
+        result = subprocess.run(["localectl", "status"], capture_output=True, text=True, timeout=5)
+        if result.returncode == 0:
+            for line in result.stdout.split("\n"):
+                if "X11 Layout" in line:
+                    return line.split(":")[-1].strip() or "us"
+        return "us"
+    except (subprocess.SubprocessError, OSError) as e:
+        logger.debug("Failed to get keyboard layout: %s", e)
+        return "us"
 
 
 @dataclass
@@ -90,16 +106,7 @@ flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flat
     @classmethod
     def _get_keyboard_layout(cls) -> str:
         """Get current keyboard layout."""
-        try:
-            result = subprocess.run(["localectl", "status"], capture_output=True, text=True, timeout=5)
-            if result.returncode == 0:
-                for line in result.stdout.split("\n"):
-                    if "X11 Layout" in line:
-                        return line.split(":")[-1].strip() or "us"
-            return "us"
-        except (subprocess.SubprocessError, OSError) as e:
-            logger.debug("Failed to get keyboard layout: %s", e)
-            return "us"
+        return _cached_keyboard_layout()
 
     @classmethod
     def _get_system_lang(cls) -> str:
@@ -180,7 +187,7 @@ flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flat
     @classmethod
     def _get_flatpak_apps(cls) -> list[str]:
         """Get installed Flatpak apps."""
-        if not shutil.which("flatpak"):
+        if not cached_which("flatpak"):
             return []
 
         try:
@@ -285,7 +292,7 @@ flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flat
         Returns:
             Result with validation output.
         """
-        if not shutil.which("ksvalidator"):
+        if not cached_which("ksvalidator"):
             return Result(True, "ksvalidator not installed - unable to validate")
 
         try:

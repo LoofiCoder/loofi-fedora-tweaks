@@ -8,11 +8,11 @@ Migrated from utils/usbguard.py in v2.0.0.
 """
 
 import logging
-import shutil
 import subprocess
 from dataclasses import dataclass
 from typing import Optional
 
+from services.system.system import cached_which
 from utils.commands import PrivilegedCommand
 
 logger = logging.getLogger(__name__)
@@ -51,7 +51,7 @@ class USBGuardManager:
     @classmethod
     def is_installed(cls) -> bool:
         """Check if USBGuard is installed."""
-        return shutil.which("usbguard") is not None
+        return cached_which("usbguard") is not None
 
     @classmethod
     def is_running(cls) -> bool:

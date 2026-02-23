@@ -43,6 +43,47 @@
 | 1.0.0   | Foundation (SemVer)             | DONE    | Version renormalization to SemVer 1.0.0                                           |
 | 2.0.0   | Evolution                       | DONE    | Service layer migration, core domain extraction                                   |
 | 2.1.0   | Continuity                      | DONE    | Workflow realignment, tracker consistency, automation hardening                   |
+| 2.2.0   | Velocity                        | DONE    | Performance caching, subprocess safety, service-layer test coverage               |
+
+---
+
+## [DONE] v2.2.0 "Velocity" — Performance & Stability
+
+### Scope
+
+Performance and stability hardening release. Adds `@lru_cache` for `shutil.which()` and
+`SystemManager` lookups, enforces `timeout` on all remaining subprocess calls, caches
+static system data, and closes the service-layer test coverage gap (~18 untested files).
+
+### Planned Deliverables
+
+- [x] Version bump to 2.2.0 "Velocity"
+- [x] Add `timeout` to 17 remaining `subprocess.run()` calls
+- [x] Create `_cached_which()` utility with `@lru_cache(maxsize=64)`
+- [x] Migrate ~100+ `shutil.which()` calls to `_cached_which()` across ~30 files
+- [x] Cache `SystemManager.is_atomic()` and `get_package_manager()` with `@lru_cache`
+- [x] Cache static subprocess data (lscpu, uname, lspci, localectl, firewall-cmd --version)
+- [x] Replace `print()` with `logger` in 2 plugin files
+- [x] Add tests for subprocess timeout enforcement
+- [x] Add tests for `_cached_which()` utility
+- [x] Add service-layer tests: desktop + hardware (5 modules)
+- [x] Add service-layer tests: security + network + virtualization + package (7 modules)
+- [x] Update CHANGELOG, README, release notes
+- [x] Full verification (tests, lint, coverage ≥ 80%)
+
+### Agent Assignment
+
+| Agent               | Task                                                          |
+| ------------------- | ------------------------------------------------------------- |
+| project-coordinator | v2.2.0 scope, task decomposition, dependency ordering         |
+| backend-builder     | Timeout enforcement, caching utilities, SystemManager caching |
+| code-implementer    | shutil.which migration, print→logger, version bump            |
+| test-writer         | Service-layer tests, timeout tests, cached_which tests        |
+| release-planner     | CHANGELOG, README, release notes                              |
+
+### Dependencies
+
+- v2.1.0 Continuity (workflow baseline)
 
 ---
 

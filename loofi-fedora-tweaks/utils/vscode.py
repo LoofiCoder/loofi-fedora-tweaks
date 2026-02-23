@@ -14,6 +14,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from services.system.system import cached_which
+
 logger = logging.getLogger(__name__)
 
 
@@ -104,11 +106,11 @@ class VSCodeManager:
         candidates = ["code", "codium", "code-oss"]
 
         for cmd in candidates:
-            if shutil.which(cmd):
+            if cached_which(cmd):
                 return cmd
 
         # Check for Flatpak
-        if shutil.which("flatpak"):
+        if cached_which("flatpak"):
             flatpak_apps = ["com.visualstudio.code", "com.vscodium.codium"]
             for app in flatpak_apps:
                 try:

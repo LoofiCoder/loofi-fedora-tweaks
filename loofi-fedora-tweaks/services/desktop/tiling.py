@@ -17,6 +17,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
+from services.system.system import cached_which
+
 logger = logging.getLogger(__name__)
 
 
@@ -92,13 +94,13 @@ class TilingManager:
     def is_hyprland(cls) -> bool:
         """Check if running Hyprland."""
         session = os.environ.get("XDG_CURRENT_DESKTOP", "").lower()
-        return "hyprland" in session or shutil.which("hyprctl") is not None
+        return "hyprland" in session or cached_which("hyprctl") is not None
 
     @classmethod
     def is_sway(cls) -> bool:
         """Check if running Sway."""
         session = os.environ.get("XDG_CURRENT_DESKTOP", "").lower()
-        return "sway" in session or shutil.which("swaymsg") is not None
+        return "sway" in session or cached_which("swaymsg") is not None
 
     @classmethod
     def get_compositor(cls) -> str:

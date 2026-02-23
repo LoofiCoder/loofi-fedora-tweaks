@@ -8,10 +8,11 @@ a wizard-friendly API.
 """
 
 import logging
-import shutil
 import subprocess
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
+
+from services.system.system import cached_which
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +71,7 @@ class BackupWizard:
             Tool name: ``"timeshift"``, ``"snapper"``, or ``"none"``.
         """
         for tool in BackupWizard.SUPPORTED_TOOLS:
-            if shutil.which(tool):
+            if cached_which(tool):
                 return tool
         return "none"
 
@@ -81,7 +82,7 @@ class BackupWizard:
         Returns:
             List of tool names that are installed.
         """
-        return [t for t in BackupWizard.SUPPORTED_TOOLS if shutil.which(t)]
+        return [t for t in BackupWizard.SUPPORTED_TOOLS if cached_which(t)]
 
     @staticmethod
     def is_available() -> bool:

@@ -7,7 +7,7 @@ original UpdatesTab, CleanupTab, and OverlaysTab.
 The Overlays sub-tab is only shown on Atomic (rpm-ostree) systems.
 """
 
-import shutil
+from services.system.system import cached_which
 
 from core.plugins.metadata import PluginMetadata
 from PyQt6.QtCore import QTimer
@@ -344,7 +344,7 @@ class _CleanupSubTab(BaseTab):
         layout.addWidget(self.output_area)
 
     def check_timeshift(self):
-        if shutil.which("timeshift"):
+        if cached_which("timeshift"):
             self.run_command("pkexec", ["timeshift", "--list"], self.tr("Checking Timeshift Snapshots..."))
         else:
             self.append_output(self.tr("Timeshift not found. Please install it for system safety.\n"))

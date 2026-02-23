@@ -20,17 +20,17 @@ from utils.vscode import VSCodeManager
 class TestGetVSCodeCommand(unittest.TestCase):
     """Test get_vscode_command."""
 
-    @patch("utils.vscode.shutil.which")
+    @patch("utils.vscode.cached_which")
     def test_finds_code(self, mock_which):
         mock_which.side_effect = lambda cmd: "/usr/bin/code" if cmd == "code" else None
         self.assertEqual(VSCodeManager.get_vscode_command(), "code")
 
-    @patch("utils.vscode.shutil.which")
+    @patch("utils.vscode.cached_which")
     def test_finds_codium(self, mock_which):
         mock_which.side_effect = lambda cmd: "/usr/bin/codium" if cmd == "codium" else None
         self.assertEqual(VSCodeManager.get_vscode_command(), "codium")
 
-    @patch("utils.vscode.shutil.which")
+    @patch("utils.vscode.cached_which")
     @patch("utils.vscode.subprocess.run")
     def test_finds_flatpak(self, mock_run, mock_which):
         mock_which.side_effect = lambda cmd: "/usr/bin/flatpak" if cmd == "flatpak" else None
@@ -38,7 +38,7 @@ class TestGetVSCodeCommand(unittest.TestCase):
         result = VSCodeManager.get_vscode_command()
         self.assertIn("flatpak run", result)
 
-    @patch("utils.vscode.shutil.which", return_value=None)
+    @patch("utils.vscode.cached_which", return_value=None)
     def test_returns_none(self, mock_which):
         self.assertIsNone(VSCodeManager.get_vscode_command())
 

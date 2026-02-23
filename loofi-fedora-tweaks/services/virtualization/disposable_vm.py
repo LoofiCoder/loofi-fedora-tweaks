@@ -12,10 +12,10 @@ Migrated from utils/disposable_vm.py in v2.0.0.
 import logging
 import os
 import re
-import shutil
 import subprocess
 import uuid
 
+from services.system.system import cached_which
 from utils.containers import Result
 
 logger = logging.getLogger(__name__)
@@ -63,7 +63,7 @@ class DisposableVMManager:
         Returns:
             Result with success/failure and message.
         """
-        if not shutil.which("qemu-img"):
+        if not cached_which("qemu-img"):
             return Result(False, "qemu-img is not installed. Install qemu-img first.")
 
         if not iso_path or not os.path.isfile(iso_path):
@@ -110,7 +110,7 @@ class DisposableVMManager:
         Returns:
             Path to the newly created overlay file, or empty string on failure.
         """
-        if not shutil.which("qemu-img"):
+        if not cached_which("qemu-img"):
             return ""
 
         storage_dir = cls._get_storage_dir()
@@ -162,7 +162,7 @@ class DisposableVMManager:
                 "No base image found. Create one first with create_base_image().",
             )
 
-        if not shutil.which("virsh"):
+        if not cached_which("virsh"):
             return Result(False, "virsh is not installed.")
 
         if name is None:
@@ -183,7 +183,7 @@ class DisposableVMManager:
         else:
             disk_path = base_path
 
-        if not shutil.which("virt-install"):
+        if not cached_which("virt-install"):
             return Result(False, "virt-install is not installed.")
 
         cmd = [
@@ -265,7 +265,7 @@ class DisposableVMManager:
         Scans ``virsh list --all`` for VMs whose names start with
         ``disposable-``.
         """
-        if not shutil.which("virsh"):
+        if not cached_which("virsh"):
             return []
 
         try:

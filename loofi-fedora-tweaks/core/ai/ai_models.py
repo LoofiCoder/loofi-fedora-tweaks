@@ -10,10 +10,11 @@ Provides:
 """
 
 import logging
-import shutil
 import subprocess
 from dataclasses import dataclass
 from typing import Any, Optional
+
+from services.system.system import cached_which
 
 logger = logging.getLogger(__name__)
 
@@ -188,7 +189,7 @@ class AIModelManager:
         Returns:
             Result with success status and message.
         """
-        if not shutil.which("ollama"):
+        if not cached_which("ollama"):
             return Result(False, "Ollama is not installed")
 
         try:
@@ -232,7 +233,7 @@ class AIModelManager:
         Returns:
             List of dicts with name and size fields.
         """
-        if not shutil.which("ollama"):
+        if not cached_which("ollama"):
             return []
 
         try:

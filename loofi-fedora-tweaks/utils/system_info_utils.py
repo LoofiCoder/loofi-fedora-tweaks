@@ -13,6 +13,7 @@ import os
 import platform
 import socket
 import subprocess
+from functools import lru_cache
 from typing import Optional
 
 from utils.log import get_logger
@@ -44,6 +45,7 @@ def get_fedora_release() -> str:
         return "Unknown"
 
 
+@lru_cache(maxsize=1)
 def get_cpu_model() -> str:
     """Return the CPU model name from lscpu."""
     try:

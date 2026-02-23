@@ -11,7 +11,7 @@ from utils.remote_config import AppConfigFetcher
 
 
 class TestPresetManager(unittest.TestCase):
-    @patch('shutil.which')
+    @patch('utils.presets.cached_which')
     @patch('subprocess.check_output')
     def test_get_power_profile_success(self, mock_sub, mock_which):
         mock_which.return_value = '/usr/bin/powerprofilesctl'
@@ -21,7 +21,7 @@ class TestPresetManager(unittest.TestCase):
         profile = manager._get_power_profile()
         self.assertEqual(profile, 'performance')
 
-    @patch('shutil.which')
+    @patch('utils.presets.cached_which')
     def test_get_power_profile_missing_tool(self, mock_which):
         mock_which.return_value = None
         manager = PresetManager()

@@ -10,14 +10,26 @@ Provides:
 
 import logging
 import os
-import shutil
 import subprocess
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Optional
 
 from services.system import SystemManager
+from services.system.system import cached_which
 
 logger = logging.getLogger(__name__)
+
+
+@lru_cache(maxsize=1)
+def _get_lspci_output() -> str:
+    """Cached lspci output — static per session."""
+    try:
+        result = subprocess.run(["lspci"], capture_output=True, text=True, timeout=10)
+        return result.stdout if result.returncode == 0 else ""
+    except (subprocess.SubprocessError, OSError) as e:
+        logger.debug("Failed to run lspci: %s", e)
+        return ""
 
 
 @dataclass
@@ -72,7 +84,7 @@ class OllamaManager:
     @classmethod
     def is_installed(cls) -> bool:
         """Check if Ollama is installed."""
-        return shutil.which("ollama") is not None
+        return cached_which("ollama") is not None
 
     @classmethod
     def is_running(cls) -> bool:
@@ -314,7 +326,7 @@ class LlamaCppManager:
     @classmethod
     def is_installed(cls) -> bool:
         """Check if llama.cpp main binary is available."""
-        return shutil.which("llama-cli") is not None or shutil.which("main") is not None
+        return cached_which("llama-cli") is not None or cached_which("main") is not None
 
     @classmethod
     def install(cls) -> Result:
@@ -340,7 +352,7 @@ class LlamaCppManager:
                         "llama.cpp package found. Install with: pkexec rpm-ostree install llama-cpp",
                     )
             else:
-                if shutil.which(pm):
+                if cached_which(pm):
                     result = subprocess.run(
                         [pm, "list", "llama-cpp"],
                         capture_output=True,
@@ -373,7 +385,7 @@ class AIConfigManager:
         Configure NVIDIA GPU for AI workloads.
         Ensures CUDA toolkit is available.
         """
-        if not shutil.which("nvidia-smi"):
+        if not cached_which("nvidia-smi"):
             return Result(False, "NVIDIA GPU not detected")
 
         # Check if CUDA toolkit is installed
@@ -398,14 +410,10 @@ class AIConfigManager:
         """
         Configure AMD GPU for AI workloads via ROCm.
         """
-        if not shutil.which("rocminfo"):
-            # Check if AMD GPU exists
-            try:
-                result = subprocess.run(["lspci"], capture_output=True, text=True, timeout=10)
-                if "AMD" not in result.stdout or "VGA" not in result.stdout:
-                    return Result(False, "AMD GPU not detected")
-            except (subprocess.SubprocessError, OSError) as e:
-                logger.debug("Failed to detect AMD GPU via lspci: %s", e)
+        if not cached_which("rocminfo"):
+            lspci_output = _get_lspci_output()
+            if "AMD" not in lspci_output or "VGA" not in lspci_output:
+                return Result(False, "AMD GPU not detected")
 
             pm = SystemManager.get_package_manager()
             return Result(
@@ -421,7 +429,7 @@ class AIConfigManager:
         result = {"total_mb": 0, "used_mb": 0, "free_mb": 0}
 
         # Try NVIDIA
-        if shutil.which("nvidia-smi"):
+        if cached_which("nvidia-smi"):
             try:
                 out = subprocess.run(
                     [

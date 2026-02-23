@@ -9,7 +9,6 @@ Migrated from utils/mesh_discovery.py in v2.0.0.
 
 import logging
 import os
-import shutil
 import socket
 import subprocess
 import time
@@ -17,6 +16,7 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Optional
 
+from services.system.system import cached_which
 from utils.containers import Result
 
 logger = logging.getLogger(__name__)
@@ -121,7 +121,7 @@ class MeshDiscovery:
         Returns:
             True if avahi-browse is on PATH.
         """
-        return shutil.which("avahi-browse") is not None
+        return cached_which("avahi-browse") is not None
 
     @classmethod
     def discover_peers(cls, timeout: int = 5) -> list:
@@ -204,7 +204,7 @@ class MeshDiscovery:
         Returns:
             Result indicating success or failure.
         """
-        if not shutil.which("avahi-publish"):
+        if not cached_which("avahi-publish"):
             return Result(success=False, message="avahi-publish is not installed.")
 
         if cls._publish_process is not None:

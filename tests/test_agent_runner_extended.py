@@ -558,7 +558,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
 
     # ==================== _op_check_dnf_updates ====================
 
-    @patch("core.agents.agent_runner.shutil.which", return_value="/usr/bin/dnf")
+    @patch("core.agents.agent_runner.cached_which", return_value="/usr/bin/dnf")
     @patch("core.agents.agent_runner.SystemManager.is_atomic", return_value=False)
     @patch("core.agents.agent_runner.subprocess.run")
     def test_op_dnf_updates_available(self, mock_run, mock_atomic, mock_which):
@@ -568,7 +568,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertEqual(result.data.get("dnf_updates"), 2)
 
-    @patch("core.agents.agent_runner.shutil.which", return_value="/usr/bin/dnf")
+    @patch("core.agents.agent_runner.cached_which", return_value="/usr/bin/dnf")
     @patch("core.agents.agent_runner.SystemManager.is_atomic", return_value=False)
     @patch("core.agents.agent_runner.subprocess.run")
     def test_op_dnf_updates_no_updates(self, mock_run, mock_atomic, mock_which):
@@ -606,7 +606,7 @@ class TestAgentExecutorExtended(unittest.TestCase):
         self.assertEqual(result.data.get("dnf_updates"), 0)
         self.assertIn("up to date", result.message.lower())
 
-    @patch("core.agents.agent_runner.shutil.which", return_value="/usr/bin/dnf")
+    @patch("core.agents.agent_runner.cached_which", return_value="/usr/bin/dnf")
     @patch("core.agents.agent_runner.SystemManager.is_atomic", return_value=False)
     @patch("core.agents.agent_runner.subprocess.run", side_effect=OSError("x"))
     def test_op_dnf_updates_exception(self, mock_run, mock_atomic, mock_which):

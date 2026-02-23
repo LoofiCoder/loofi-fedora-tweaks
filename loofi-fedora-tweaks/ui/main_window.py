@@ -1261,10 +1261,10 @@ class MainWindow(QMainWindow):
             event.accept()
 
     def check_dependencies(self):
-        import shutil
+        from services.system.system import cached_which
 
         critical = ["dnf", "pkexec"]
-        missing = [tool for tool in critical if not shutil.which(tool)]
+        missing = [tool for tool in critical if not cached_which(tool)]
         if missing:
             self.show_doctor()
 

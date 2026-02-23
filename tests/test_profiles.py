@@ -436,27 +436,27 @@ class TestSetGovernor(unittest.TestCase):
     """Tests for _set_governor with mocked system calls."""
 
     @patch('utils.profiles.subprocess.run')
-    @patch('utils.profiles.shutil.which', return_value='/usr/bin/cpupower')
+    @patch('utils.profiles.cached_which', return_value='/usr/bin/cpupower')
     def test_set_governor_success(self, mock_which, mock_run):
         """Governor is set when cpupower succeeds."""
         mock_run.return_value = MagicMock(returncode=0)
         self.assertTrue(ProfileManager._set_governor("performance"))
         mock_run.assert_called_once()
 
-    @patch('utils.profiles.shutil.which', return_value=None)
+    @patch('utils.profiles.cached_which', return_value=None)
     def test_set_governor_no_cpupower(self, mock_which):
         """Returns False when cpupower is not installed."""
         self.assertFalse(ProfileManager._set_governor("performance"))
 
     @patch('utils.profiles.subprocess.run')
-    @patch('utils.profiles.shutil.which', return_value='/usr/bin/cpupower')
+    @patch('utils.profiles.cached_which', return_value='/usr/bin/cpupower')
     def test_set_governor_failure(self, mock_which, mock_run):
         """Returns False when cpupower returns non-zero."""
         mock_run.return_value = MagicMock(returncode=1)
         self.assertFalse(ProfileManager._set_governor("invalid"))
 
     @patch('utils.profiles.subprocess.run', side_effect=OSError("exec failed"))
-    @patch('utils.profiles.shutil.which', return_value='/usr/bin/cpupower')
+    @patch('utils.profiles.cached_which', return_value='/usr/bin/cpupower')
     def test_set_governor_oserror(self, mock_which, mock_run):
         """Returns False on OSError."""
         self.assertFalse(ProfileManager._set_governor("performance"))

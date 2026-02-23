@@ -9,12 +9,12 @@ for Fedora Workstation systems.
 import logging
 import os
 import re
-import shutil
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List
 
+from services.system.system import cached_which
 from utils.commands import CommandTuple
 
 logger = logging.getLogger(__name__)
@@ -128,7 +128,7 @@ class BootConfigManager:
         """
         kernels: List[KernelEntry] = []
 
-        if not shutil.which("grubby"):
+        if not cached_which("grubby"):
             logger.warning("grubby not found; cannot list kernels")
             return kernels
 
@@ -246,7 +246,7 @@ class BootConfigManager:
         Returns:
             CommandTuple to apply the change.
         """
-        if shutil.which("grubby"):
+        if cached_which("grubby"):
             return ("pkexec", ["grubby", "--set-default", entry],
                     f"Setting default kernel to {entry}...")
         return BootConfigManager._build_grub_set_command(

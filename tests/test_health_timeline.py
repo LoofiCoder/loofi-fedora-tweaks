@@ -486,7 +486,7 @@ class TestGetCpuTemp(unittest.TestCase):
         self.assertEqual(temp, 65.0)
 
     @patch('os.path.isdir', return_value=False)
-    @patch('utils.health_timeline.shutil.which', return_value=None)
+    @patch('utils.health_timeline.cached_which', return_value=None)
     def test_no_source_raises(self, mock_which, mock_isdir):
         """RuntimeError is raised when no temperature source exists."""
         with self.assertRaises(RuntimeError):

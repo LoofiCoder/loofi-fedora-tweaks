@@ -227,7 +227,7 @@ class TestVFIOHelpers(unittest.TestCase):
 class TestTooling(unittest.TestCase):
     """Tests for virtualization tool detection."""
 
-    @patch("shutil.which")
+    @patch("services.virtualization.virtualization.cached_which")
     def test_all_tools_present(self, mock_which):
         mock_which.return_value = "/usr/bin/dummy"
         tools = VirtualizationManager.check_virt_tools()
@@ -237,13 +237,13 @@ class TestTooling(unittest.TestCase):
         self.assertTrue(tools["qemu-system-x86_64"])
         self.assertTrue(tools["swtpm"])
 
-    @patch("shutil.which", return_value=None)
+    @patch("services.virtualization.virtualization.cached_which", return_value=None)
     def test_no_tools_present(self, mock_which):
         tools = VirtualizationManager.check_virt_tools()
         for tool_name, available in tools.items():
             self.assertFalse(available, f"{tool_name} should be missing")
 
-    @patch("shutil.which", return_value=None)
+    @patch("services.virtualization.virtualization.cached_which", return_value=None)
     def test_missing_packages(self, mock_which):
         missing = VirtualizationManager.get_missing_packages()
         self.assertIn("qemu-kvm", missing)
@@ -251,7 +251,7 @@ class TestTooling(unittest.TestCase):
         self.assertIn("virt-install", missing)
         self.assertIn("swtpm", missing)
 
-    @patch("shutil.which")
+    @patch("services.virtualization.virtualization.cached_which")
     def test_no_missing_packages_when_all_installed(self, mock_which):
         mock_which.return_value = "/usr/bin/dummy"
         missing = VirtualizationManager.get_missing_packages()
@@ -269,7 +269,7 @@ class TestFullStatus(unittest.TestCase):
     @patch("services.virtualization.virtualization.VirtualizationManager.is_iommu_enabled", return_value=False)
     @patch("services.virtualization.virtualization.VirtualizationManager.is_kvm_module_loaded", return_value=True)
     @patch("services.virtualization.virtualization.VirtualizationManager.check_cpu_virt_extensions", return_value=(True, "Intel", "vmx"))
-    @patch("shutil.which", return_value=None)
+    @patch("services.virtualization.virtualization.cached_which", return_value=None)
     def test_full_status_basic(self, mock_which, mock_cpu, mock_kvm, mock_iommu, mock_groups):
         status = VirtualizationManager.get_full_status()
         self.assertIsInstance(status, VirtStatus)
@@ -284,7 +284,7 @@ class TestFullStatus(unittest.TestCase):
     @patch("services.virtualization.virtualization.VirtualizationManager.is_iommu_enabled", return_value=True)
     @patch("services.virtualization.virtualization.VirtualizationManager.is_kvm_module_loaded", return_value=True)
     @patch("services.virtualization.virtualization.VirtualizationManager.check_cpu_virt_extensions", return_value=(True, "AMD", "svm"))
-    @patch("shutil.which")
+    @patch("services.virtualization.virtualization.cached_which")
     def test_full_status_all_ready(self, mock_which, mock_cpu, mock_kvm, mock_iommu, mock_groups):
         mock_which.return_value = "/usr/bin/dummy"
         mock_groups.return_value = [IOMMUGroup(group_id=0), IOMMUGroup(group_id=1)]

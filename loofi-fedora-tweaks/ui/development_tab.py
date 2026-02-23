@@ -7,7 +7,7 @@ Sub-tabs:
 - Developer Tools: Language version managers, VS Code extensions
 """
 
-import shutil
+from services.system.system import cached_which
 
 from core.plugins.metadata import PluginMetadata
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
@@ -379,7 +379,7 @@ class DevelopmentTab(BaseTab):
         ]
 
         for term_name, term_cmd in terminals:
-            if shutil.which(term_name):
+            if cached_which(term_name):
                 try:
                     QProcess.startDetached(term_cmd[0], term_cmd[1:])
                     self.append_output(

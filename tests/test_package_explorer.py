@@ -45,7 +45,7 @@ class TestPackageInfo(unittest.TestCase):
 class TestPackageExplorerSearch(unittest.TestCase):
     """Tests for PackageExplorer.search()."""
 
-    @patch('utils.package_explorer.shutil.which', return_value='/usr/bin/dnf')
+    @patch('utils.package_explorer.cached_which', return_value='/usr/bin/dnf')
     @patch('utils.package_explorer.PackageExplorer._is_flatpak_installed')
     @patch('utils.package_explorer.PackageExplorer._is_rpm_installed')
     @patch('utils.package_explorer.SystemManager.is_atomic')
@@ -73,7 +73,7 @@ class TestPackageExplorerSearch(unittest.TestCase):
         self.assertIn("vim-enhanced", names)
         self.assertIn("vim-minimal", names)
 
-    @patch('utils.package_explorer.shutil.which', return_value='/usr/bin/dnf')
+    @patch('utils.package_explorer.cached_which', return_value='/usr/bin/dnf')
     @patch('utils.package_explorer.PackageExplorer._is_flatpak_installed')
     @patch('utils.package_explorer.PackageExplorer._is_rpm_installed')
     @patch('utils.package_explorer.SystemManager.is_atomic')
@@ -115,7 +115,7 @@ class TestPackageExplorerSearch(unittest.TestCase):
 
         self.assertEqual(results, [])
 
-    @patch('utils.package_explorer.shutil.which', return_value='/usr/bin/dnf')
+    @patch('utils.package_explorer.cached_which', return_value='/usr/bin/dnf')
     @patch('utils.package_explorer.PackageExplorer._is_rpm_installed')
     @patch('utils.package_explorer.SystemManager.is_atomic')
     @patch('utils.package_explorer.subprocess.run')
@@ -133,7 +133,7 @@ class TestPackageExplorerSearch(unittest.TestCase):
 
         self.assertEqual(results[0].source, "rpm-ostree")
 
-    @patch('utils.package_explorer.shutil.which', return_value='/usr/bin/dnf')
+    @patch('utils.package_explorer.cached_which', return_value='/usr/bin/dnf')
     @patch('utils.package_explorer.subprocess.run')
     def test_search_no_flatpak(self, mock_run, mock_which):
         """Skips flatpak search when include_flatpak=False."""
@@ -381,7 +381,7 @@ class TestPackageExplorerRecentlyInstalled(unittest.TestCase):
 class TestPackageExplorerInfo(unittest.TestCase):
     """Tests for PackageExplorer.get_package_info()."""
 
-    @patch('utils.package_explorer.shutil.which', return_value='/usr/bin/dnf')
+    @patch('utils.package_explorer.cached_which', return_value='/usr/bin/dnf')
     @patch('utils.package_explorer.SystemManager.is_atomic')
     @patch('utils.package_explorer.subprocess.run')
     def test_get_info_success(self, mock_run, mock_atomic, mock_which):

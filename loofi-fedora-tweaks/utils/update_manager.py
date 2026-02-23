@@ -8,13 +8,12 @@ and transaction rollback for both DNF and rpm-ostree systems.
 
 import json
 import logging
-import shutil
 import subprocess
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Optional
 
-from services.system.system import SystemManager
+from services.system.system import SystemManager, cached_which
 
 from utils.commands import CommandTuple, PrivilegedCommand
 
@@ -84,7 +83,7 @@ class UpdateManager:
         """Check updates via DNF."""
         updates: List[UpdateEntry] = []
         package_manager = SystemManager.get_package_manager()
-        if not shutil.which(package_manager):
+        if not cached_which(package_manager):
             return updates
         try:
             result = subprocess.run(
@@ -160,7 +159,7 @@ class UpdateManager:
         if SystemManager.is_atomic():
             return UpdateManager._preview_conflicts_ostree(packages)
 
-        if not shutil.which("dnf"):
+        if not cached_which("dnf"):
             return conflicts
 
         try:
@@ -336,7 +335,7 @@ class UpdateManager:
                 logger.error("Failed to get rpm-ostree history: %s", e)
         else:
             package_manager = SystemManager.get_package_manager()
-            if not shutil.which(package_manager):
+            if not cached_which(package_manager):
                 return history
             try:
                 result = subprocess.run(

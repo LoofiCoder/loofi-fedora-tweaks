@@ -116,11 +116,11 @@ class TestGetLocalIps(unittest.TestCase):
 class TestIsAvahiAvailable(unittest.TestCase):
     """Tests for MeshDiscovery.is_avahi_available()."""
 
-    @patch('services.network.mesh.shutil.which', return_value="/usr/bin/avahi-browse")
+    @patch('services.network.mesh.cached_which', return_value="/usr/bin/avahi-browse")
     def test_avahi_available(self, mock_which):
         self.assertTrue(MeshDiscovery.is_avahi_available())
 
-    @patch('services.network.mesh.shutil.which', return_value=None)
+    @patch('services.network.mesh.cached_which', return_value=None)
     def test_avahi_not_available(self, mock_which):
         self.assertFalse(MeshDiscovery.is_avahi_available())
 
@@ -194,20 +194,20 @@ class TestRegisterService(unittest.TestCase):
     @patch('services.network.mesh.MeshDiscovery.build_service_info', return_value={"device_id": "abc", "version": "1.0", "platform": "linux", "name": "test", "capabilities": "clipboard"})
     @patch('services.network.mesh.MeshDiscovery.get_device_name', return_value="test-host")
     @patch('services.network.mesh.subprocess.Popen')
-    @patch('services.network.mesh.shutil.which', return_value="/usr/bin/avahi-publish")
+    @patch('services.network.mesh.cached_which', return_value="/usr/bin/avahi-publish")
     def test_register_service_success(self, mock_which, mock_popen, mock_name, mock_info):
         mock_popen.return_value = MagicMock()
         result = MeshDiscovery.register_service()
         self.assertTrue(result.success)
         self.assertIn("registered", result.message)
 
-    @patch('services.network.mesh.shutil.which', return_value=None)
+    @patch('services.network.mesh.cached_which', return_value=None)
     def test_register_service_no_avahi_publish(self, mock_which):
         result = MeshDiscovery.register_service()
         self.assertFalse(result.success)
         self.assertIn("not installed", result.message)
 
-    @patch('services.network.mesh.shutil.which', return_value="/usr/bin/avahi-publish")
+    @patch('services.network.mesh.cached_which', return_value="/usr/bin/avahi-publish")
     def test_register_service_already_registered(self, mock_which):
         MeshDiscovery._publish_process = MagicMock()
         result = MeshDiscovery.register_service()
@@ -217,7 +217,7 @@ class TestRegisterService(unittest.TestCase):
     @patch('services.network.mesh.MeshDiscovery.build_service_info', return_value={"device_id": "abc"})
     @patch('services.network.mesh.MeshDiscovery.get_device_name', return_value="test-host")
     @patch('services.network.mesh.subprocess.Popen')
-    @patch('services.network.mesh.shutil.which', return_value="/usr/bin/avahi-publish")
+    @patch('services.network.mesh.cached_which', return_value="/usr/bin/avahi-publish")
     def test_register_service_subprocess_error(self, mock_which, mock_popen, mock_name, mock_info):
         mock_popen.side_effect = OSError("fail")
         result = MeshDiscovery.register_service()

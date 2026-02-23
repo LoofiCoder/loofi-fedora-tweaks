@@ -10,10 +10,11 @@ Migrated from utils/wayland_display.py in v2.0.0 "Evolution".
 
 import logging
 import os
-import shutil
 import subprocess
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
+
+from services.system.system import cached_which
 
 logger = logging.getLogger(__name__)
 
@@ -184,7 +185,7 @@ class WaylandDisplayManager:
     def _get_displays_kde() -> List[DisplayInfo]:
         """Get display info on KDE via kscreen-doctor."""
         displays: List[DisplayInfo] = []
-        if not shutil.which("kscreen-doctor"):
+        if not cached_which("kscreen-doctor"):
             logger.debug("kscreen-doctor not found")
             return displays
         try:
@@ -247,7 +248,7 @@ class WaylandDisplayManager:
     def _get_displays_xrandr() -> List[DisplayInfo]:
         """Fallback: get basic display info via xrandr (X11)."""
         displays: List[DisplayInfo] = []
-        if not shutil.which("xrandr"):
+        if not cached_which("xrandr"):
             return displays
         try:
             result = subprocess.run(

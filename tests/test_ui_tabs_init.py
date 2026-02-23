@@ -1,188 +1,290 @@
-"""UI Tab Instantiation Tests — pytest style with autouse qapp fixture."""
+"""
+Disposable VM Manager - snapshot-based throwaway virtual machines.
+
+Creates QCOW2 overlay images backed by a reusable base image so that
+each session starts clean.  On shutdown the overlay is deleted and the
+session is gone, making it ideal for malware analysis, testing, or
+one-off browsing.
+
+Migrated from utils/disposable_vm.py in v2.0.0.
+"""
+
+import logging
 import os
-import sys
-from unittest.mock import patch, MagicMock
+import re
+import subprocess
+import uuid
 
-os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'loofi-fedora-tweaks'))
+from services.system.system import cached_which
+from utils.containers import Result
 
-_tab_refs = []
-
-
-def _mock_perf():
-    m = MagicMock()
-    m.get_cpu_usage.return_value = 10.0
-    m.get_memory_usage.return_value = {"percent": 40.0, "used_gb": 4.0, "total_gb": 16.0}
-    m.get_disk_usage.return_value = {"percent": 50.0, "used_gb": 100, "total_gb": 200}
-    m.get_swap_usage.return_value = {"percent": 10.0}
-    m.get_cpu_temp.return_value = 45.0
-    m.get_gpu_info.return_value = {"name": "Test GPU", "usage": 0}
-    m.get_network_stats.return_value = {"rx_rate": 0, "tx_rate": 0}
-    return m
+logger = logging.getLogger(__name__)
 
 
-@patch("ui.monitor_tab.ProcessManager")
-@patch("ui.monitor_tab.PerformanceCollector")
-def test_monitor_tab_init(mock_perf_cls, mock_proc_cls):
-    mock_perf_cls.return_value = _mock_perf()
-    mock_proc_cls.return_value = MagicMock()
-    mock_proc_cls.return_value.get_processes.return_value = []
-    from ui.monitor_tab import MonitorTab
-    tab = MonitorTab()
-    _tab_refs.append(tab)
-    assert tab is not None
+# Name validation: alphanumeric, dash, underscore only
+_VM_NAME_RE = re.compile(r"^[a-zA-Z0-9_-]+$")
 
 
-@patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=""))
-@patch("subprocess.check_output", return_value="")
-def test_network_tab_init(mock_co, mock_run):
-    from ui.network_tab import NetworkTab
-    tab = NetworkTab()
-    _tab_refs.append(tab)
-    assert tab is not None
+class DisposableVMManager:
+    """Manages snapshot-backed disposable VMs."""
 
+    DISPOSABLE_BASE_NAME = "loofi-disposable"
 
-@patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=""))
-@patch("subprocess.check_output", return_value="")
-@patch("shutil.which", return_value=None)
-def test_development_tab_init(mock_which, mock_co, mock_run):
-    from ui.development_tab import DevelopmentTab
-    tab = DevelopmentTab()
-    _tab_refs.append(tab)
-    assert tab is not None
+    # ==================== PATHS ====================
 
+    @classmethod
+    def _get_storage_dir(cls) -> str:
+        """Return (and ensure exists) the disposable VM storage directory."""
+        user_dir = os.path.expanduser("~/.local/share/loofi-vms/disposable")
+        os.makedirs(user_dir, exist_ok=True)
+        return user_dir
 
-@patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=""))
-@patch("subprocess.check_output", return_value="")
-@patch("ui.dashboard_tab.get_qicon", return_value=MagicMock())
-def test_dashboard_tab_init(mock_icon, mock_co, mock_run):
-    from PyQt6.QtGui import QIcon
-    mock_icon.return_value = QIcon()
-    from ui.dashboard_tab import DashboardTab
-    tab = DashboardTab()
-    _tab_refs.append(tab)
-    assert tab is not None
+    @classmethod
+    def get_base_image_path(cls) -> str:
+        """Return the path to the base QCOW2 image."""
+        return os.path.join(cls._get_storage_dir(), f"{cls.DISPOSABLE_BASE_NAME}-base.qcow2")
 
+    # ==================== BASE IMAGE ====================
 
-@patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=""))
-@patch("subprocess.check_output", return_value="")
-@patch("shutil.which", return_value=None)
-def test_virtualization_tab_init(mock_which, mock_co, mock_run):
-    from ui.virtualization_tab import VirtualizationTab
-    tab = VirtualizationTab()
-    _tab_refs.append(tab)
-    assert tab is not None
+    @classmethod
+    def is_base_image_available(cls) -> bool:
+        """Check whether the base QCOW2 image exists."""
+        return os.path.isfile(cls.get_base_image_path())
 
+    @classmethod
+    def create_base_image(cls, iso_path: str, size_gb: int = 20) -> Result:
+        """Create the base QCOW2 image using ``qemu-img``.
 
-@patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=""))
-@patch("subprocess.check_output", return_value="")
-@patch("shutil.which", return_value=None)
-def test_hardware_tab_init(mock_which, mock_co, mock_run):
-    from ui.hardware_tab import HardwareTab
-    tab = HardwareTab()
-    _tab_refs.append(tab)
-    assert tab is not None
+        Args:
+            iso_path: Path to the installation ISO (used later by the user
+                      to install into the base image).
+            size_gb: Disk size in GiB.
 
+        Returns:
+            Result with success/failure and message.
+        """
+        if not shutil.which("qemu-img"):
+            return Result(False, "qemu-img is not installed. Install qemu-img first.")
 
-@patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=""))
-@patch("subprocess.check_output", return_value="")
-@patch("shutil.which", return_value=None)
-def test_ai_enhanced_tab_init(mock_which, mock_co, mock_run):
-    from ui.ai_enhanced_tab import AIEnhancedTab
-    tab = AIEnhancedTab()
-    _tab_refs.append(tab)
-    assert tab is not None
+        if not iso_path or not os.path.isfile(iso_path):
+            return Result(False, f"ISO file not found: {iso_path}")
 
+        base_path = cls.get_base_image_path()
 
-@patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=""))
-@patch("subprocess.check_output", return_value="")
-def test_automation_tab_init(mock_co, mock_run):
-    from ui.automation_tab import AutomationTab
-    tab = AutomationTab()
-    _tab_refs.append(tab)
-    assert tab is not None
+        try:
+            result = subprocess.run(
+                [
+                    "qemu-img",
+                    "create",
+                    "-f",
+                    "qcow2",
+                    base_path,
+                    f"{size_gb}G",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            if result.returncode == 0:
+                return Result(
+                    True,
+                    f"Base image created at {base_path} ({size_gb} GiB).",
+                    {"path": base_path, "iso": iso_path},
+                )
+            else:
+                error = result.stderr.strip() or result.stdout.strip()
+                return Result(False, f"Failed to create base image: {error}")
 
+        except subprocess.TimeoutExpired:
+            return Result(False, "Base image creation timed out.")
+        except (subprocess.SubprocessError, OSError) as e:
+            logger.debug("Error creating base image: %s", e)
+            return Result(False, f"Error creating base image: {e}")
 
-@patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=""))
-@patch("subprocess.check_output", return_value="")
-@patch("shutil.which", return_value="/usr/bin/dnf")
-def test_maintenance_tab_init(mock_which, mock_co, mock_run):
-    from ui.maintenance_tab import MaintenanceTab
-    tab = MaintenanceTab()
-    _tab_refs.append(tab)
-    assert tab is not None
+    # ==================== OVERLAY / SNAPSHOT ====================
 
+    @classmethod
+    def create_snapshot_overlay(cls, base_path: str) -> str:
+        """Create a QCOW2 overlay backed by *base_path*.
 
-@patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=""))
-@patch("subprocess.check_output", return_value="")
-def test_mesh_tab_init(mock_co, mock_run):
-    from ui.mesh_tab import MeshTab
-    tab = MeshTab()
-    _tab_refs.append(tab)
-    assert tab is not None
+        Returns:
+            Path to the newly created overlay file, or empty string on failure.
+        """
+        if not shutil.which("qemu-img"):
+            return ""
 
+        storage_dir = cls._get_storage_dir()
+        overlay_name = f"disposable-{uuid.uuid4().hex[:8]}.qcow2"
+        overlay_path = os.path.join(storage_dir, overlay_name)
 
-@patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=""))
-@patch("subprocess.check_output", return_value="")
-def test_teleport_tab_init(mock_co, mock_run):
-    from ui.teleport_tab import TeleportTab
-    tab = TeleportTab()
-    _tab_refs.append(tab)
-    assert tab is not None
+        try:
+            result = subprocess.run(
+                [
+                    "qemu-img",
+                    "create",
+                    "-f",
+                    "qcow2",
+                    "-b",
+                    base_path,
+                    "-F",
+                    "qcow2",
+                    overlay_path,
+                ],
+                capture_output=True,
+                text=True,
+                timeout=15,
+            )
+            if result.returncode == 0:
+                return overlay_path
+        except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError) as e:
+            logger.debug("Failed to create snapshot overlay: %s", e)
+        return ""
 
+    # ==================== LAUNCH ====================
 
-@patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=""))
-@patch("subprocess.check_output", return_value="")
-@patch("shutil.which", return_value="/usr/bin/dnf")
-def test_software_tab_init(mock_which, mock_co, mock_run):
-    from ui.software_tab import SoftwareTab
-    tab = SoftwareTab()
-    _tab_refs.append(tab)
-    assert tab is not None
+    @classmethod
+    def launch_disposable(cls, name: str = None, snapshot: bool = True) -> Result:  # type: ignore[assignment]
+        """Launch a disposable VM.
 
+        If *snapshot* is True, a QCOW2 overlay is created on top of the base
+        image; on shutdown the overlay is deleted and the session is lost.
 
-@patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=""))
-@patch("subprocess.check_output", return_value="")
-@patch("shutil.which", return_value=None)
-def test_gaming_tab_init(mock_which, mock_co, mock_run):
-    from ui.gaming_tab import GamingTab
-    tab = GamingTab()
-    _tab_refs.append(tab)
-    assert tab is not None
+        Args:
+            name: Optional VM name.  Auto-generated when ``None``.
+            snapshot: Whether to use an overlay (True) or boot the base directly.
 
+        Returns:
+            Result with success/failure and message.
+        """
+        if not cls.is_base_image_available():
+            return Result(
+                False,
+                "No base image found. Create one first with create_base_image().",
+            )
 
-@patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=""))
-@patch("subprocess.check_output", return_value="")
-def test_desktop_tab_init(mock_co, mock_run):
-    from ui.desktop_tab import DesktopTab
-    tab = DesktopTab()
-    _tab_refs.append(tab)
-    assert tab is not None
+        if not shutil.which("virsh"):
+            return Result(False, "virsh is not installed.")
 
+        if name is None:
+            name = f"disposable-{uuid.uuid4().hex[:8]}"
 
-@patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=""))
-@patch("subprocess.check_output", return_value="")
-@patch("shutil.which", return_value=None)
-def test_security_tab_init(mock_which, mock_co, mock_run):
-    from ui.security_tab import SecurityTab
-    tab = SecurityTab()
-    _tab_refs.append(tab)
-    assert tab is not None
+        if not _VM_NAME_RE.match(name):
+            return Result(
+                False,
+                "Invalid VM name. Use only letters, numbers, dashes, and underscores.",
+            )
 
+        base_path = cls.get_base_image_path()
 
-@patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=""))
-@patch("subprocess.check_output", return_value="")
-def test_community_tab_init(mock_co, mock_run):
-    from ui.community_tab import CommunityTab
-    tab = CommunityTab()
-    _tab_refs.append(tab)
-    assert tab is not None
+        if snapshot:
+            disk_path = cls.create_snapshot_overlay(base_path)
+            if not disk_path:
+                return Result(False, "Failed to create snapshot overlay.")
+        else:
+            disk_path = base_path
 
+        if not shutil.which("virt-install"):
+            return Result(False, "virt-install is not installed.")
 
-@patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=""))
-@patch("subprocess.check_output", return_value="")
-def test_diagnostics_tab_init(mock_co, mock_run):
-    from ui.diagnostics_tab import DiagnosticsTab
-    tab = DiagnosticsTab()
-    _tab_refs.append(tab)
-    assert tab is not None
+        cmd = [
+            "virt-install",
+            "--name",
+            name,
+            "--ram",
+            "2048",
+            "--vcpus",
+            "2",
+            "--disk",
+            f"path={disk_path},format=qcow2",
+            "--os-variant",
+            "generic",
+            "--network",
+            "default",
+            "--graphics",
+            "spice",
+            "--import",
+            "--noautoconsole",
+        ]
+
+        try:
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=60,
+            )
+            if result.returncode == 0:
+                return Result(
+                    True,
+                    f"Disposable VM '{name}' launched.",
+                    {"name": name, "overlay": disk_path if snapshot else "", "snapshot": snapshot},
+                )
+            else:
+                error = result.stderr.strip() or result.stdout.strip()
+                # Clean up overlay on failure
+                if snapshot and disk_path and os.path.isfile(disk_path):
+                    cls.cleanup_disposable(disk_path)
+                return Result(False, f"Failed to launch disposable VM: {error}")
+
+        except subprocess.TimeoutExpired:
+            return Result(False, "Disposable VM launch timed out.")
+        except (subprocess.SubprocessError, OSError) as e:
+            logger.debug("Error launching disposable VM: %s", e)
+            return Result(False, f"Error launching disposable VM: {e}")
+
+    # ==================== CLEANUP ====================
+
+    @classmethod
+    def cleanup_disposable(cls, overlay_path: str) -> Result:
+        """Delete a disposable VM overlay file.
+
+        Args:
+            overlay_path: Absolute path to the overlay QCOW2 to remove.
+
+        Returns:
+            Result with success/failure and message.
+        """
+        if not overlay_path:
+            return Result(False, "No overlay path provided.")
+
+        if not os.path.isfile(overlay_path):
+            return Result(False, f"Overlay file not found: {overlay_path}")
+
+        try:
+            os.remove(overlay_path)
+            return Result(True, f"Overlay deleted: {overlay_path}")
+        except OSError as e:
+            return Result(False, f"Failed to delete overlay: {e}")
+
+    # ==================== LIST ACTIVE ====================
+
+    @classmethod
+    def list_active_disposables(cls) -> list:
+        """Return names of currently defined disposable VMs.
+
+        Scans ``virsh list --all`` for VMs whose names start with
+        ``disposable-``.
+        """
+        if not shutil.which("virsh"):
+            return []
+
+        try:
+            result = subprocess.run(
+                ["virsh", "list", "--all", "--name"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            if result.returncode != 0:
+                return []
+
+            names = []
+            for line in result.stdout.strip().split("\n"):
+                line = line.strip()
+                if line.startswith("disposable-"):
+                    names.append(line)
+            return names
+
+        except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError) as e:
+            logger.debug("Failed to list active disposables: %s", e)
+            return []

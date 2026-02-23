@@ -52,17 +52,17 @@ class TestIsSupported(unittest.TestCase):
     """Tests for ExtensionManager.is_supported()."""
 
     @patch.dict(os.environ, {"XDG_CURRENT_DESKTOP": "GNOME"})
-    @patch("utils.extension_manager.shutil.which", return_value="/usr/bin/gnome-extensions")
+    @patch("utils.extension_manager.cached_which", return_value="/usr/bin/gnome-extensions")
     def test_gnome_supported(self, mock_which):
         self.assertTrue(ExtensionManager.is_supported())
 
     @patch.dict(os.environ, {"XDG_CURRENT_DESKTOP": "GNOME"})
-    @patch("utils.extension_manager.shutil.which", return_value=None)
+    @patch("utils.extension_manager.cached_which", return_value=None)
     def test_gnome_not_supported(self, mock_which):
         self.assertFalse(ExtensionManager.is_supported())
 
     @patch.dict(os.environ, {"XDG_CURRENT_DESKTOP": "KDE"})
-    @patch("utils.extension_manager.shutil.which", return_value="/usr/bin/plasmapkg2")
+    @patch("utils.extension_manager.cached_which", return_value="/usr/bin/plasmapkg2")
     def test_kde_supported(self, mock_which):
         self.assertTrue(ExtensionManager.is_supported())
 
@@ -76,7 +76,7 @@ class TestListInstalled(unittest.TestCase):
     """Tests for ExtensionManager.list_installed()."""
 
     @patch.dict(os.environ, {"XDG_CURRENT_DESKTOP": "GNOME"})
-    @patch("utils.extension_manager.shutil.which", return_value="/usr/bin/gnome-extensions")
+    @patch("utils.extension_manager.cached_which", return_value="/usr/bin/gnome-extensions")
     @patch("utils.extension_manager.subprocess.run")
     def test_list_gnome_extensions(self, mock_run, mock_which):
         mock_run.return_value = MagicMock(
@@ -101,7 +101,7 @@ class TestListInstalled(unittest.TestCase):
         self.assertFalse(result[1].enabled)
 
     @patch.dict(os.environ, {"XDG_CURRENT_DESKTOP": "KDE"})
-    @patch("utils.extension_manager.shutil.which", return_value="/usr/bin/plasmapkg2")
+    @patch("utils.extension_manager.cached_which", return_value="/usr/bin/plasmapkg2")
     @patch("utils.extension_manager.subprocess.run")
     def test_list_kde_extensions(self, mock_run, mock_which):
         mock_run.return_value = MagicMock(
@@ -117,14 +117,14 @@ class TestListInstalled(unittest.TestCase):
         self.assertEqual(result[0].desktop, "kde")
 
     @patch.dict(os.environ, {"XDG_CURRENT_DESKTOP": "GNOME"})
-    @patch("utils.extension_manager.shutil.which", return_value=None)
+    @patch("utils.extension_manager.cached_which", return_value=None)
     def test_list_gnome_no_tool(self, mock_which):
         """No gnome-extensions binary returns empty list."""
         result = ExtensionManager.list_installed()
         self.assertEqual(len(result), 0)
 
     @patch.dict(os.environ, {"XDG_CURRENT_DESKTOP": "GNOME"})
-    @patch("utils.extension_manager.shutil.which", return_value="/usr/bin/gnome-extensions")
+    @patch("utils.extension_manager.cached_which", return_value="/usr/bin/gnome-extensions")
     @patch("utils.extension_manager.subprocess.run")
     def test_list_gnome_timeout(self, mock_run, mock_which):
         import subprocess

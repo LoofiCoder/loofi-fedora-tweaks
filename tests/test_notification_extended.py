@@ -28,7 +28,7 @@ class TestSendParameters(unittest.TestCase):
     """Verify that send() forwards all parameters to notify-send correctly."""
 
     @patch('utils.notifications.subprocess.run')
-    @patch('utils.notifications.shutil.which', return_value='/usr/bin/notify-send')
+    @patch('utils.notifications.cached_which', return_value='/usr/bin/notify-send')
     def test_default_icon_is_dialog_information(self, _which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         NotificationManager.send("Title", "Body")
@@ -37,7 +37,7 @@ class TestSendParameters(unittest.TestCase):
         self.assertEqual(cmd[icon_idx + 1], "dialog-information")
 
     @patch('utils.notifications.subprocess.run')
-    @patch('utils.notifications.shutil.which', return_value='/usr/bin/notify-send')
+    @patch('utils.notifications.cached_which', return_value='/usr/bin/notify-send')
     def test_default_urgency_is_normal(self, _which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         NotificationManager.send("Title", "Body")
@@ -46,7 +46,7 @@ class TestSendParameters(unittest.TestCase):
         self.assertEqual(cmd[urg_idx + 1], "normal")
 
     @patch('utils.notifications.subprocess.run')
-    @patch('utils.notifications.shutil.which', return_value='/usr/bin/notify-send')
+    @patch('utils.notifications.cached_which', return_value='/usr/bin/notify-send')
     def test_custom_timeout_forwarded(self, _which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         NotificationManager.send("Title", "Body", timeout=10000)
@@ -55,7 +55,7 @@ class TestSendParameters(unittest.TestCase):
         self.assertEqual(cmd[expire_idx + 1], "10000")
 
     @patch('utils.notifications.subprocess.run')
-    @patch('utils.notifications.shutil.which', return_value='/usr/bin/notify-send')
+    @patch('utils.notifications.cached_which', return_value='/usr/bin/notify-send')
     def test_zero_timeout_forwarded(self, _which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         NotificationManager.send("Title", "Body", timeout=0)
@@ -64,7 +64,7 @@ class TestSendParameters(unittest.TestCase):
         self.assertEqual(cmd[expire_idx + 1], "0")
 
     @patch('utils.notifications.subprocess.run')
-    @patch('utils.notifications.shutil.which', return_value='/usr/bin/notify-send')
+    @patch('utils.notifications.cached_which', return_value='/usr/bin/notify-send')
     def test_title_and_body_are_last_two_args(self, _which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         NotificationManager.send("My Title", "My Body")
@@ -81,21 +81,21 @@ class TestSpecialCharacters(unittest.TestCase):
     """Notifications with special characters should not crash."""
 
     @patch('utils.notifications.subprocess.run')
-    @patch('utils.notifications.shutil.which', return_value='/usr/bin/notify-send')
+    @patch('utils.notifications.cached_which', return_value='/usr/bin/notify-send')
     def test_unicode_in_title(self, _which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         result = NotificationManager.send("Update complete", "Freed 1.5 GB")
         self.assertTrue(result)
 
     @patch('utils.notifications.subprocess.run')
-    @patch('utils.notifications.shutil.which', return_value='/usr/bin/notify-send')
+    @patch('utils.notifications.cached_which', return_value='/usr/bin/notify-send')
     def test_empty_body(self, _which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         result = NotificationManager.send("Title", "")
         self.assertTrue(result)
 
     @patch('utils.notifications.subprocess.run')
-    @patch('utils.notifications.shutil.which', return_value='/usr/bin/notify-send')
+    @patch('utils.notifications.cached_which', return_value='/usr/bin/notify-send')
     def test_newlines_in_body(self, _which, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         result = NotificationManager.send("Title", "Line1\nLine2\nLine3")
@@ -113,14 +113,14 @@ class TestErrorPaths(unittest.TestCase):
 
     @patch('utils.notifications.subprocess.run',
            side_effect=subprocess.SubprocessError("pipe broke"))
-    @patch('utils.notifications.shutil.which', return_value='/usr/bin/notify-send')
+    @patch('utils.notifications.cached_which', return_value='/usr/bin/notify-send')
     def test_subprocess_error_returns_false(self, _which, _run):
         result = NotificationManager.send("Title", "Body")
         self.assertFalse(result)
 
     @patch('utils.notifications.subprocess.run',
            side_effect=FileNotFoundError("not found"))
-    @patch('utils.notifications.shutil.which', return_value='/usr/bin/notify-send')
+    @patch('utils.notifications.cached_which', return_value='/usr/bin/notify-send')
     def test_file_not_found_returns_false(self, _which, _run):
         result = NotificationManager.send("Title", "Body")
         self.assertFalse(result)

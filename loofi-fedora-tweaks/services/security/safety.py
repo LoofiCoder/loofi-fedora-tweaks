@@ -5,9 +5,10 @@ Migrated from utils/safety.py in v2.0.0.
 """
 
 import logging
-import shutil
 import subprocess
 from typing import Optional
+
+from services.system.system import cached_which
 
 logger = logging.getLogger(__name__)
 
@@ -48,9 +49,9 @@ class SafetyManager:
         Returns:
             Tool name ('timeshift' or 'snapper'), or None if neither found.
         """
-        if shutil.which("timeshift"):
+        if cached_which("timeshift"):
             return "timeshift"
-        elif shutil.which("snapper"):
+        elif cached_which("snapper"):
             return "snapper"
         return None
 

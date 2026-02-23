@@ -1048,7 +1048,7 @@ class TestEnterContainer(unittest.TestCase):
         output = "".join(tab._output_lines)
         self.assertIn("No container selected", output)
 
-    @patch("ui.development_tab.shutil.which", return_value=None)
+    @patch("ui.development_tab.cached_which", return_value=None)
     def test_enter_no_terminal_fallback(self, mock_which):
         """Falls back to showing command when no terminal emulator found."""
         containers = [
@@ -1070,7 +1070,7 @@ class TestEnterContainer(unittest.TestCase):
 class TestOpenTerminal(unittest.TestCase):
     """Tests for _open_terminal."""
 
-    @patch("ui.development_tab.shutil.which", return_value="/usr/bin/gnome-terminal")
+    @patch("ui.development_tab.cached_which", return_value="/usr/bin/gnome-terminal")
     def test_open_terminal_gnome(self, mock_which):
         """Opens gnome-terminal when available."""
         tab = _make_tab(distrobox_available=True)
@@ -1085,7 +1085,7 @@ class TestOpenTerminal(unittest.TestCase):
         self.assertIn("Opened terminal", output)
         self.assertIn("dev", output)
 
-    @patch("ui.development_tab.shutil.which", return_value=None)
+    @patch("ui.development_tab.cached_which", return_value=None)
     def test_open_terminal_no_emulator(self, mock_which):
         """Shows fallback command when no terminal found."""
         tab = _make_tab(distrobox_available=True)
@@ -1097,7 +1097,7 @@ class TestOpenTerminal(unittest.TestCase):
         self.assertIn("No terminal emulator found", output)
         self.assertIn("distrobox enter test-box", output)
 
-    @patch("ui.development_tab.shutil.which", return_value="/usr/bin/gnome-terminal")
+    @patch("ui.development_tab.cached_which", return_value="/usr/bin/gnome-terminal")
     def test_open_terminal_includes_container_name(self, mock_which):
         """Success message includes container name."""
         tab = _make_tab(distrobox_available=True)

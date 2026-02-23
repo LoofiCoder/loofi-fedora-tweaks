@@ -59,7 +59,7 @@ class TestUpdateManagerCheckUpdates(unittest.TestCase):
 
     @patch("utils.update_manager.SystemManager.is_atomic", return_value=False)
     @patch("utils.update_manager.SystemManager.get_package_manager", return_value="dnf")
-    @patch("utils.update_manager.shutil.which", return_value="/usr/bin/dnf")
+    @patch("utils.update_manager.cached_which", return_value="/usr/bin/dnf")
     @patch("utils.update_manager.subprocess.run")
     def test_check_updates_dnf_with_updates(self, mock_run, mock_which, mock_pm, mock_atomic):
         """DNF check-update returns available packages."""
@@ -79,7 +79,7 @@ class TestUpdateManagerCheckUpdates(unittest.TestCase):
 
     @patch("utils.update_manager.SystemManager.is_atomic", return_value=False)
     @patch("utils.update_manager.SystemManager.get_package_manager", return_value="dnf")
-    @patch("utils.update_manager.shutil.which", return_value="/usr/bin/dnf")
+    @patch("utils.update_manager.cached_which", return_value="/usr/bin/dnf")
     @patch("utils.update_manager.subprocess.run")
     def test_check_updates_dnf_no_updates(self, mock_run, mock_which, mock_pm, mock_atomic):
         """DNF check-update returns 0 when no updates available."""
@@ -89,7 +89,7 @@ class TestUpdateManagerCheckUpdates(unittest.TestCase):
 
     @patch("utils.update_manager.SystemManager.is_atomic", return_value=False)
     @patch("utils.update_manager.SystemManager.get_package_manager", return_value="dnf")
-    @patch("utils.update_manager.shutil.which", return_value="/usr/bin/dnf")
+    @patch("utils.update_manager.cached_which", return_value="/usr/bin/dnf")
     @patch("utils.update_manager.subprocess.run")
     def test_check_updates_dnf_timeout(self, mock_run, mock_which, mock_pm, mock_atomic):
         """DNF check-update timeout returns empty list."""
@@ -100,7 +100,7 @@ class TestUpdateManagerCheckUpdates(unittest.TestCase):
 
     @patch("utils.update_manager.SystemManager.is_atomic", return_value=False)
     @patch("utils.update_manager.SystemManager.get_package_manager", return_value="dnf")
-    @patch("utils.update_manager.shutil.which", return_value=None)
+    @patch("utils.update_manager.cached_which", return_value=None)
     def test_check_updates_dnf_not_found(self, mock_which, mock_pm, mock_atomic):
         """DNF not installed returns empty list."""
         result = UpdateManager.check_updates()
@@ -108,7 +108,7 @@ class TestUpdateManagerCheckUpdates(unittest.TestCase):
 
     @patch("utils.update_manager.SystemManager.is_atomic", return_value=False)
     @patch("utils.update_manager.SystemManager.get_package_manager", return_value="dnf")
-    @patch("utils.update_manager.shutil.which", return_value="/usr/bin/dnf")
+    @patch("utils.update_manager.cached_which", return_value="/usr/bin/dnf")
     @patch("utils.update_manager.subprocess.run")
     def test_check_updates_dnf_os_error(self, mock_run, mock_which, mock_pm, mock_atomic):
         """DNF check-update OSError returns empty list."""
@@ -321,7 +321,7 @@ class TestUpdateManagerHistory(unittest.TestCase):
 
     @patch("utils.update_manager.SystemManager.is_atomic", return_value=False)
     @patch("utils.update_manager.SystemManager.get_package_manager", return_value="dnf")
-    @patch("utils.update_manager.shutil.which", return_value=None)
+    @patch("utils.update_manager.cached_which", return_value=None)
     def test_history_dnf_not_found(self, mock_which, mock_pm, mock_atomic):
         """DNF history when shutil.which returns None."""
         result = UpdateManager.get_update_history()

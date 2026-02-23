@@ -55,16 +55,16 @@ class TestVMManagerFlavors(unittest.TestCase):
 class TestVMManagerAvailability(unittest.TestCase):
     """Tests for VMManager.is_available()."""
 
-    @patch("shutil.which")
+    @patch("services.virtualization.vm_manager.cached_which")
     def test_available_when_tools_present(self, mock_which):
         mock_which.return_value = "/usr/bin/dummy"
         self.assertTrue(VMManager.is_available())
 
-    @patch("shutil.which", return_value=None)
+    @patch("services.virtualization.vm_manager.cached_which", return_value=None)
     def test_unavailable_when_tools_missing(self, mock_which):
         self.assertFalse(VMManager.is_available())
 
-    @patch("shutil.which")
+    @patch("services.virtualization.vm_manager.cached_which")
     def test_unavailable_when_only_virsh(self, mock_which):
         def side(name):
             return "/usr/bin/virsh" if name == "virsh" else None
@@ -95,7 +95,7 @@ class TestVMManagerListVMs(unittest.TestCase):
     """Tests for VMManager.list_vms()."""
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/virsh")
+    @patch("services.virtualization.vm_manager.cached_which", return_value="/usr/bin/virsh")
     def test_list_vms_parses_running_and_shutoff(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout=VIRSH_LIST_OUTPUT)
         vms = VMManager.list_vms()
@@ -106,19 +106,19 @@ class TestVMManagerListVMs(unittest.TestCase):
         self.assertEqual(vms[1].state, "shut off")
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/virsh")
+    @patch("services.virtualization.vm_manager.cached_which", return_value="/usr/bin/virsh")
     def test_list_vms_empty(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout=VIRSH_LIST_EMPTY)
         vms = VMManager.list_vms()
         self.assertEqual(vms, [])
 
-    @patch("shutil.which", return_value=None)
+    @patch("services.virtualization.vm_manager.cached_which", return_value=None)
     def test_list_vms_no_virsh(self, mock_which):
         vms = VMManager.list_vms()
         self.assertEqual(vms, [])
 
     @patch("subprocess.run", side_effect=Exception("oops"))
-    @patch("shutil.which", return_value="/usr/bin/virsh")
+    @patch("services.virtualization.vm_manager.cached_which", return_value="/usr/bin/virsh")
     def test_list_vms_exception(self, mock_which, mock_run):
         vms = VMManager.list_vms()
         self.assertEqual(vms, [])
@@ -143,7 +143,7 @@ class TestVMManagerGetVMInfo(unittest.TestCase):
     """Tests for VMManager.get_vm_info()."""
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/virsh")
+    @patch("services.virtualization.vm_manager.cached_which", return_value="/usr/bin/virsh")
     def test_get_vm_info_parses_fields(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout=VIRSH_DOMINFO)
         info = VMManager.get_vm_info("fedora-vm")
@@ -155,13 +155,13 @@ class TestVMManagerGetVMInfo(unittest.TestCase):
         self.assertEqual(info.memory_mb, 4096)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/virsh")
+    @patch("services.virtualization.vm_manager.cached_which", return_value="/usr/bin/virsh")
     def test_get_vm_info_not_found(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=1, stdout="", stderr="error")
         info = VMManager.get_vm_info("ghost")
         self.assertIsNone(info)
 
-    @patch("shutil.which", return_value=None)
+    @patch("services.virtualization.vm_manager.cached_which", return_value=None)
     def test_get_vm_info_no_virsh(self, mock_which):
         info = VMManager.get_vm_info("anything")
         self.assertIsNone(info)
@@ -177,7 +177,7 @@ class TestVMManagerCreateVM(unittest.TestCase):
     @patch("subprocess.run")
     @patch("os.path.isfile", return_value=True)
     @patch("os.path.isdir", return_value=True)
-    @patch("shutil.which", return_value="/usr/bin/virt-install")
+    @patch("services.virtualization.vm_manager.cached_which", return_value="/usr/bin/virt-install")
     def test_create_vm_success(self, mock_which, mock_isdir, mock_isfile, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
         result = VMManager.create_vm("test-vm", "fedora", "/tmp/fedora.iso")
@@ -201,7 +201,7 @@ class TestVMManagerCreateVM(unittest.TestCase):
         self.assertIn("Unknown", result.message)
 
     @patch("os.path.isfile", return_value=False)
-    @patch("shutil.which", return_value="/usr/bin/virt-install")
+    @patch("services.virtualization.vm_manager.cached_which", return_value="/usr/bin/virt-install")
     def test_create_vm_missing_iso(self, mock_which, mock_isfile):
         result = VMManager.create_vm("ok-name", "fedora", "/nonexistent.iso")
         self.assertFalse(result.success)
@@ -209,7 +209,7 @@ class TestVMManagerCreateVM(unittest.TestCase):
 
     @patch("os.path.isfile")
     @patch("os.path.isdir", return_value=True)
-    @patch("shutil.which")
+    @patch("services.virtualization.vm_manager.cached_which")
     def test_create_vm_windows_needs_swtpm(self, mock_which, mock_isdir, mock_isfile):
         mock_isfile.return_value = True
         # virsh & virt-install present, but swtpm missing
@@ -225,7 +225,7 @@ class TestVMManagerCreateVM(unittest.TestCase):
     @patch("subprocess.run")
     @patch("os.path.isfile", return_value=True)
     @patch("os.path.isdir", return_value=True)
-    @patch("shutil.which", return_value="/usr/bin/dummy")
+    @patch("services.virtualization.vm_manager.cached_which", return_value="/usr/bin/dummy")
     def test_create_vm_windows_with_swtpm(self, mock_which, mock_isdir, mock_isfile, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
         result = VMManager.create_vm("win-test", "windows11", "/tmp/win.iso")
@@ -236,7 +236,7 @@ class TestVMManagerCreateVM(unittest.TestCase):
     @patch("subprocess.run")
     @patch("os.path.isfile", return_value=True)
     @patch("os.path.isdir", return_value=True)
-    @patch("shutil.which", return_value="/usr/bin/dummy")
+    @patch("services.virtualization.vm_manager.cached_which", return_value="/usr/bin/dummy")
     def test_create_vm_with_overrides(self, mock_which, mock_isdir, mock_isfile, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
         result = VMManager.create_vm("test", "arch", "/tmp/a.iso", ram_mb=4096, vcpus=4)
@@ -248,7 +248,7 @@ class TestVMManagerCreateVM(unittest.TestCase):
     @patch("subprocess.run", side_effect=OSError("kaboom"))
     @patch("os.path.isfile", return_value=True)
     @patch("os.path.isdir", return_value=True)
-    @patch("shutil.which", return_value="/usr/bin/dummy")
+    @patch("services.virtualization.vm_manager.cached_which", return_value="/usr/bin/dummy")
     def test_create_vm_exception(self, mock_which, mock_isdir, mock_isfile, mock_run):
         result = VMManager.create_vm("exc-test", "fedora", "/tmp/f.iso")
         self.assertFalse(result.success)
@@ -263,21 +263,21 @@ class TestVMManagerLifecycle(unittest.TestCase):
     """Tests for start, stop, force_stop, delete VM operations."""
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/virsh")
+    @patch("services.virtualization.vm_manager.cached_which", return_value="/usr/bin/virsh")
     def test_start_vm_success(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout="Domain started", stderr="")
         result = VMManager.start_vm("my-vm")
         self.assertTrue(result.success)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/virsh")
+    @patch("services.virtualization.vm_manager.cached_which", return_value="/usr/bin/virsh")
     def test_start_vm_failure(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=1, stdout="", stderr="error: already running")
         result = VMManager.start_vm("my-vm")
         self.assertFalse(result.success)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/virsh")
+    @patch("services.virtualization.vm_manager.cached_which", return_value="/usr/bin/virsh")
     def test_stop_vm_success(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
         result = VMManager.stop_vm("my-vm")
@@ -286,7 +286,7 @@ class TestVMManagerLifecycle(unittest.TestCase):
         self.assertIn("shutdown", cmd)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/virsh")
+    @patch("services.virtualization.vm_manager.cached_which", return_value="/usr/bin/virsh")
     def test_force_stop_vm_success(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
         result = VMManager.force_stop_vm("my-vm")
@@ -295,7 +295,7 @@ class TestVMManagerLifecycle(unittest.TestCase):
         self.assertIn("destroy", cmd)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/virsh")
+    @patch("services.virtualization.vm_manager.cached_which", return_value="/usr/bin/virsh")
     def test_delete_vm_without_storage(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
         result = VMManager.delete_vm("my-vm", delete_storage=False)
@@ -304,7 +304,7 @@ class TestVMManagerLifecycle(unittest.TestCase):
         self.assertNotIn("--remove-all-storage", cmd)
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/virsh")
+    @patch("services.virtualization.vm_manager.cached_which", return_value="/usr/bin/virsh")
     def test_delete_vm_with_storage(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
         result = VMManager.delete_vm("my-vm", delete_storage=True)
@@ -312,18 +312,18 @@ class TestVMManagerLifecycle(unittest.TestCase):
         cmd = mock_run.call_args[0][0]
         self.assertIn("--remove-all-storage", cmd)
 
-    @patch("shutil.which", return_value=None)
+    @patch("services.virtualization.vm_manager.cached_which", return_value=None)
     def test_start_vm_no_virsh(self, mock_which):
         result = VMManager.start_vm("x")
         self.assertFalse(result.success)
         self.assertIn("virsh", result.message)
 
-    @patch("shutil.which", return_value=None)
+    @patch("services.virtualization.vm_manager.cached_which", return_value=None)
     def test_stop_vm_no_virsh(self, mock_which):
         result = VMManager.stop_vm("x")
         self.assertFalse(result.success)
 
-    @patch("shutil.which", return_value=None)
+    @patch("services.virtualization.vm_manager.cached_which", return_value=None)
     def test_delete_vm_no_virsh(self, mock_which):
         result = VMManager.delete_vm("x")
         self.assertFalse(result.success)
@@ -611,7 +611,7 @@ class TestDisposableBaseImage(unittest.TestCase):
     @patch("subprocess.run")
     @patch("os.path.isfile", return_value=True)
     @patch("os.makedirs")
-    @patch("shutil.which", return_value="/usr/bin/qemu-img")
+    @patch("services.virtualization.disposable_vm.cached_which", return_value="/usr/bin/qemu-img")
     def test_create_base_image_success(self, mock_which, mock_makedirs, mock_isfile, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
         result = DisposableVMManager.create_base_image("/tmp/test.iso", size_gb=20)
@@ -622,14 +622,14 @@ class TestDisposableBaseImage(unittest.TestCase):
 
     @patch("os.path.isfile", return_value=False)
     @patch("os.makedirs")
-    @patch("shutil.which", return_value="/usr/bin/qemu-img")
+    @patch("services.virtualization.disposable_vm.cached_which", return_value="/usr/bin/qemu-img")
     def test_create_base_image_missing_iso(self, mock_which, mock_makedirs, mock_isfile):
         result = DisposableVMManager.create_base_image("/nonexistent.iso")
         self.assertFalse(result.success)
         self.assertIn("ISO", result.message)
 
     @patch("os.makedirs")
-    @patch("shutil.which", return_value=None)
+    @patch("services.virtualization.disposable_vm.cached_which", return_value=None)
     def test_create_base_image_no_qemu_img(self, mock_which, mock_makedirs):
         result = DisposableVMManager.create_base_image("/tmp/test.iso")
         self.assertFalse(result.success)
@@ -645,7 +645,7 @@ class TestDisposableOverlay(unittest.TestCase):
 
     @patch("subprocess.run")
     @patch("os.makedirs")
-    @patch("shutil.which", return_value="/usr/bin/qemu-img")
+    @patch("services.virtualization.disposable_vm.cached_which", return_value="/usr/bin/qemu-img")
     def test_overlay_creation_success(self, mock_which, mock_makedirs, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
         path = DisposableVMManager.create_snapshot_overlay("/base.qcow2")
@@ -656,14 +656,14 @@ class TestDisposableOverlay(unittest.TestCase):
         self.assertIn("/base.qcow2", cmd)
 
     @patch("os.makedirs")
-    @patch("shutil.which", return_value=None)
+    @patch("services.virtualization.disposable_vm.cached_which", return_value=None)
     def test_overlay_creation_no_qemu_img(self, mock_which, mock_makedirs):
         path = DisposableVMManager.create_snapshot_overlay("/base.qcow2")
         self.assertEqual(path, "")
 
     @patch("subprocess.run")
     @patch("os.makedirs")
-    @patch("shutil.which", return_value="/usr/bin/qemu-img")
+    @patch("services.virtualization.disposable_vm.cached_which", return_value="/usr/bin/qemu-img")
     def test_overlay_creation_failure(self, mock_which, mock_makedirs, mock_run):
         mock_run.return_value = MagicMock(returncode=1, stdout="", stderr="err")
         path = DisposableVMManager.create_snapshot_overlay("/base.qcow2")
@@ -709,7 +709,7 @@ class TestDisposableListActive(unittest.TestCase):
     """Tests for DisposableVMManager.list_active_disposables()."""
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/virsh")
+    @patch("services.virtualization.disposable_vm.cached_which", return_value="/usr/bin/virsh")
     def test_list_active_finds_disposables(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(
             returncode=0,
@@ -720,13 +720,13 @@ class TestDisposableListActive(unittest.TestCase):
         self.assertEqual(names[0], "disposable-abc12345")
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/virsh")
+    @patch("services.virtualization.disposable_vm.cached_which", return_value="/usr/bin/virsh")
     def test_list_active_no_disposables(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout="fedora-vm\nwin11\n")
         names = DisposableVMManager.list_active_disposables()
         self.assertEqual(names, [])
 
-    @patch("shutil.which", return_value=None)
+    @patch("services.virtualization.disposable_vm.cached_which", return_value=None)
     def test_list_active_no_virsh(self, mock_which):
         names = DisposableVMManager.list_active_disposables()
         self.assertEqual(names, [])

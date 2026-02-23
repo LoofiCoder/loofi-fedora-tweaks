@@ -12,13 +12,13 @@ v42.0.0 Sentinel: Replaced curl-pipe-bash with download-then-execute pattern.
 
 import logging
 import os
-import shutil
 import subprocess
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
+from services.system.system import cached_which
 from utils.commands import PrivilegedCommand
 
 logger = logging.getLogger(__name__)
@@ -97,7 +97,7 @@ export NVM_DIR="$HOME/.nvm"
 
         # Check by command
         if info.get("check_cmd"):
-            if shutil.which(info["check_cmd"]):
+            if cached_which(info["check_cmd"]):
                 try:
                     result = subprocess.run(
                         [info["check_cmd"], "--version"],

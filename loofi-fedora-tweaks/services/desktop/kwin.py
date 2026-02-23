@@ -12,11 +12,12 @@ Migrated from utils/kwin_tiling.py in v2.0.0 "Evolution".
 import json
 import logging
 import os
-import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
+
+from services.system.system import cached_which
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +78,7 @@ class KWinManager:
     def get_kwriteconfig(cls) -> Optional[str]:
         """Get appropriate kwriteconfig command."""
         for cmd in ["kwriteconfig6", "kwriteconfig5"]:
-            if shutil.which(cmd):
+            if cached_which(cmd):
                 return cmd
         return None
 
@@ -85,7 +86,7 @@ class KWinManager:
     def get_kreadconfig(cls) -> Optional[str]:
         """Get appropriate kreadconfig command."""
         for cmd in ["kreadconfig6", "kreadconfig5"]:
-            if shutil.which(cmd):
+            if cached_which(cmd):
                 return cmd
         return None
 

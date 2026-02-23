@@ -29,7 +29,7 @@ class TestGetToolStatus(unittest.TestCase):
         self.assertEqual(msg, "Unknown tool")
 
     @patch("subprocess.run")
-    @patch("shutil.which", return_value="/usr/bin/pyenv")
+    @patch("utils.devtools.cached_which", return_value="/usr/bin/pyenv")
     def test_pyenv_installed(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(
             returncode=0,
@@ -39,12 +39,12 @@ class TestGetToolStatus(unittest.TestCase):
         self.assertTrue(installed)
         self.assertIn("2.3.0", version)
 
-    @patch("shutil.which", return_value=None)
+    @patch("utils.devtools.cached_which", return_value=None)
     def test_pyenv_not_installed(self, mock_which):
         installed, version = DevToolsManager.get_tool_status("pyenv")
         self.assertFalse(installed)
 
-    @patch("shutil.which", return_value="/home/user/.cargo/bin/rustup")
+    @patch("utils.devtools.cached_which", return_value="/home/user/.cargo/bin/rustup")
     @patch("subprocess.run", side_effect=OSError("fail"))
     def test_rustup_installed_version_fail(self, mock_run, mock_which):
         installed, version = DevToolsManager.get_tool_status("rustup")
@@ -52,13 +52,13 @@ class TestGetToolStatus(unittest.TestCase):
         self.assertEqual(version, "installed")
 
     @patch("pathlib.Path.exists", return_value=True)
-    @patch("shutil.which", return_value=None)
+    @patch("utils.devtools.cached_which", return_value=None)
     def test_nvm_installed_by_dir(self, mock_which, mock_exists):
         installed, version = DevToolsManager.get_tool_status("nvm")
         self.assertTrue(installed)
 
     @patch("pathlib.Path.exists", return_value=False)
-    @patch("shutil.which", return_value=None)
+    @patch("utils.devtools.cached_which", return_value=None)
     def test_nvm_not_installed(self, mock_which, mock_exists):
         installed, version = DevToolsManager.get_tool_status("nvm")
         self.assertFalse(installed)

@@ -9,12 +9,12 @@ desktop environment extensions across GNOME and KDE.
 import json
 import logging
 import os
-import shutil
 import subprocess
 from dataclasses import dataclass
 from enum import Enum
 from typing import List
 
+from services.system.system import cached_which
 from utils.commands import CommandTuple
 
 logger = logging.getLogger(__name__)
@@ -88,9 +88,9 @@ class ExtensionManager:
         """Check if extension management is supported on this system."""
         de = ExtensionManager.detect_desktop()
         if de == DesktopEnvironment.GNOME:
-            return shutil.which("gnome-extensions") is not None
+            return cached_which("gnome-extensions") is not None
         if de == DesktopEnvironment.KDE:
-            return shutil.which("plasmapkg2") is not None
+            return cached_which("plasmapkg2") is not None
         return False
 
     # -----------------------------------------------------------------
@@ -115,7 +115,7 @@ class ExtensionManager:
     def _list_gnome() -> List[ExtensionEntry]:
         """List GNOME Shell extensions via gnome-extensions."""
         extensions: List[ExtensionEntry] = []
-        if not shutil.which("gnome-extensions"):
+        if not cached_which("gnome-extensions"):
             return extensions
 
         try:
@@ -164,7 +164,7 @@ class ExtensionManager:
     def _list_kde() -> List[ExtensionEntry]:
         """List KDE Plasma widgets/extensions."""
         extensions: List[ExtensionEntry] = []
-        if not shutil.which("plasmapkg2"):
+        if not cached_which("plasmapkg2"):
             return extensions
 
         try:

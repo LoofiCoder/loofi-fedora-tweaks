@@ -341,9 +341,9 @@ class AgentPlanner:
     @classmethod
     def _plan_with_ollama(cls, goal: str) -> Optional[AgentPlan]:
         """Use Ollama to interpret a custom goal into an agent plan."""
-        import shutil
+        from services.system.system import cached_which
 
-        if not shutil.which("ollama"):
+        if not cached_which("ollama"):
             return None
 
         # Build the prompt

@@ -526,7 +526,7 @@ class TestCmdNetmon(unittest.TestCase):
 
 class TestCmdDoctor(unittest.TestCase):
     @patch("cli.main._output_json")
-    @patch("shutil.which")
+    @patch("cli.main.cached_which")
     def test_doctor_json_all_found(self, mock_which, mock_json):
         """JSON mode: all tools found → returns 0 and outputs valid JSON."""
         _set_json(True)
@@ -539,7 +539,7 @@ class TestCmdDoctor(unittest.TestCase):
         _set_json(False)
 
     @patch("cli.main._output_json")
-    @patch("shutil.which")
+    @patch("cli.main.cached_which")
     def test_doctor_json_missing(self, mock_which, mock_json):
         """JSON mode: no tools found → returns 1."""
         _set_json(True)
@@ -552,7 +552,7 @@ class TestCmdDoctor(unittest.TestCase):
         _set_json(False)
 
     @patch("cli.main._print")
-    @patch("shutil.which")
+    @patch("cli.main.cached_which")
     def test_doctor_text_missing_critical(self, mock_which, mock_print):
         _set_json(False)
         mock_which.return_value = None

@@ -17,11 +17,11 @@ from services.security.usbguard import USBGuardManager
 class TestIsInstalled(unittest.TestCase):
     """Test is_installed."""
 
-    @patch("services.security.usbguard.shutil.which", return_value="/usr/bin/usbguard")
+    @patch("services.security.usbguard.cached_which", return_value="/usr/bin/usbguard")
     def test_installed(self, mock_which):
         self.assertTrue(USBGuardManager.is_installed())
 
-    @patch("services.security.usbguard.shutil.which", return_value=None)
+    @patch("services.security.usbguard.cached_which", return_value=None)
     def test_not_installed(self, mock_which):
         self.assertFalse(USBGuardManager.is_installed())
 

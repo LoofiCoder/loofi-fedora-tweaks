@@ -73,7 +73,7 @@ class TestDownloadModel(unittest.TestCase):
     """Tests for AIModelManager.download_model()."""
 
     @patch('utils.ai_models.subprocess.Popen')
-    @patch('utils.ai_models.shutil.which', return_value="/usr/bin/ollama")
+    @patch('utils.ai_models.cached_which', return_value="/usr/bin/ollama")
     def test_download_model_success(self, mock_which, mock_popen):
         mock_process = MagicMock()
         mock_process.stdout = iter(["Downloading...\n", "Done\n"])
@@ -85,14 +85,14 @@ class TestDownloadModel(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertIn("downloaded successfully", result.message)
 
-    @patch('utils.ai_models.shutil.which', return_value=None)
+    @patch('utils.ai_models.cached_which', return_value=None)
     def test_download_model_ollama_not_installed(self, mock_which):
         result = AIModelManager.download_model("llama3.2:1b")
         self.assertFalse(result.success)
         self.assertIn("not installed", result.message)
 
     @patch('utils.ai_models.subprocess.Popen')
-    @patch('utils.ai_models.shutil.which', return_value="/usr/bin/ollama")
+    @patch('utils.ai_models.cached_which', return_value="/usr/bin/ollama")
     def test_download_model_failure(self, mock_which, mock_popen):
         mock_process = MagicMock()
         mock_process.stdout = iter(["Error: model not found\n"])
@@ -105,7 +105,7 @@ class TestDownloadModel(unittest.TestCase):
         self.assertIn("failed", result.message.lower())
 
     @patch('utils.ai_models.subprocess.Popen')
-    @patch('utils.ai_models.shutil.which', return_value="/usr/bin/ollama")
+    @patch('utils.ai_models.cached_which', return_value="/usr/bin/ollama")
     def test_download_model_file_not_found(self, mock_which, mock_popen):
         mock_popen.side_effect = FileNotFoundError("binary not found")
         result = AIModelManager.download_model("llama3.2:1b")
@@ -113,7 +113,7 @@ class TestDownloadModel(unittest.TestCase):
         self.assertIn("not found", result.message)
 
     @patch('utils.ai_models.subprocess.Popen')
-    @patch('utils.ai_models.shutil.which', return_value="/usr/bin/ollama")
+    @patch('utils.ai_models.cached_which', return_value="/usr/bin/ollama")
     def test_download_model_subprocess_error(self, mock_which, mock_popen):
         mock_popen.side_effect = subprocess.SubprocessError("fail")
         result = AIModelManager.download_model("llama3.2:1b")
@@ -121,7 +121,7 @@ class TestDownloadModel(unittest.TestCase):
         self.assertIn("error", result.message.lower())
 
     @patch('utils.ai_models.subprocess.Popen')
-    @patch('utils.ai_models.shutil.which', return_value="/usr/bin/ollama")
+    @patch('utils.ai_models.cached_which', return_value="/usr/bin/ollama")
     def test_download_model_with_callback(self, mock_which, mock_popen):
         mock_process = MagicMock()
         mock_process.stdout = iter(["Progress 50%\n", "Progress 100%\n"])
@@ -139,7 +139,7 @@ class TestGetInstalledModels(unittest.TestCase):
     """Tests for AIModelManager.get_installed_models()."""
 
     @patch('utils.ai_models.subprocess.run')
-    @patch('utils.ai_models.shutil.which', return_value="/usr/bin/ollama")
+    @patch('utils.ai_models.cached_which', return_value="/usr/bin/ollama")
     def test_get_installed_models_success(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(
             returncode=0,
@@ -150,34 +150,34 @@ class TestGetInstalledModels(unittest.TestCase):
         self.assertEqual(len(result), 2)
         self.assertEqual(result[0]["name"], "llama3.2:1b")
 
-    @patch('utils.ai_models.shutil.which', return_value=None)
+    @patch('utils.ai_models.cached_which', return_value=None)
     def test_get_installed_models_no_ollama(self, mock_which):
         result = AIModelManager.get_installed_models()
         self.assertEqual(result, [])
 
     @patch('utils.ai_models.subprocess.run')
-    @patch('utils.ai_models.shutil.which', return_value="/usr/bin/ollama")
+    @patch('utils.ai_models.cached_which', return_value="/usr/bin/ollama")
     def test_get_installed_models_command_failure(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=1, stdout="")
         result = AIModelManager.get_installed_models()
         self.assertEqual(result, [])
 
     @patch('utils.ai_models.subprocess.run')
-    @patch('utils.ai_models.shutil.which', return_value="/usr/bin/ollama")
+    @patch('utils.ai_models.cached_which', return_value="/usr/bin/ollama")
     def test_get_installed_models_timeout(self, mock_which, mock_run):
         mock_run.side_effect = subprocess.TimeoutExpired(cmd="ollama", timeout=10)
         result = AIModelManager.get_installed_models()
         self.assertEqual(result, [])
 
     @patch('utils.ai_models.subprocess.run')
-    @patch('utils.ai_models.shutil.which', return_value="/usr/bin/ollama")
+    @patch('utils.ai_models.cached_which', return_value="/usr/bin/ollama")
     def test_get_installed_models_os_error(self, mock_which, mock_run):
         mock_run.side_effect = OSError("fail")
         result = AIModelManager.get_installed_models()
         self.assertEqual(result, [])
 
     @patch('utils.ai_models.subprocess.run')
-    @patch('utils.ai_models.shutil.which', return_value="/usr/bin/ollama")
+    @patch('utils.ai_models.cached_which', return_value="/usr/bin/ollama")
     def test_get_installed_models_empty_output(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout="NAME\tSIZE\n")
         result = AIModelManager.get_installed_models()

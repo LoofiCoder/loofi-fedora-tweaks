@@ -25,7 +25,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'loofi-fedora-twea
 class TestDependencyDoctor(unittest.TestCase):
     """Tests for DependencyDoctor dialog."""
 
-    @patch("shutil.which", return_value="/usr/bin/fake")
+    @patch("ui.doctor.cached_which", return_value="/usr/bin/fake")
     def test_init_all_tools_found(self, mock_which):
         from ui.doctor import DependencyDoctor
         d = DependencyDoctor()
@@ -34,7 +34,7 @@ class TestDependencyDoctor(unittest.TestCase):
         self.assertFalse(d.btn_fix.isEnabled())
         d.close()
 
-    @patch("shutil.which", return_value=None)
+    @patch("ui.doctor.cached_which", return_value=None)
     def test_init_all_tools_missing(self, mock_which):
         from ui.doctor import DependencyDoctor
         d = DependencyDoctor()
@@ -42,7 +42,7 @@ class TestDependencyDoctor(unittest.TestCase):
         self.assertTrue(d.btn_fix.isEnabled())
         d.close()
 
-    @patch("shutil.which", side_effect=lambda t: "/usr/bin/dnf" if t == "dnf" else None)
+    @patch("ui.doctor.cached_which", side_effect=lambda t: "/usr/bin/dnf" if t == "dnf" else None)
     def test_init_partial_tools(self, mock_which):
         from ui.doctor import DependencyDoctor
         d = DependencyDoctor()
@@ -50,7 +50,7 @@ class TestDependencyDoctor(unittest.TestCase):
         self.assertGreater(len(d.missing_tools), 0)
         d.close()
 
-    @patch("shutil.which", return_value=None)
+    @patch("ui.doctor.cached_which", return_value=None)
     def test_check_tools_refreshes(self, mock_which):
         from ui.doctor import DependencyDoctor
         d = DependencyDoctor()
@@ -60,7 +60,7 @@ class TestDependencyDoctor(unittest.TestCase):
         self.assertEqual(d.missing_tools, [])
         d.close()
 
-    @patch("shutil.which", return_value=None)
+    @patch("ui.doctor.cached_which", return_value=None)
     @patch("utils.command_runner.CommandRunner.run_command")
     def test_fix_dependencies_runs_command(self, mock_run, mock_which):
         from ui.doctor import DependencyDoctor
@@ -71,7 +71,7 @@ class TestDependencyDoctor(unittest.TestCase):
         self.assertEqual(args[0][0], "pkexec")
         d.close()
 
-    @patch("shutil.which", return_value="/usr/bin/all")
+    @patch("ui.doctor.cached_which", return_value="/usr/bin/all")
     @patch("utils.command_runner.CommandRunner.run_command")
     def test_fix_dependencies_no_missing(self, mock_run, mock_which):
         from ui.doctor import DependencyDoctor
@@ -80,7 +80,7 @@ class TestDependencyDoctor(unittest.TestCase):
         mock_run.assert_not_called()
         d.close()
 
-    @patch("shutil.which", return_value=None)
+    @patch("ui.doctor.cached_which", return_value=None)
     def test_on_fix_complete_success(self, mock_which):
         from ui.doctor import DependencyDoctor
         d = DependencyDoctor()
@@ -93,7 +93,7 @@ class TestDependencyDoctor(unittest.TestCase):
             mock_ct.assert_called_once()
         d.close()
 
-    @patch("shutil.which", return_value=None)
+    @patch("ui.doctor.cached_which", return_value=None)
     def test_on_fix_complete_failure(self, mock_which):
         from ui.doctor import DependencyDoctor
         d = DependencyDoctor()

@@ -112,7 +112,7 @@ class TestTaskScheduler(unittest.TestCase):
         self.assertEqual(results[1]["task"], "Two")
         self.assertFalse(results[1]["success"])
 
-    @patch('utils.scheduler.shutil.which', return_value='/usr/bin/dnf')
+    @patch('utils.scheduler.cached_which', return_value='/usr/bin/dnf')
     @patch('utils.scheduler.SystemManager.is_atomic', return_value=False)
     @patch('utils.notifications.NotificationManager.notify_updates_available')
     @patch('utils.scheduler.subprocess.run')

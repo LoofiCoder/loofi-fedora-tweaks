@@ -7,11 +7,10 @@ running subprocess calls in UI modules.
 from __future__ import annotations
 
 import os
-import shutil
 import subprocess
 from typing import Dict, List, Tuple
 
-from services.system.system import SystemManager
+from services.system.system import SystemManager, cached_which
 
 from utils.log import get_logger
 
@@ -87,7 +86,7 @@ class WizardHealth:
         results: Dict[str, object],
         package_manager: str,
     ) -> None:
-        if not shutil.which(package_manager):
+        if not cached_which(package_manager):
             checks.append(("ℹ️", "DNF not found (atomic system?)", "info"))
             return
 
@@ -132,7 +131,7 @@ class WizardHealth:
     def _check_firewall(
         checks: List[HealthCheckTuple], results: Dict[str, object]
     ) -> None:
-        if shutil.which("firewall-cmd"):
+        if cached_which("firewall-cmd"):
             try:
                 result = subprocess.run(
                     ["firewall-cmd", "--state"],
@@ -156,8 +155,8 @@ class WizardHealth:
     def _check_backup_tool(
         checks: List[HealthCheckTuple], results: Dict[str, object]
     ) -> None:
-        if shutil.which("timeshift") or shutil.which("snapper"):
-            tool = "timeshift" if shutil.which("timeshift") else "snapper"
+        if cached_which("timeshift") or cached_which("snapper"):
+            tool = "timeshift" if cached_which("timeshift") else "snapper"
             checks.append(("✅", f"Backup tool available: {tool}", "ok"))
             results["backup_tool"] = tool
         else:

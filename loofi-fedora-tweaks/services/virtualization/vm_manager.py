@@ -10,10 +10,11 @@ Migrated from utils/vm_manager.py in v2.0.0.
 
 import os
 import re
-import shutil
 import subprocess
 from dataclasses import dataclass
 from typing import Any, Optional
+
+from services.system.system import cached_which
 
 # ---------------------------------------------------------------------------
 # Result dataclass (mirrors utils.containers.Result)
@@ -116,7 +117,7 @@ class VMManager:
     @classmethod
     def is_available(cls) -> bool:
         """Check if the core tools (virsh, qemu-system-x86_64) are installed."""
-        return shutil.which("virsh") is not None and shutil.which("qemu-system-x86_64") is not None
+        return cached_which("virsh") is not None and cached_which("qemu-system-x86_64") is not None
 
     # ==================== FLAVOURS ====================
 
@@ -134,7 +135,7 @@ class VMManager:
         Returns:
             List of VMInfo objects.
         """
-        if not shutil.which("virsh"):
+        if not cached_which("virsh"):
             return []
 
         try:
@@ -175,7 +176,7 @@ class VMManager:
         Returns:
             VMInfo or None if the VM doesn't exist.
         """
-        if not shutil.which("virsh"):
+        if not cached_which("virsh"):
             return None
 
         try:
@@ -254,7 +255,7 @@ class VMManager:
         if not iso_path or not os.path.isfile(iso_path):
             return Result(False, f"ISO file not found: {iso_path}")
 
-        if not shutil.which("virt-install"):
+        if not cached_which("virt-install"):
             return Result(False, "virt-install is not installed.")
 
         flavor = dict(VM_FLAVORS[flavor_key])
@@ -290,7 +291,7 @@ class VMManager:
 
         # TPM support for Windows 11
         if flavor.get("needs_tpm", False):
-            if shutil.which("swtpm"):
+            if cached_which("swtpm"):
                 cmd.extend(["--tpm", "backend.type=emulator,backend.version=2.0,model=tpm-crw"])
             else:
                 return Result(
@@ -331,7 +332,7 @@ class VMManager:
     @classmethod
     def start_vm(cls, name: str) -> Result:
         """Start a VM via ``virsh start``."""
-        if not shutil.which("virsh"):
+        if not cached_which("virsh"):
             return Result(False, "virsh is not installed.")
 
         try:
@@ -354,7 +355,7 @@ class VMManager:
     @classmethod
     def stop_vm(cls, name: str) -> Result:
         """Gracefully shut down a VM via ``virsh shutdown``."""
-        if not shutil.which("virsh"):
+        if not cached_which("virsh"):
             return Result(False, "virsh is not installed.")
 
         try:
@@ -377,7 +378,7 @@ class VMManager:
     @classmethod
     def force_stop_vm(cls, name: str) -> Result:
         """Force-stop a VM via ``virsh destroy``."""
-        if not shutil.which("virsh"):
+        if not cached_which("virsh"):
             return Result(False, "virsh is not installed.")
 
         try:
@@ -405,7 +406,7 @@ class VMManager:
             name: VM name to delete.
             delete_storage: If True, also remove associated disk images.
         """
-        if not shutil.which("virsh"):
+        if not cached_which("virsh"):
             return Result(False, "virsh is not installed.")
 
         cmd = ["virsh", "undefine", name]

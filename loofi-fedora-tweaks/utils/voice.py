@@ -12,11 +12,11 @@ Provides:
 
 import logging
 import os
-import shutil
 import subprocess
 import tempfile
 from typing import Any, Optional
 
+from services.system.system import cached_which
 from utils.containers import Result
 
 logger = logging.getLogger(__name__)
@@ -74,7 +74,7 @@ class VoiceManager:
             True if a whisper.cpp binary is found on PATH.
         """
         for binary in _WHISPER_BINARIES:
-            if shutil.which(binary):
+            if cached_which(binary):
                 return True
         return False
 
@@ -87,7 +87,7 @@ class VoiceManager:
             Binary name string, or empty string if not found.
         """
         for binary in _WHISPER_BINARIES:
-            if shutil.which(binary):
+            if cached_which(binary):
                 return binary
         return ""
 
@@ -130,7 +130,7 @@ class VoiceManager:
             pass
 
         # Method 2: Use arecord -l to detect capture devices
-        if shutil.which("arecord"):
+        if cached_which("arecord"):
             try:
                 result = subprocess.run(
                     ["arecord", "-l"],
@@ -194,7 +194,7 @@ class VoiceManager:
         # Find the whisper binary
         binary = ""
         for name in _WHISPER_BINARIES:
-            if shutil.which(name):
+            if cached_which(name):
                 binary = name
                 break
 
@@ -248,7 +248,7 @@ class VoiceManager:
             os.close(fd)
 
         # Try arecord first (ALSA)
-        if shutil.which("arecord"):
+        if cached_which("arecord"):
             try:
                 result = subprocess.run(
                     [
@@ -269,7 +269,7 @@ class VoiceManager:
                 logger.debug("arecord failed: %s", e)
 
         # Fallback: parecord (PulseAudio)
-        if shutil.which("parecord"):
+        if cached_which("parecord"):
             try:
                 result = subprocess.run(
                     [
@@ -299,5 +299,5 @@ class VoiceManager:
         Returns:
             True if arecord or parecord is found on PATH.
         """
-        return shutil.which("arecord") is not None or \
-            shutil.which("parecord") is not None
+        return cached_which("arecord") is not None or \
+            cached_which("parecord") is not None
