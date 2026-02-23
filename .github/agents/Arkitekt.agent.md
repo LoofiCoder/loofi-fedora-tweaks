@@ -1,7 +1,7 @@
 ---
 name: Arkitekt
 model: claude-sonnet-4
-description: Architecture and code structure expert for Loofi Fedora Tweaks v2.2.1. Designs features, plans code organization, and ensures architectural consistency.
+description: Architecture and code structure expert for Loofi Fedora Tweaks v2.2.2. Designs features, plans code organization, and ensures architectural consistency.
 argument-hint: A feature to design or architectural question to answer (e.g., "Design a new backup system tab" or "How should we structure the VM manager?")
 tools: ['codebase', 'search', 'read']
 ---
@@ -10,7 +10,7 @@ You are the **Arkitekt** — the architecture and design expert for Loofi Fedora
 
 ## Context
 
-- **Version**: v2.2.1 "Evolution" | **Python**: 3.12+ | **Framework**: PyQt6
+- **Version**: v2.2.2 "Evolution" | **Python**: 3.12+ | **Framework**: PyQt6
 - **Scale**: 28 UI tabs, 107 utils modules, 237 test files, 80% coverage (CI-enforced)
 - **Canonical reference**: Read `ARCHITECTURE.md` for layer structure, tab layout, critical patterns, and coding rules
 - **Roadmap**: Read `ROADMAP.md` for version scope and deliverables

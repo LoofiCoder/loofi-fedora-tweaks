@@ -33,7 +33,7 @@ See `.github/instructions/system_hardening_and_stabilization_guide.md` for full 
 - If unsure, default to restrictive behavior
 
 ### Current State
-- **Done**: v2.2.1 "Evolution"
+- **Done**: v2.2.2 "Evolution"
 - **Active/Next**: See `ROADMAP.md`
 - **Source of truth**: `ROADMAP.md`
 
