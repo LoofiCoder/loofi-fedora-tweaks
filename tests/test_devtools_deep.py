@@ -33,11 +33,11 @@ class TestGetToolStatus(unittest.TestCase):
     def test_pyenv_installed(self, mock_which, mock_run):
         mock_run.return_value = MagicMock(
             returncode=0,
-            stdout="pyenv 2.3.0\n"
+            stdout="pyenv 3.1.7\n"
         )
         installed, version = DevToolsManager.get_tool_status("pyenv")
         self.assertTrue(installed)
-        self.assertIn("2.3.0", version)
+        self.assertIn("3.1.7", version)
 
     @patch("utils.devtools.cached_which", return_value=None)
     def test_pyenv_not_installed(self, mock_which):
