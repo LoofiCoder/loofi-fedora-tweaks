@@ -1,7 +1,7 @@
 # Loofi Fedora Tweaks — Agent Instructions
 
 > PyQt6 desktop app for Fedora Linux system customization.
-> Python 3.12+ | 28 feature tabs | 237 test files | 80% coverage (CI-enforced) | 107 utils modules
+> Python 3.12+ | 28 feature tabs | 241 test files | 80% coverage (CI-enforced) | 107 utils modules
 > Canonical references: `ARCHITECTURE.md` (structure), `ROADMAP.md` (scope), `.github/copilot-instructions.md` (patterns)
 
 ## Build, Lint, Test Commands

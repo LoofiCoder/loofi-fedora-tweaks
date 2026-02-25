@@ -20,7 +20,7 @@ Delegate to agents. Follow existing patterns. Minimize token usage.
 # Dev run
 ./run.sh
 
-# Run full test suite (237 test files)
+# Run full test suite (241 test files)
 PYTHONPATH=loofi-fedora-tweaks python -m pytest tests/ -v --tb=short
 
 # Run a single test file
@@ -179,7 +179,7 @@ See `.github/instructions/system_hardening_and_stabilization_guide.md`:
 
 ## RELEASE RULES
 
-**Current version:** v2.3.0
+**Current version:** v2.4.0
 
 For every vX.Y.0: update `version.py` + `.spec` + `pyproject.toml` (via `bump_version.py`), complete `CHANGELOG.md`, update `README.md`, run full test suite, build and verify RPM.
 
