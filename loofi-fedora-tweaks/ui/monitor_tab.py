@@ -10,6 +10,7 @@ refresh timers and custom rendering logic rather than CommandRunner
 based execution.
 """
 
+import getpass
 import os
 from collections import deque
 
@@ -42,6 +43,12 @@ from utils.performance import PerformanceCollector
 from ui.tab_utils import configure_top_tabs
 
 logger = get_logger(__name__)
+
+if not hasattr(os, "getuid"):
+    def _getuid_unavailable() -> int:
+        raise OSError("getuid not available")
+
+    os.getuid = _getuid_unavailable  # type: ignore[attr-defined]
 
 
 # ---------------------------------------------------------------------------
@@ -600,8 +607,20 @@ class _ProcessesSubTab(QWidget):
         try:
             return os.getlogin()
         except OSError:
-            import pwd
-            return pwd.getpwuid(os.getuid()).pw_name
+            try:
+                import pwd
+
+                getuid = getattr(os, "getuid", None)
+                getpwuid = getattr(pwd, "getpwuid", None)
+                if callable(getuid) and callable(getpwuid):
+                    pw_entry = getpwuid(getuid())
+                    username = getattr(pw_entry, "pw_name", None)
+                    if isinstance(username, str) and username:
+                        return username
+            except (ImportError, OSError, KeyError):
+                pass
+
+            return getpass.getuser()
 
     def init_ui(self):
         """Initialise the UI components."""

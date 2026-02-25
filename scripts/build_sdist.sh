@@ -23,6 +23,7 @@ require_python_build() {
 extract_version() {
   local version
   version="$(sed -nE 's/^__version__ = "([^"]+)"/\1/p' "${VERSION_FILE}" | head -n 1)"
+  version="$(printf '%s' "${version}" | tr -d '\r\n')"
   if [[ -z "${version}" ]]; then
     echo "Error: Failed to parse version from ${VERSION_FILE}" >&2
     exit 1

@@ -316,6 +316,69 @@ class TestSystemServiceDelegation(unittest.TestCase):
         self.assertTrue(result)
 
 
+@patch('services.system.service.daemon_client.call_json')
+@patch('services.system.service.CommandWorker')
+class TestSystemServiceDaemonFirst(unittest.TestCase):
+    """Tests for daemon-first behavior with local fallback."""
+
+    def test_reboot_uses_daemon_action_result_when_valid(self, mock_worker_class, mock_call_json):
+        mock_call_json.return_value = {
+            "success": True,
+            "message": "daemon reboot",
+            "exit_code": 0,
+            "stdout": "",
+            "stderr": "",
+            "data": None,
+            "preview": False,
+            "needs_reboot": False,
+            "timestamp": 0.0,
+            "action_id": "",
+        }
+
+        service = SystemService()
+        result = service.reboot()
+
+        self.assertTrue(result.success)
+        self.assertEqual(result.message, "daemon reboot")
+        mock_worker_class.assert_not_called()
+
+    def test_reboot_falls_back_when_daemon_payload_malformed(self, mock_worker_class, mock_call_json):
+        mock_call_json.return_value = {"value": 42}
+        mock_worker = MagicMock()
+        mock_worker_class.return_value = mock_worker
+        mock_worker.get_result.return_value = ActionResult(success=True, message="local reboot", exit_code=0)
+
+        service = SystemService()
+        result = service.reboot()
+
+        self.assertTrue(result.success)
+        self.assertEqual(result.message, "local reboot")
+        mock_worker_class.assert_called_once()
+
+
+@patch('services.system.service.SystemManager')
+@patch('services.system.service.daemon_client.call_json')
+class TestSystemServiceDaemonDelegation(unittest.TestCase):
+    """Tests for daemon-backed static delegation methods."""
+
+    def test_get_package_manager_uses_daemon_string_when_available(self, mock_call_json, mock_system_manager):
+        mock_call_json.return_value = "dnf"
+
+        result = SystemService.get_package_manager()
+
+        self.assertEqual(result, "dnf")
+        mock_system_manager.get_package_manager.assert_not_called()
+
+    def test_get_package_manager_falls_back_when_daemon_payload_invalid(self, mock_call_json, mock_system_manager):
+        mock_call_json.return_value = {"value": "dnf"}
+        mock_system_manager.get_package_manager.return_value = "rpm-ostree"
+
+        result = SystemService.get_package_manager()
+
+        self.assertEqual(result, "rpm-ostree")
+        mock_system_manager.get_package_manager.assert_called_once()
+
+
 if __name__ == '__main__':
     if not _SKIP_QT:
         import sys

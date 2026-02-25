@@ -10,7 +10,7 @@ You are the primary AI developer for Loofi Fedora Tweaks.
 Delegate to agents. Follow existing patterns. Minimize token usage.
 
 ## PROJECT OVERVIEW
-- PyQt6-based desktop app for Fedora Linux (current: v2.6.0 "API Migration Slice 2")
+- PyQt6-based desktop app for Fedora Linux (current: v2.7.0 "API Migration Slice 3")
 - 28 UI tabs, 241 test files, 80% coverage (CI-enforced), 107 utils modules
 - Four entry modes: GUI (default), CLI (`--cli`), Daemon (`--daemon`), API (`--api`)
 - Architecture: `ARCHITECTURE.md` (canonical reference — read once, never duplicate)

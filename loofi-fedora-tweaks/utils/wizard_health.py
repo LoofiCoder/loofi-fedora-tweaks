@@ -46,7 +46,11 @@ class WizardHealth:
         checks: List[HealthCheckTuple], results: Dict[str, object]
     ) -> None:
         try:
-            stat = os.statvfs("/")
+            statvfs = getattr(os, "statvfs", None)
+            if not callable(statvfs):
+                checks.append(("❓", "Could not check disk space", "unknown"))
+                return
+            stat = statvfs("/")
             free_gb = (stat.f_bavail * stat.f_frsize) / (1024**3)
             total_gb = (stat.f_blocks * stat.f_frsize) / (1024**3)
             pct_used = ((total_gb - free_gb) / total_gb * 100) if total_gb else 0

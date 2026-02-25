@@ -16,11 +16,18 @@ import threading
 import uuid
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from typing import cast
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from utils.containers import Result
 from utils.rate_limiter import TokenBucketRateLimiter
+
+if not hasattr(os, "statvfs"):
+    def _statvfs_unavailable(_path: str):
+        raise OSError("statvfs not available")
+
+    os.statvfs = _statvfs_unavailable  # type: ignore[attr-defined]
 
 DEFAULT_PORT = 53317
 CHUNK_SIZE = 65536  # 64 KB chunks
@@ -245,8 +252,11 @@ class FileDropManager:
         Returns:
             Available space in bytes.
         """
-        stat = os.statvfs(path)
-        return stat.f_bavail * stat.f_frsize
+        statvfs = getattr(os, "statvfs", None)
+        if not callable(statvfs):
+            return 0
+        stat = statvfs(path)
+        return cast(int, stat.f_bavail * stat.f_frsize)
 
     @staticmethod
     def build_http_server_command(port: int, directory: str) -> tuple:

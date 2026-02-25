@@ -11,9 +11,16 @@ import os
 import subprocess
 import time
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, cast
 
 logger = logging.getLogger(__name__)
+
+
+if not hasattr(os, "sysconf"):
+    def _sysconf_unavailable(_name: str) -> int:
+        raise ValueError("sysconf not available")
+
+    os.sysconf = _sysconf_unavailable  # type: ignore[attr-defined]
 
 
 @dataclass
@@ -47,12 +54,21 @@ class ProcessManager:
     _prev_snapshot_time: float = 0.0
 
     @staticmethod
+    def _sysconf(name: str, default: int) -> int:
+        """Read a sysconf value in a cross-platform, type-safe way."""
+        sysconf = getattr(os, "sysconf", None)
+        if not callable(sysconf):
+            return default
+        try:
+            value = sysconf(name)
+            return int(cast(int, value))
+        except (OSError, ValueError, TypeError):
+            return default
+
+    @staticmethod
     def _get_clock_ticks() -> int:
         """Get the system clock ticks per second (CLK_TCK)."""
-        try:
-            return os.sysconf(os.sysconf_names["SC_CLK_TCK"])
-        except (ValueError, KeyError):
-            return 100  # Default on most Linux systems
+        return ProcessManager._sysconf("SC_CLK_TCK", 100)
 
     @staticmethod
     def _get_total_memory() -> int:
@@ -170,7 +186,7 @@ class ProcessManager:
         """
         clk_tck = cls._get_clock_ticks()
         total_memory = cls._get_total_memory()
-        page_size = os.sysconf("SC_PAGESIZE")
+        page_size = cls._sysconf("SC_PAGESIZE", 4096)
         uid_map = cls._get_uid_user_map()
         num_cpus = os.cpu_count() or 1
 

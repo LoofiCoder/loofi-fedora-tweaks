@@ -1,5 +1,7 @@
 # Changelog
 
+<!-- markdownlint-configure-file {"MD032": false, "MD036": false, "MD060": false} -->
+
 Version history highlights for Loofi Fedora Tweaks.
 
 For the complete changelog with all changes, see [CHANGELOG.md](https://github.com/loofitheboss/loofi-fedora-tweaks/blob/master/CHANGELOG.md) in the repository.
@@ -7,6 +9,21 @@ For the complete changelog with all changes, see [CHANGELOG.md](https://github.c
 ---
 
 ## Latest Release
+
+### v2.7.0 "API Migration Slice 3" (2026-02-25)
+
+**API migration completion release** focused on release-flow alignment, cross-platform packaging reliability, and documentation synchronization.
+
+**Key Changes:**
+- Completed API migration slice and workflow activation updates for v2.7.0
+- Hardened packaging scripts (`build_flatpak.sh`, `build_appimage.sh`, `build_sdist.sh`) with CRLF-safe version parsing
+- Fixed Windows compatibility issues in monitor/process username resolution paths
+- Updated release documentation: CHANGELOG, release notes, roadmap, README, and wiki pages
+- Linux validation run completed successfully (`7095 passed, 102 skipped`)
+
+**Test Suite**: 7k+ tests exercised in Linux validation for release readiness
+
+---
 
 ### v46.0.0 "Navigator" (2026-02-17)
 
@@ -235,7 +252,13 @@ For the complete changelog with all changes, see [CHANGELOG.md](https://github.c
 
 ## Statistics
 
-**Current (v41.0.0):**
+**Current (v2.7.0):**
+- **Tests**: 7k+ exercised in Linux validation (`7095 passed, 102 skipped`)
+- **Coverage threshold gate**: 77% (CI/auto-release)
+- **Tabs**: 28
+- **Run modes**: GUI, CLI, daemon, Web API
+
+**Historical snapshot (v41.0.0):**
 - **Tests**: 5,894 collected
 - **Coverage**: 80%
 - **Test files**: 193

@@ -4,7 +4,7 @@
 
 ### Application
 
-- 28 feature tabs across 7 categories (System, Hardware, Network, Desktop, Security, Software, Advanced)
+- 28 feature tabs across 8 categories (System, Packages, Hardware, Network, Security, Appearance, Tools, Maintenance)
 - 4 entry modes: GUI, CLI (`--cli`), Daemon (`--daemon`), API (`--api`)
 - Lazy tab loading for fast startup
 - Plugin marketplace with sandboxing, ratings, reviews, hot-reload
@@ -41,6 +41,7 @@
 - SemVer: v2.4.0 "Evolution" — daemon foundation + IPC fallback alignment
 - SemVer: v2.5.0 "API Slice 1" — network/firewall API migration
 - SemVer: v2.6.0 "API Slice 2" — package API migration (active)
+- SemVer: v2.7.0 "API Slice 3" — system-service API migration + Phase 3 prep (in progress)
 
 Current active semantic cycle: v2.6.0.
 
@@ -53,12 +54,23 @@ Current active semantic cycle: v2.6.0.
 - [x] TASK003 Package service API migration slice
 - [x] TASK004 IPC behavior and compatibility hardening (packages)
 - [x] TASK005 Test updates for slice-2 package migration
-- [ ] TASK006 Planning artifact cleanup sync
-- [ ] TASK007 Validation and progress sync
+- [x] TASK006 Planning artifact cleanup sync
+- [x] TASK007 Validation and progress sync
+
+### Next Slice (v2.7.0 — in progress)
+
+- [x] TASK001 Prepare v2.7.0 planning contracts
+- [x] TASK002 Service daemon handler foundation
+- [x] TASK003 System service API migration slice
+- [x] TASK004 IPC compatibility hardening (service slice)
+- [x] TASK005 Test updates for slice-3 system migration
+- [x] TASK006 Phase 3 prep: policy audit inventory + validator tightening plan
+- [x] TASK007 Validation and progress metadata sync
 
 ## Current Status
 
-**v2.6.0 "API Migration Slice 2 (Packages)"**: 🚧 IN PROGRESS — implementation through TASK005 completed.
+**v2.6.0 "API Migration Slice 2 (Packages)"**: 🚧 IN PROGRESS — implementation/documentation complete; package + release phases pending.
+**v2.7.0 "API Migration Slice 3 (System Services)"**: 🚧 IN PROGRESS — implementation and focused verification completed; workflow activation pending phase progression.
 **v2.5.0 "API Migration Slice 1"**: ✅ COMPLETE — network/firewall daemon-first migration.
 **v2.4.0 "Evolution"**: ✅ COMPLETE — daemon foundation and hardening alignment.
 **v2.3.0 "Insight"**: ✅ COMPLETE — diagnostics expansion.

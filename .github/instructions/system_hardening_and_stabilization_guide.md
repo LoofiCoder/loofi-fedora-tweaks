@@ -81,6 +81,11 @@ If there is ever a trade-off between velocity and safety, safety wins.
 5. Separate read-only vs privileged API endpoints.
 6. Document threat model for API mode.
 
+Phase 3 preparation tracking:
+
+- Use `.workflow/specs/arch-v2.7.0.md` checklist as the pre-activation inventory baseline.
+- Preparation work must remain documentation and validation planning only until explicitly activated by workflow scope.
+
 ---
 
 # PHASE 4 – UX Stabilization & Scope Control

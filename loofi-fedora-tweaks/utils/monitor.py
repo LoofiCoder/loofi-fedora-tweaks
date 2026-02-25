@@ -138,7 +138,10 @@ class SystemMonitor:
             CpuInfo object or None on error.
         """
         try:
-            load_1, load_5, load_15 = os.getloadavg()
+            getloadavg = getattr(os, "getloadavg", None)
+            if not callable(getloadavg):
+                return None
+            load_1, load_5, load_15 = getloadavg()
             core_count = os.cpu_count() or 1
             return CpuInfo(
                 load_1min=round(load_1, 2),

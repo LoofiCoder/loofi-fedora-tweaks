@@ -48,3 +48,23 @@ def is_package_payload(method: str, payload: Any) -> bool:
         return isinstance(payload, bool)
 
     return True
+
+
+def is_system_payload(method: str, payload: Any) -> bool:
+    """Validate daemon payload shape for system-related IPC methods."""
+    if method in {
+        "SystemReboot",
+        "SystemShutdown",
+        "SystemSuspend",
+        "SystemUpdateGrub",
+        "SystemSetHostname",
+    }:
+        return is_action_result_payload(payload)
+
+    if method == "SystemHasPendingReboot":
+        return isinstance(payload, bool)
+
+    if method in {"SystemGetPackageManager", "SystemGetVariantName"}:
+        return isinstance(payload, str)
+
+    return True

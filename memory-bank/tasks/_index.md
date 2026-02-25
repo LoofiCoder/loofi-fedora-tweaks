@@ -2,7 +2,7 @@
 
 ## In Progress
 
-- [TASK-018] v2.6.0 package API migration slice — TASK001-005 complete, TASK006 in progress
+- [TASK-018] v2.6.0 package API migration slice — TASK001-007 complete; workflow package/release phases pending
 
 ## Pending
 

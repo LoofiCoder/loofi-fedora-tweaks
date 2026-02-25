@@ -8,6 +8,7 @@ from services.ipc.daemon_client import DaemonClient
 from services.ipc.errors import DaemonRequiredModeError
 from services.network.network import NetworkUtils
 from services.package.service import DnfPackageService
+from services.system.service import SystemService
 
 
 class TestIPCFallbackModes(unittest.TestCase):
@@ -63,6 +64,34 @@ class TestIPCFallbackModes(unittest.TestCase):
         mock_worker.get_result.return_value.message = "ok"
 
         result = DnfPackageService().install(["git"])
+
+        self.assertTrue(result.success)
+        mock_worker_class.assert_called_once()
+
+    @patch.dict(os.environ, {"LOOFI_IPC_MODE": "preferred"})
+    @patch("services.system.service.daemon_client.call_json")
+    @patch("services.system.service.CommandWorker")
+    def test_preferred_system_reboot_falls_back_to_local(self, mock_worker_class, mock_call):
+        mock_call.return_value = None
+        mock_worker = mock_worker_class.return_value
+        mock_worker.get_result.return_value.success = True
+        mock_worker.get_result.return_value.message = "ok"
+
+        result = SystemService().reboot()
+
+        self.assertTrue(result.success)
+        mock_worker_class.assert_called_once()
+
+    @patch.dict(os.environ, {"LOOFI_IPC_MODE": "disabled"})
+    @patch("services.system.service.daemon_client.call_json")
+    @patch("services.system.service.CommandWorker")
+    def test_disabled_system_reboot_uses_local_path(self, mock_worker_class, mock_call):
+        mock_call.return_value = None
+        mock_worker = mock_worker_class.return_value
+        mock_worker.get_result.return_value.success = True
+        mock_worker.get_result.return_value.message = "ok"
+
+        result = SystemService().reboot()
 
         self.assertTrue(result.success)
         mock_worker_class.assert_called_once()

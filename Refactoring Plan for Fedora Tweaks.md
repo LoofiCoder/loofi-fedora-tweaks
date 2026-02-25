@@ -1,4 +1,4 @@
-
+# Refactoring Plan for Fedora Tweaks
 
 Markdown
 
@@ -67,7 +67,7 @@ Goal: Reduce technical debt by removing peripheral functionality from the core a
 Current position in plan:
 
 - Phase 1 (Architectural Separation / Daemonization): **Completed** in v2.4.0 Phase 1 scope.
-- Phase 2 (Replace CLI scraping with APIs): **Not started** (planned next major increment).
+- Phase 2 (Replace CLI scraping with APIs): **In progress** (v2.5.0 and v2.6.0 slices completed for network/firewall/packages).
 - Phase 3 (Polkit security hardening): **Partially addressed** via daemon validators; policy audit remains.
 - Phase 4 (Version and environment guardrails): **Not started**.
 - Phase 5 (Scope reduction / optionalization): **Not started**.
@@ -83,4 +83,4 @@ What was completed for Phase 1:
 
 Immediate next step:
 
-- Begin Phase 2 by replacing remaining CLI-scraping network/firewall/systemctl paths with direct D-Bus/API-backed implementations behind existing service interfaces.
+- Continue Phase 2 with a service/systemctl migration slice while pairing the design with bounded Phase 3 preparation tasks (policy inventory + validator tightening plan).

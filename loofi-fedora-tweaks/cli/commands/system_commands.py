@@ -1,7 +1,7 @@
 """Core system-oriented CLI handlers extracted from cli.main."""
 
 import os
-from typing import Callable
+from typing import Any, Callable
 
 
 def handle_info(
@@ -115,7 +115,7 @@ def handle_disk(args, json_output: bool, output_json: Callable, print_fn: Callab
     usage = disk_manager_cls.get_disk_usage("/")
 
     if json_output:
-        data = {"root": None, "home": None}
+        data: dict[str, Any] = {"root": None, "home": None}
         if usage:
             level, _ = disk_manager_cls.check_disk_health("/")
             data["root"] = {

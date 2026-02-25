@@ -13,6 +13,7 @@ import os
 from core.executor.action_result import ActionResult
 from core.workers.command_worker import CommandWorker
 
+from services.ipc import daemon_client
 from services.system.base import BaseSystemService
 from services.system.system import SystemManager
 
@@ -28,8 +29,26 @@ class SystemService(BaseSystemService):
     for system detection and information.
     """
 
+    @staticmethod
+    def _from_daemon_payload(payload: object) -> ActionResult | None:
+        if not isinstance(payload, dict):
+            return None
+        try:
+            return ActionResult.from_dict(payload)
+        except (TypeError, ValueError):
+            return None
+
     def reboot(self, *, description: str = "", delay_seconds: int = 0) -> ActionResult:
-        """Reboot the system using systemctl."""
+        """Reboot the system using daemon-first with local fallback."""
+        payload = daemon_client.call_json("SystemReboot", description, int(delay_seconds))
+        parsed = self._from_daemon_payload(payload)
+        if parsed is not None:
+            return parsed
+
+        return self.reboot_local(description=description, delay_seconds=delay_seconds)
+
+    def reboot_local(self, *, description: str = "", delay_seconds: int = 0) -> ActionResult:
+        """Local fallback for reboot via systemctl."""
         desc = description or "Rebooting system"
 
         if delay_seconds > 0:
@@ -55,7 +74,18 @@ class SystemService(BaseSystemService):
     def shutdown(
         self, *, description: str = "", delay_seconds: int = 0
     ) -> ActionResult:
-        """Shutdown the system using systemctl."""
+        """Shutdown the system using daemon-first with local fallback."""
+        payload = daemon_client.call_json("SystemShutdown", description, int(delay_seconds))
+        parsed = self._from_daemon_payload(payload)
+        if parsed is not None:
+            return parsed
+
+        return self.shutdown_local(description=description, delay_seconds=delay_seconds)
+
+    def shutdown_local(
+        self, *, description: str = "", delay_seconds: int = 0
+    ) -> ActionResult:
+        """Local fallback for shutdown via systemctl."""
         desc = description or "Shutting down system"
 
         if delay_seconds > 0:
@@ -79,7 +109,16 @@ class SystemService(BaseSystemService):
         )
 
     def suspend(self, *, description: str = "") -> ActionResult:
-        """Suspend the system using systemctl."""
+        """Suspend the system using daemon-first with local fallback."""
+        payload = daemon_client.call_json("SystemSuspend", description)
+        parsed = self._from_daemon_payload(payload)
+        if parsed is not None:
+            return parsed
+
+        return self.suspend_local(description=description)
+
+    def suspend_local(self, *, description: str = "") -> ActionResult:
+        """Local fallback for suspend via systemctl."""
         desc = description or "Suspending system"
 
         worker = CommandWorker("systemctl", ["suspend"], description=desc)
@@ -98,7 +137,16 @@ class SystemService(BaseSystemService):
         )
 
     def update_grub(self, *, description: str = "") -> ActionResult:
-        """Update GRUB configuration."""
+        """Update GRUB configuration using daemon-first with local fallback."""
+        payload = daemon_client.call_json("SystemUpdateGrub", description)
+        parsed = self._from_daemon_payload(payload)
+        if parsed is not None:
+            return parsed
+
+        return self.update_grub_local(description=description)
+
+    def update_grub_local(self, *, description: str = "") -> ActionResult:
+        """Local fallback for GRUB update."""
         desc = description or "Updating GRUB configuration"
 
         # Detect UEFI vs BIOS
@@ -129,7 +177,16 @@ class SystemService(BaseSystemService):
         )
 
     def set_hostname(self, hostname: str, *, description: str = "") -> ActionResult:
-        """Set system hostname using hostnamectl."""
+        """Set system hostname using daemon-first with local fallback."""
+        payload = daemon_client.call_json("SystemSetHostname", hostname, description)
+        parsed = self._from_daemon_payload(payload)
+        if parsed is not None:
+            return parsed
+
+        return self.set_hostname_local(hostname, description=description)
+
+    def set_hostname_local(self, hostname: str, *, description: str = "") -> ActionResult:
+        """Local fallback for setting system hostname using hostnamectl."""
         if not hostname or not hostname.strip():
             return ActionResult(
                 success=False,
@@ -180,6 +237,9 @@ class SystemService(BaseSystemService):
         Returns:
             str: Variant name (e.g., "Silverblue", "Workstation")
         """
+        payload = daemon_client.call_json("SystemGetVariantName")
+        if isinstance(payload, str):
+            return payload
         return SystemManager.get_variant_name()
 
     @staticmethod
@@ -192,6 +252,9 @@ class SystemService(BaseSystemService):
         Returns:
             str: "dnf" or "rpm-ostree"
         """
+        payload = daemon_client.call_json("SystemGetPackageManager")
+        if isinstance(payload, str):
+            return payload
         return SystemManager.get_package_manager()
 
     @staticmethod
@@ -204,4 +267,7 @@ class SystemService(BaseSystemService):
         Returns:
             bool: True if reboot needed, False otherwise
         """
+        payload = daemon_client.call_json("SystemHasPendingReboot")
+        if isinstance(payload, bool):
+            return payload
         return SystemManager.has_pending_deployment()

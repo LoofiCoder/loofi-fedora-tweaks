@@ -49,11 +49,12 @@
 | 2.3.0   | Insight                         | DONE    | Enhanced diagnostics: 5 new report sections (services, journal, updates, SELinux, network) |
 | 2.4.0   | Daemon Foundation               | DONE    | Daemonized network/firewall execution boundary via D-Bus with fallback                      |
 | 2.5.0   | API Migration Slice 1           | DONE    | Network/firewall API-first hardening with strict IPC compatibility and fallback safeguards   |
-| 2.6.0   | API Migration Slice 2           | ACTIVE  | Package API-first migration with strict IPC payload validation and fallback safeguards       |
+| 2.6.0   | API Migration Slice 2           | DONE    | Package API-first migration with strict IPC payload validation and fallback safeguards       |
+| 2.7.0   | API Migration Slice 3           | ACTIVE  | System service API migration + bounded Phase 3 policy-audit preparation                      |
 
 ---
 
-## [ACTIVE] v2.6.0 "API Migration Slice 2" — Phase 2 Package Migration
+## [DONE] v2.6.0 "API Migration Slice 2" — Phase 2 Package Migration
 
 ### Scope
 
@@ -78,6 +79,43 @@ fallback semantics.
 | backend-builder            | package handler, package service migration, IPC hardening          |
 | test-writer                | focused package/IPC fallback regression validation                 |
 | release-planner            | roadmap/workflow progress metadata sync                            |
+
+---
+
+## [ACTIVE] v2.7.0 "API Migration Slice 3" — Phase 2 System-Service Migration + Phase 3 Prep
+
+### Scope
+
+Continue API-first migration for system/service operations currently backed by
+`systemctl` execution paths while preserving caller-facing signatures and strict IPC
+envelope compatibility. In parallel, perform bounded Phase 3 preparation by defining
+policy-audit inventory and validator-tightening tasks without expanding privilege scope.
+
+### Planned Deliverables
+
+- [x] Add daemon-side service handler foundation for system/service operations
+- [x] Migrate service/system APIs to daemon-first pathways with preferred-mode fallback
+- [x] Harden IPC payload compatibility for new service handler response types
+- [x] Add focused regression tests for success/failure/fallback payload handling
+- [x] Produce a policy-audit inventory and validator tightening checklist (prep only)
+
+### Status snapshot (2026-02-25)
+
+- [x] Service daemon handler foundation implemented (`service_handler.py` + handler export)
+- [x] `SystemService` daemon-first migration implemented with local fallback parity
+- [x] System IPC payload validation hardening implemented (`is_system_payload` + client enforcement)
+- [x] Focused daemon/system fallback regression tests passed
+- [x] Phase 3 prep inventory documented in `arch-v2.7.0.md`
+- [x] Workflow phase metadata sync finalized (`run-manifest-v2.7.0.json` + memory-bank progress)
+
+### Agent Assignment
+
+| Agent                      | Task                                                               |
+| -------------------------- | ------------------------------------------------------------------ |
+| project-coordinator        | v2.7.0 scope/task contracts                                        |
+| backend-builder            | service handler + service API migration + IPC compatibility        |
+| test-writer                | daemon/service fallback regression validation                      |
+| release-planner            | planning artifact and roadmap/workflow metadata synchronization    |
 
 ---
 

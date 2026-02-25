@@ -16,7 +16,7 @@ from services.ipc.errors import (
     DaemonUnavailableError,
     DaemonValidationError,
 )
-from services.ipc.types import DaemonError, DaemonResponse, is_package_payload
+from services.ipc.types import DaemonError, DaemonResponse, is_package_payload, is_system_payload
 
 logger = get_logger(__name__)
 
@@ -130,6 +130,8 @@ class DaemonClient:
     @staticmethod
     def _validate_payload(method: str, payload: Any) -> None:
         if not is_package_payload(method, payload):
+            raise DaemonClientError(f"Invalid daemon response for {method}: malformed payload")
+        if not is_system_payload(method, payload):
             raise DaemonClientError(f"Invalid daemon response for {method}: malformed payload")
 
 

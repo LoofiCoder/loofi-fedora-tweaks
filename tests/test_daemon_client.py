@@ -82,3 +82,25 @@ class TestDaemonClient(unittest.TestCase):
         client = DaemonClient()
         with self.assertRaises(DaemonRequiredModeError):
             client.call_json("PackageInfo", "vim")
+
+    @patch.dict(os.environ, {"LOOFI_IPC_MODE": "preferred"})
+    @patch("services.ipc.daemon_client.DaemonClient._call_raw")
+    def test_preferred_mode_falls_back_on_malformed_system_payload(self, mock_raw):
+        mock_raw.return_value = '{"ok": true, "data": {"value": 42}, "error": null}'
+        client = DaemonClient()
+        self.assertIsNone(client.call_json("SystemGetPackageManager"))
+
+    @patch.dict(os.environ, {"LOOFI_IPC_MODE": "required"})
+    @patch("services.ipc.daemon_client.DaemonClient._call_raw")
+    def test_required_mode_raises_on_malformed_system_payload(self, mock_raw):
+        mock_raw.return_value = '{"ok": true, "data": {"value": 42}, "error": null}'
+        client = DaemonClient()
+        with self.assertRaises(DaemonRequiredModeError):
+            client.call_json("SystemGetVariantName")
+
+    @patch.dict(os.environ, {"LOOFI_IPC_MODE": "preferred"})
+    @patch("services.ipc.daemon_client.DaemonClient._call_raw")
+    def test_call_json_returns_string_on_valid_system_payload(self, mock_raw):
+        mock_raw.return_value = '{"ok": true, "data": "dnf", "error": null}'
+        client = DaemonClient()
+        self.assertEqual(client.call_json("SystemGetPackageManager"), "dnf")

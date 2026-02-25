@@ -5,9 +5,9 @@
 **Version**: v2.6.0 "API Migration Slice 2 (Packages)" — **IN PROGRESS**
 **Date**: 2026-02-25
 
-v2.6.0 is the active workflow slice focused on package API migration. The workflow
-lock and architecture/task specs are active, and implementation has completed through
-TASK005 (handler foundation, package service migration, IPC hardening, focused tests).
+v2.6.0 is the active workflow slice focused on package API migration. Build, test, and
+documentation updates are complete through TASK007; package/release workflow phases
+remain open for final execution.
 
 ## Recent Changes
 
@@ -16,27 +16,26 @@ TASK005 (handler foundation, package service migration, IPC hardening, focused t
 - Implemented package service daemon-first migration with local fallbacks (`TASK003`)
 - Implemented IPC payload hardening for package methods (`TASK004`)
 - Added focused tests for daemon payload validity and fallback behavior (`TASK005`)
+- Completed planning artifact cleanup sync (`TASK006`)
+- Completed roadmap/workflow progress metadata sync (`TASK007`)
 
 ## Current Work Focus
 
-**Active task**: `TASK006 — Planning artifact cleanup sync`
+**Active workflow phase**: `P6 PACKAGE` for `v2.6.0`
 
-Current objective is to keep memory-bank and workflow sources aligned with active
-v2.6.0 state while preserving clear history of completed slices.
-
-Next queued task after cleanup:
-
-- `TASK007 — Validation and progress sync` (`ROADMAP.md`, run manifest updates)
+Current objective is to close remaining package/release phases while keeping the
+v2.7.0 system-service migration slice metadata synchronized.
 
 ## Open Items
 
-1. Complete workflow metadata sync (`TASK007`)
-2. Execute packaging/release phases for active cycle after validation
-3. Keep memory-bank task index synchronized with workflow progress
+1. Execute package phase artifacts for active `v2.6.0` cycle
+2. Execute release phase artifacts for active `v2.6.0` cycle
+3. Keep `v2.7.0` run-manifest and memory-bank progress synchronized after further changes
 
 ## Active Decisions
 
 - **Canonical authority**: `ROADMAP.md` + `.workflow/specs/*`
 - **Slice scope**: v2.6.0 is package migration only (no broad systemctl/polkit expansion)
+- **Next slice status**: v2.7.0 TASK001-007 contracts are synchronized; runtime activation remains gated by workflow phase progression
 - **IPC policy**: strict payload validation with safe preferred-mode fallback
 - **Coverage**: CI gate remains 77%

@@ -4,6 +4,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.0] - 2026-02-25 "API Migration Slice 3"
+
+### Added
+
+- Service daemon handler foundation in `daemon/handlers/service_handler.py` and handler export wiring in `daemon/handlers/__init__.py`
+- Strict system IPC payload contract validation in `services/ipc/types.py` (`is_system_payload`) with daemon-client enforcement
+
+### Changed
+
+- `SystemService` now prefers daemon-backed execution with explicit local fallback parity for preferred-mode operation
+- Daemon server typing and method wrappers were hardened for stable runtime behavior across dbus-present and dbus-absent environments
+- Workflow and release artifacts advanced to v2.7.0 (`version.py`, `.spec`, `pyproject.toml`, race lock, release notes scaffold)
+
+### Fixed
+
+- Cross-platform test compatibility for POSIX-only `os.*` APIs on Windows in system diagnostics and monitoring paths
+- Linux packaging artifact naming stability by normalizing parsed version strings in `build_flatpak.sh`, `build_appimage.sh`, and `build_sdist.sh`
+
 ## [2.6.0] - 2026-02-25 "API Migration Slice 2"
 
 ### Added

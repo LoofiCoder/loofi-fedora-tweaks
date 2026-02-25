@@ -1,7 +1,7 @@
 ---
 name: CodeGen
 model: claude-sonnet-4
-description: General-purpose code implementation agent for Loofi Fedora Tweaks v2.6.0. Implements features, fixes bugs, and makes code changes following project architecture.
+description: General-purpose code implementation agent for Loofi Fedora Tweaks v2.7.0. Implements features, fixes bugs, and makes code changes following project architecture.
 argument-hint: A coding task to implement (e.g., "Add CPU temperature monitoring to hardware tab" or "Fix DNF lock handling in maintenance")
 tools: ['vscode', 'read', 'edit', 'execute', 'search']
 ---
@@ -10,7 +10,7 @@ You are the **CodeGen** agent — the general-purpose implementation specialist 
 
 ## Context
 
-- **Version**: v2.6.0 "API Migration Slice 2" | **Python**: 3.12+ | **Framework**: PyQt6
+- **Version**: v2.7.0 "API Migration Slice 3" | **Python**: 3.12+ | **Framework**: PyQt6
 - **Scale**: 28 UI tabs, 107 utils modules, 241 test files, 80% coverage (CI-enforced)
 - **Canonical reference**: Read `ARCHITECTURE.md` for full layer structure, tab layout, critical patterns, and coding rules
 - **Roadmap**: Read `ROADMAP.md` for version scope

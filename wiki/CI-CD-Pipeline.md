@@ -1,5 +1,7 @@
 # CI/CD Pipeline
 
+<!-- markdownlint-configure-file {"MD024": false, "MD032": false, "MD034": false, "MD040": false, "MD060": false} -->
+
 Continuous Integration and Deployment pipeline for Loofi Fedora Tweaks.
 
 ---
@@ -11,7 +13,7 @@ Every push to `master` and every pull request runs through automated pipelines:
 | Pipeline | File | Trigger | Purpose |
 |----------|------|---------|---------|
 | **CI** | `.github/workflows/ci.yml` | Push/PR | Lint, typecheck, test, security, packaging |
-| **Auto Release** | `.github/workflows/auto-release.yml` | Push to master | Full release: validate → build → tag → publish |
+| **Auto Release** | `.github/workflows/auto-release.yml` | Push to master/tags + manual dispatch | Full release: validate → gates → build → tag → publish + COPR submit |
 | **PR Security Bot** | `.github/workflows/pr-security-bot.yml` | PR | Security scans (Bandit, pip-audit, Trivy, secrets) |
 | **Publish Wiki** | `.github/workflows/publish-wiki.yml` | Wiki changes | Auto-publish wiki pages |
 
@@ -70,8 +72,8 @@ Runs on every **push** and **pull request**.
 ```
 
 **Requirements:**
-- 4349+ tests passing
-- 75%+ coverage
+- 7k+ tests in Linux validation path
+- 77%+ coverage threshold
 - 0 failures
 
 #### 4. Security Scan
@@ -176,7 +178,7 @@ Creates git tag if not already present:
     git push origin v${{ needs.validate.outputs.version }}
 ```
 
-Tag format: `vX.Y.Z` (e.g., `v40.0.0`)
+Tag format: `vX.Y.Z` (e.g., `v2.7.0`)
 
 #### 5. Release
 
@@ -220,6 +222,14 @@ on:
 2. Enter version number (e.g., `40.0.0`)
 3. Set `dry_run: true` to validate without publishing
 4. Click **Run workflow**
+
+### Integrated COPR Publish Step
+
+After GitHub Release creation, the `copr_publish` job in `auto-release.yml`:
+
+- Builds SRPM via `scripts/build_srpm.sh`
+- Configures `copr-cli` from repository secrets
+- Submits build to configured COPR project/chroots
 
 ---
 
@@ -337,7 +347,7 @@ Posts coverage report as PR comment:
 ```
 📊 Coverage Report
 
-Overall: 74.2% (+0.3%)
+Overall: must remain above release gate threshold (77%+)
 
 Files with < 75% coverage:
 - loofi-fedora-tweaks/utils/new_feature.py: 62.5%
@@ -383,8 +393,8 @@ bash scripts/build_rpm.sh
 Releases are published to:
 
 1. **GitHub Releases**: https://github.com/loofitheboss/loofi-fedora-tweaks/releases
-2. **RPM package**: Attached to GitHub Release
-3. **Future**: Fedora COPR repository (planned)
+2. **Release assets**: RPM (required), optional Flatpak/sdist when available
+3. **Fedora COPR repository**: Published by integrated `copr_publish` job
 
 ---
 

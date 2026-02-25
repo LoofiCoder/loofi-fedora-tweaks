@@ -1,4 +1,6 @@
-# Loofi Fedora Tweaks v2.0.0 "Evolution"
+# Loofi Fedora Tweaks v2.7.0 "API Migration Slice 3"
+
+<!-- markdownlint-configure-file {"MD033": false} -->
 
 <p align="center">
   <img src="loofi-fedora-tweaks/assets/loofi-fedora-tweaks.png" alt="Loofi Fedora Tweaks Logo" width="128"/>
@@ -10,8 +12,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/loofitheboss/loofi-fedora-tweaks/releases/tag/v2.3.0">
-    <img src="https://img.shields.io/badge/Release-v2.3.0-blue?style=for-the-badge&logo=github" alt="Release v2.3.0"/>
+  <a href="https://github.com/loofitheboss/loofi-fedora-tweaks/releases/tag/v2.7.0">
+    <img src="https://img.shields.io/badge/Release-v2.7.0-blue?style=for-the-badge&logo=github" alt="Release v2.7.0"/>
   </a>
   <img src="https://img.shields.io/badge/Fedora-43-blue?style=for-the-badge&logo=fedora" alt="Fedora 43"/>
   <img src="https://img.shields.io/badge/Python-3.12+-green?style=for-the-badge&logo=python" alt="Python"/>
@@ -39,18 +41,16 @@ It is designed to be practical for both casual users and advanced users:
 
 ---
 
-## What Is New in v2.0.0?
+## What Is New in v2.7.0?
 
-`v2.0.0 "Evolution"` is a structural refactoring release that reorganizes the codebase from a flat `utils/` namespace into domain-specific `services/` and `core/` layers. No user-facing behavior changes — all 6383 tests pass.
+`v2.7.0 "API Migration Slice 3"` completes the API migration slice with workflow and release alignment updates.
 
-- **22 modules migrated** from `utils/` to `services/` across 6 domains (security, software, desktop, storage, network, virtualization).
-- **14 modules migrated** from `utils/` to `core/` across 4 domains (agents, ai, diagnostics, export).
-- **Backward-compatible deprecation shims** in `utils/` — existing imports continue to work with `DeprecationWarning`.
-- **3 legacy deprecated shims removed** (`process.py`, `battery.py`, `action_executor.py`).
-- **All UI/CLI/API/plugin imports updated** to new service/core paths.
-- **6383 tests passing**, 81%+ coverage, 0 new failures.
+- **Cross-platform packaging hardening** for Flatpak/AppImage/sdist scripts with CRLF-safe version normalization.
+- **Windows compatibility fixes** in monitor/process-related UI paths.
+- **Workflow metadata synchronized** for the active release slice.
+- **Linux validation complete** with `7095 passed, 102 skipped`.
 
-Full notes: [`docs/releases/RELEASE-NOTES-v2.0.0.md`](docs/releases/RELEASE-NOTES-v2.0.0.md)
+Full notes: [`docs/releases/RELEASE-NOTES-v2.7.0.md`](docs/releases/RELEASE-NOTES-v2.7.0.md)
 
 ---
 
@@ -164,7 +164,7 @@ alias loofi='loofi-fedora-tweaks --cli'
 
 ## Screenshots
 
-Current UI screenshots (v46.0.0) are maintained in:
+Current UI screenshots (v2.7.0) are maintained in:
 
 - [`docs/images/user-guide/README.md`](docs/images/user-guide/README.md)
 
@@ -271,7 +271,7 @@ Optional features may require extra packages (for example: virtualization tools,
 Run tests:
 
 ```bash
-PYTHONPATH=loofi-fedora-tweaks python -m pytest tests/ -v  # 6383 tests collected
+PYTHONPATH=loofi-fedora-tweaks python -m pytest tests/ -v
 ```
 
 ### Windows developers: run tests in Linux (Docker-first primary path)
@@ -326,11 +326,11 @@ bash scripts/build_rpm.sh
 
 Every push to `master` and every pull request runs through two pipelines:
 
-| Pipeline     | File                                 | Purpose                                                           |
-| ------------ | ------------------------------------ | ----------------------------------------------------------------- |
-| CI           | `.github/workflows/ci.yml`           | Lint, typecheck, test, security, plus required Fedora review gate |
-| Auto Release | `.github/workflows/auto-release.yml` | Full release: validate → fedora_review → build → tag → publish    |
-| COPR Publish | `.github/workflows/copr-publish.yml` | Build SRPM and submit to Fedora COPR                              |
+| Pipeline | File | Purpose |
+| --- | --- | --- |
+| CI | `.github/workflows/ci.yml` | Lint, typecheck, test, security, and Fedora review gate |
+| Auto Release | `.github/workflows/auto-release.yml` | Validate, gate checks, build, tag, GitHub release, then integrated COPR submit |
+| COPR Publish | `.github/workflows/copr-publish.yml` | Standalone/manual COPR publishing workflow |
 
 ### Auto Release Flow
 
@@ -340,8 +340,8 @@ push to master
   → adapter_drift, lint, typecheck, test, security, docs_gate, fedora_review (parallel)
   → build (RPM in Fedora 43 container)
   → auto_tag (creates vX.Y.Z tag if missing)
-  → release (publishes GitHub Release with RPM artifact)
-  → copr-publish (builds SRPM and submits to Fedora COPR)
+  → release (publishes GitHub Release with RPM/Flatpak/sdist artifacts)
+  → copr_publish (builds SRPM and submits to Fedora COPR)
 ```
 
 `fedora_review` runs `python3 scripts/check_fedora_review.py`, which requires `fedora-review`

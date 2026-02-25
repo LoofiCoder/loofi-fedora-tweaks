@@ -16,12 +16,25 @@ import sqlite3
 import statistics
 import subprocess
 import time
-from typing import Optional
+from typing import Optional, cast
 
 from services.system.system import cached_which
 from utils.containers import Result
 
 logger = logging.getLogger(__name__)
+
+
+if not hasattr(os, "statvfs"):
+    def _statvfs_unavailable(_path: str):
+        raise OSError("statvfs not available")
+
+    os.statvfs = _statvfs_unavailable  # type: ignore[attr-defined]
+
+if not hasattr(os, "getloadavg"):
+    def _getloadavg_unavailable():
+        raise OSError("getloadavg not available")
+
+    os.getloadavg = _getloadavg_unavailable  # type: ignore[attr-defined]
 
 
 class HealthTimeline:
@@ -511,13 +524,16 @@ class HealthTimeline:
             Disk usage as a percentage (0-100).
         """
         try:
-            st = os.statvfs("/")
+            statvfs = getattr(os, "statvfs", None)
+            if not callable(statvfs):
+                return 0.0
+            st = statvfs("/")
             total = st.f_blocks * st.f_frsize
             free = st.f_bfree * st.f_frsize
             if total <= 0:
                 return 0.0
             used_pct = ((total - free) / total) * 100
-            return round(used_pct, 1)
+            return cast(float, round(used_pct, 1))
         except OSError as e:
             logger.debug("Failed to read disk usage: %s", e)
             return 0.0
@@ -531,8 +547,11 @@ class HealthTimeline:
             1-minute load average as a float.
         """
         try:
-            load1, _, _ = os.getloadavg()
-            return round(load1, 2)
+            getloadavg = getattr(os, "getloadavg", None)
+            if not callable(getloadavg):
+                return 0.0
+            load1, _, _ = getloadavg()
+            return cast(float, round(load1, 2))
         except OSError as e:
             logger.debug("Failed to read load average: %s", e)
             return 0.0

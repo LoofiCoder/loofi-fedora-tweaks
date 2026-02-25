@@ -151,7 +151,7 @@
       "problemMatcher": []
     },
     {
-      "label": "Dev: Run Tests (Linux Auto: Docker→WSL)",
+      "label": "Dev: Run Tests (Linux Auto: Docker\u2192WSL)",
       "type": "shell",
       "command": "pwsh",
       "args": [
@@ -250,13 +250,13 @@
       "id": "workflowVersion",
       "type": "promptString",
       "description": "Workflow target version (example: v45.0)",
-      "default": "v2.3"
+      "default": "v2.7"
     },
     {
       "id": "workflowVersionNoV",
       "type": "promptString",
       "description": "Workflow target version without v (example: 45.0)",
-      "default": "2.3"
+      "default": "2.7"
     },
     {
       "id": "workflowPhase",
