@@ -17,20 +17,6 @@ class SafetyManager:
     """Pre-action safety checks and snapshot management."""
 
     @staticmethod
-    def _process_events_if_available() -> None:
-        """Process Qt events only when a QApplication instance exists."""
-        from PyQt6.QtWidgets import QApplication
-
-        app = QApplication.instance()
-        if app is None:
-            return
-
-        try:
-            app.processEvents()
-        except RuntimeError as e:
-            logger.debug("Skipping processEvents without active QApplication: %s", e)
-
-    @staticmethod
     def check_dnf_lock() -> bool:
         """
         Check if DNF or RPM is currently running.
@@ -162,12 +148,10 @@ class SafetyManager:
         if tool and clicked == btn_snapshot:
             # Show a progress message while snapshot runs
             parent.setDisabled(True)
-            SafetyManager._process_events_if_available()
 
             success = SafetyManager.create_snapshot(tool, f"Pre-{description.split(' ')[0]}")
 
             parent.setDisabled(False)
-            SafetyManager._process_events_if_available()
 
             if not success:
                 QMessageBox.warning(
