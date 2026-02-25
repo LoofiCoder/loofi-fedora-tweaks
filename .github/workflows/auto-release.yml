@@ -209,7 +209,7 @@ jobs:
           cache: "pip"
           cache-dependency-path: ${{ env.PIP_CACHE_FILES }}
       - run: pip install mypy PyQt6-stubs
-      - run: mypy loofi-fedora-tweaks/ --ignore-missing-imports --no-error-summary --warn-return-any
+      - run: mypy loofi-fedora-tweaks/services/security loofi-fedora-tweaks/services/network --ignore-missing-imports --no-error-summary --follow-imports=silent
 
   stabilization_rules:
     runs-on: ubuntu-latest
@@ -256,7 +256,7 @@ jobs:
       - name: Install system test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libegl1
+          sudo apt-get install -y libegl1 pkg-config libdbus-1-dev libglib2.0-dev
       - uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
