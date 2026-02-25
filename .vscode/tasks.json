@@ -140,19 +140,13 @@
     {
       "label": "Dev: Run Tests",
       "type": "shell",
-      "command": "python",
+      "command": "pwsh",
       "args": [
-        "-m",
-        "pytest",
-        "tests/",
-        "-v",
-        "--tb=short"
+        "-File",
+        "scripts/run_linux_tests.ps1",
+        "-Backend",
+        "docker"
       ],
-      "options": {
-        "env": {
-          "PYTHONPATH": "loofi-fedora-tweaks"
-        }
-      },
       "group": "test",
       "problemMatcher": []
     },
@@ -183,7 +177,7 @@
       "problemMatcher": []
     },
     {
-      "label": "Dev: Run Tests (Linux Docker, Primary)",
+      "label": "Dev: Run Tests (Linux venv Docker, Primary)",
       "type": "shell",
       "command": "pwsh",
       "args": [

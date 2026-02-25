@@ -47,11 +47,37 @@
 | 2.2.1   | Velocity (patch)                | DONE    | CI stability: @patch target corrections for test reliability                               |
 | 2.2.2   | Velocity (patch)                | DONE    | CI: lower coverage threshold to 77%, fix tasks spec gate                                   |
 | 2.3.0   | Insight                         | DONE    | Enhanced diagnostics: 5 new report sections (services, journal, updates, SELinux, network) |
-| 2.4.0   | Daemon Foundation               | ACTIVE  | Daemonized network/firewall execution boundary via D-Bus with fallback                      |
+| 2.4.0   | Daemon Foundation               | DONE    | Daemonized network/firewall execution boundary via D-Bus with fallback                      |
+| 2.5.0   | API Migration Slice 1           | ACTIVE  | Network/firewall API-first hardening with strict IPC compatibility and fallback safeguards   |
 
 ---
 
-## [ACTIVE] v2.4.0 "Daemon Foundation" — Phase 1 Daemonization
+## [ACTIVE] v2.5.0 "API Migration Slice 1" — Phase 2 Daemon-Service Hardening
+
+### Scope
+
+Reduce parsing-heavy network/firewall service pathways while preserving v2.4.0 daemon-first
+contracts, strict envelope handling, and `LOOFI_IPC_MODE=preferred` fallback semantics.
+
+### Status snapshot (2026-02-25)
+
+- [x] Network service API migration slice completed
+- [x] Firewall service API migration slice completed
+- [x] IPC compatibility hardening validated (strict envelope + required/preferred behavior)
+- [x] Focused verification passed (`test_daemon_client.py`, `test_ipc_fallback_modes.py`, `test_daemon_dbus.py`, `test_network_utils.py`, `test_firewall_manager.py`)
+
+### Agent Assignment
+
+| Agent                      | Task                                                               |
+| -------------------------- | ------------------------------------------------------------------ |
+| project-coordinator        | v2.5.0 scope/task contracts                                        |
+| backend-builder            | network/firewall API migration + IPC compatibility hardening       |
+| test-writer                | focused IPC/network/firewall regression validation                 |
+| release-planner            | roadmap/workflow progress metadata sync                            |
+
+---
+
+## [DONE] v2.4.0 "Daemon Foundation" — Phase 1 Daemonization
 
 ### Scope
 

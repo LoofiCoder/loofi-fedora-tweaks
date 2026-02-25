@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from daemon.contracts import error_response, ok_response
 from daemon.handlers import FirewallHandler, NetworkHandler
-from daemon.interfaces import BUS_NAME, INTERFACE, OBJECT_PATH
+from daemon.interfaces import INTERFACE, OBJECT_PATH
 from daemon.validators import ValidationError
 
 logger = logging.getLogger(__name__)
@@ -26,14 +27,16 @@ class DaemonServiceBase:
 
 
 if dbus is None:
+
     class DaemonService(DaemonServiceBase):
         """No-op service when dbus is unavailable."""
 
 else:
+
     class DaemonService(dbus.service.Object):  # type: ignore[misc,valid-type]
         """D-Bus object exposing daemon methods."""
 
-        def __init__(self, bus_name: "dbus.service.BusName"):
+        def __init__(self, bus_name: Any):
             super().__init__(bus_name, OBJECT_PATH)
 
         @dbus.service.method(INTERFACE, in_signature="", out_signature="s")
@@ -52,11 +55,24 @@ else:
                         "get_active_connection",
                         "check_hostname_privacy",
                         "reactivate_connection",
+                        "connect_wifi",
+                        "disconnect_wifi",
+                        "apply_dns",
+                        "set_hostname_privacy",
                     ],
                     "firewall": [
                         "get_status",
                         "list_ports",
                         "list_services",
+                        "get_default_zone",
+                        "get_zones",
+                        "get_active_zones",
+                        "list_rich_rules",
+                        "set_default_zone",
+                        "add_service",
+                        "remove_service",
+                        "add_rich_rule",
+                        "remove_rich_rule",
                         "open_port",
                         "close_port",
                         "start_firewall",
@@ -90,6 +106,22 @@ else:
         def NetworkReactivateConnection(self, connection_name: str) -> str:  # noqa: N802
             return self._safe_call(NetworkHandler.reactivate_connection, connection_name)
 
+        @dbus.service.method(INTERFACE, in_signature="s", out_signature="s")
+        def NetworkConnectWifi(self, ssid: str) -> str:  # noqa: N802
+            return self._safe_call(NetworkHandler.connect_wifi, ssid)
+
+        @dbus.service.method(INTERFACE, in_signature="s", out_signature="s")
+        def NetworkDisconnectWifi(self, interface_name: str) -> str:  # noqa: N802
+            return self._safe_call(NetworkHandler.disconnect_wifi, interface_name)
+
+        @dbus.service.method(INTERFACE, in_signature="ss", out_signature="s")
+        def NetworkApplyDns(self, connection_name: str, dns_servers: str) -> str:  # noqa: N802
+            return self._safe_call(NetworkHandler.apply_dns, connection_name, dns_servers)
+
+        @dbus.service.method(INTERFACE, in_signature="sb", out_signature="s")
+        def NetworkSetHostnamePrivacy(self, connection_name: str, hide: bool) -> str:  # noqa: N802
+            return self._safe_call(NetworkHandler.set_hostname_privacy, connection_name, hide)
+
         @dbus.service.method(INTERFACE, in_signature="", out_signature="s")
         def FirewallGetStatus(self) -> str:  # noqa: N802
             return self._safe_call(FirewallHandler.get_status)
@@ -101,6 +133,42 @@ else:
         @dbus.service.method(INTERFACE, in_signature="s", out_signature="s")
         def FirewallListServices(self, zone: str = "") -> str:  # noqa: N802
             return self._safe_call(FirewallHandler.list_services, zone)
+
+        @dbus.service.method(INTERFACE, in_signature="", out_signature="s")
+        def FirewallGetDefaultZone(self) -> str:  # noqa: N802
+            return self._safe_call(FirewallHandler.get_default_zone)
+
+        @dbus.service.method(INTERFACE, in_signature="", out_signature="s")
+        def FirewallGetZones(self) -> str:  # noqa: N802
+            return self._safe_call(FirewallHandler.get_zones)
+
+        @dbus.service.method(INTERFACE, in_signature="", out_signature="s")
+        def FirewallGetActiveZones(self) -> str:  # noqa: N802
+            return self._safe_call(FirewallHandler.get_active_zones)
+
+        @dbus.service.method(INTERFACE, in_signature="s", out_signature="s")
+        def FirewallListRichRules(self, zone: str = "") -> str:  # noqa: N802
+            return self._safe_call(FirewallHandler.list_rich_rules, zone)
+
+        @dbus.service.method(INTERFACE, in_signature="s", out_signature="s")
+        def FirewallSetDefaultZone(self, zone: str) -> str:  # noqa: N802
+            return self._safe_call(FirewallHandler.set_default_zone, zone)
+
+        @dbus.service.method(INTERFACE, in_signature="ssb", out_signature="s")
+        def FirewallAddService(self, service: str, zone: str, permanent: bool) -> str:  # noqa: N802
+            return self._safe_call(FirewallHandler.add_service, service, zone, permanent)
+
+        @dbus.service.method(INTERFACE, in_signature="ssb", out_signature="s")
+        def FirewallRemoveService(self, service: str, zone: str, permanent: bool) -> str:  # noqa: N802
+            return self._safe_call(FirewallHandler.remove_service, service, zone, permanent)
+
+        @dbus.service.method(INTERFACE, in_signature="ssb", out_signature="s")
+        def FirewallAddRichRule(self, rule: str, zone: str, permanent: bool) -> str:  # noqa: N802
+            return self._safe_call(FirewallHandler.add_rich_rule, rule, zone, permanent)
+
+        @dbus.service.method(INTERFACE, in_signature="ssb", out_signature="s")
+        def FirewallRemoveRichRule(self, rule: str, zone: str, permanent: bool) -> str:  # noqa: N802
+            return self._safe_call(FirewallHandler.remove_rich_rule, rule, zone, permanent)
 
         @dbus.service.method(INTERFACE, in_signature="sssb", out_signature="s")
         def FirewallOpenPort(self, port: str, protocol: str, zone: str, permanent: bool) -> str:  # noqa: N802
@@ -135,4 +203,3 @@ else:
             except (OSError, RuntimeError, ValueError, TypeError) as exc:
                 logger.exception("Daemon method failure")
                 return error_response("execution_error", str(exc))
-

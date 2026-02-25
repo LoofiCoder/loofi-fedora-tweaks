@@ -117,8 +117,15 @@ class TestFirewallManagerStatus(unittest.TestCase):
     @patch('services.security.firewall.FirewallManager.get_active_zones')
     @patch('services.security.firewall.FirewallManager.get_default_zone')
     @patch('services.security.firewall.FirewallManager.is_running')
-    def test_get_status_running(self, mock_running, mock_zone, mock_active,
-                                 mock_ports, mock_services, mock_rules):
+    def test_get_status_running(
+        self,
+        mock_running,
+        mock_zone,
+        mock_active,
+        mock_ports,
+        mock_services,
+        mock_rules,
+    ):
         """Returns full status when running."""
         mock_running.return_value = True
         mock_zone.return_value = "public"
@@ -581,6 +588,102 @@ class TestFirewallManagerReload(unittest.TestCase):
         mock_run.side_effect = subprocess.TimeoutExpired(cmd="firewall-cmd", timeout=15)
 
         self.assertFalse(FirewallManager._reload())
+
+
+class TestFirewallDaemonFirstReads(unittest.TestCase):
+    """Tests daemon-first behavior for selected firewall read operations."""
+
+    @patch('services.security.firewall.subprocess.run')
+    @patch('services.security.firewall.daemon_client.call_json')
+    def test_get_default_zone_prefers_daemon(self, mock_call_json, mock_run):
+        mock_call_json.return_value = "public"
+        zone = FirewallManager.get_default_zone()
+        self.assertEqual(zone, "public")
+        mock_call_json.assert_called_once_with("FirewallGetDefaultZone")
+        mock_run.assert_not_called()
+
+    @patch('services.security.firewall.subprocess.run')
+    @patch('services.security.firewall.daemon_client.call_json')
+    def test_get_zones_prefers_daemon(self, mock_call_json, mock_run):
+        mock_call_json.return_value = ["public", "trusted"]
+        zones = FirewallManager.get_zones()
+        self.assertEqual(zones, ["public", "trusted"])
+        mock_call_json.assert_called_once_with("FirewallGetZones")
+        mock_run.assert_not_called()
+
+    @patch('services.security.firewall.subprocess.run')
+    @patch('services.security.firewall.daemon_client.call_json')
+    def test_get_active_zones_prefers_daemon(self, mock_call_json, mock_run):
+        mock_call_json.return_value = {"public": ["eth0"]}
+        zones = FirewallManager.get_active_zones()
+        self.assertEqual(zones, {"public": ["eth0"]})
+        mock_call_json.assert_called_once_with("FirewallGetActiveZones")
+        mock_run.assert_not_called()
+
+    @patch('services.security.firewall.subprocess.run')
+    @patch('services.security.firewall.daemon_client.call_json')
+    def test_list_rich_rules_prefers_daemon(self, mock_call_json, mock_run):
+        mock_call_json.return_value = ['rule family="ipv4" accept']
+        rules = FirewallManager.list_rich_rules()
+        self.assertEqual(rules, ['rule family="ipv4" accept'])
+        mock_call_json.assert_called_once_with("FirewallListRichRules", "")
+        mock_run.assert_not_called()
+
+
+class TestFirewallDaemonFirstWrites(unittest.TestCase):
+    """Tests daemon-first behavior for selected firewall write operations."""
+
+    @patch('services.security.firewall.subprocess.run')
+    @patch('services.security.firewall.daemon_client.call_json')
+    def test_set_default_zone_prefers_daemon(self, mock_call_json, mock_run):
+        mock_call_json.return_value = {"success": True, "message": "ok"}
+        result = FirewallManager.set_default_zone("public")
+        self.assertTrue(result.success)
+        self.assertEqual(result.message, "ok")
+        mock_call_json.assert_called_once_with("FirewallSetDefaultZone", "public")
+        mock_run.assert_not_called()
+
+    @patch('services.security.firewall.subprocess.run')
+    @patch('services.security.firewall.daemon_client.call_json')
+    def test_add_service_prefers_daemon(self, mock_call_json, mock_run):
+        mock_call_json.return_value = {"success": True, "message": "added"}
+        result = FirewallManager.add_service("http", zone="trusted", permanent=False)
+        self.assertTrue(result.success)
+        self.assertEqual(result.message, "added")
+        mock_call_json.assert_called_once_with("FirewallAddService", "http", "trusted", False)
+        mock_run.assert_not_called()
+
+    @patch('services.security.firewall.subprocess.run')
+    @patch('services.security.firewall.daemon_client.call_json')
+    def test_remove_service_prefers_daemon(self, mock_call_json, mock_run):
+        mock_call_json.return_value = {"success": True, "message": "removed"}
+        result = FirewallManager.remove_service("http", zone="trusted", permanent=False)
+        self.assertTrue(result.success)
+        self.assertEqual(result.message, "removed")
+        mock_call_json.assert_called_once_with("FirewallRemoveService", "http", "trusted", False)
+        mock_run.assert_not_called()
+
+    @patch('services.security.firewall.subprocess.run')
+    @patch('services.security.firewall.daemon_client.call_json')
+    def test_add_rich_rule_prefers_daemon(self, mock_call_json, mock_run):
+        rule = 'rule family="ipv4" accept'
+        mock_call_json.return_value = {"success": True, "message": "added"}
+        result = FirewallManager.add_rich_rule(rule, zone="public", permanent=True)
+        self.assertTrue(result.success)
+        self.assertEqual(result.message, "added")
+        mock_call_json.assert_called_once_with("FirewallAddRichRule", rule, "public", True)
+        mock_run.assert_not_called()
+
+    @patch('services.security.firewall.subprocess.run')
+    @patch('services.security.firewall.daemon_client.call_json')
+    def test_remove_rich_rule_prefers_daemon(self, mock_call_json, mock_run):
+        rule = 'rule family="ipv4" accept'
+        mock_call_json.return_value = {"success": True, "message": "removed"}
+        result = FirewallManager.remove_rich_rule(rule, zone="public", permanent=True)
+        self.assertTrue(result.success)
+        self.assertEqual(result.message, "removed")
+        mock_call_json.assert_called_once_with("FirewallRemoveRichRule", rule, "public", True)
+        mock_run.assert_not_called()
 
 
 if __name__ == '__main__':

@@ -320,5 +320,51 @@ class TestReactivateConnection(unittest.TestCase):
         self.assertFalse(result)
 
 
+class TestDaemonFirstNetworkMutations(unittest.TestCase):
+    """Tests daemon-first behavior for network mutating methods."""
+
+    @patch('services.network.network.subprocess.run')
+    @patch('services.network.network.daemon_client.call_json')
+    def test_connect_wifi_prefers_daemon_result(self, mock_call_json, mock_run):
+        mock_call_json.return_value = True
+        result = NetworkUtils.connect_wifi("MyWiFi")
+        self.assertTrue(result)
+        mock_call_json.assert_called_once_with("NetworkConnectWifi", "MyWiFi")
+        mock_run.assert_not_called()
+
+    @patch('services.network.network.subprocess.run')
+    @patch('services.network.network.daemon_client.call_json')
+    def test_connect_wifi_falls_back_local(self, mock_call_json, mock_run):
+        mock_call_json.return_value = None
+        mock_run.return_value = MagicMock(returncode=0)
+        result = NetworkUtils.connect_wifi("MyWiFi")
+        self.assertTrue(result)
+        mock_call_json.assert_called_once_with("NetworkConnectWifi", "MyWiFi")
+        mock_run.assert_called_once_with(
+            ["nmcli", "device", "wifi", "connect", "MyWiFi"],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+
+    @patch('services.network.network.subprocess.run')
+    @patch('services.network.network.daemon_client.call_json')
+    def test_apply_dns_prefers_daemon_result(self, mock_call_json, mock_run):
+        mock_call_json.return_value = True
+        result = NetworkUtils.apply_dns("Home", "auto")
+        self.assertTrue(result)
+        mock_call_json.assert_called_once_with("NetworkApplyDns", "Home", "auto")
+        mock_run.assert_not_called()
+
+    @patch('services.network.network.subprocess.run')
+    @patch('services.network.network.daemon_client.call_json')
+    def test_set_hostname_privacy_prefers_daemon_result(self, mock_call_json, mock_run):
+        mock_call_json.return_value = True
+        result = NetworkUtils.set_hostname_privacy("Home", True)
+        self.assertTrue(result)
+        mock_call_json.assert_called_once_with("NetworkSetHostnamePrivacy", "Home", True)
+        mock_run.assert_not_called()
+
+
 if __name__ == '__main__':
     unittest.main()

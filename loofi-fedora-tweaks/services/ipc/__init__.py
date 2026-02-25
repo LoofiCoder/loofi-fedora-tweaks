@@ -18,4 +18,3 @@ __all__ = [
     "DaemonValidationError",
     "daemon_client",
 ]
-

@@ -124,6 +124,9 @@ class FirewallManager:
 
     @classmethod
     def get_default_zone(cls) -> str:
+        data = daemon_client.call_json("FirewallGetDefaultZone")
+        if isinstance(data, str):
+            return data
         return cls.get_default_zone_local()
 
     @classmethod
@@ -136,6 +139,9 @@ class FirewallManager:
 
     @classmethod
     def get_zones(cls) -> List[str]:
+        data = daemon_client.call_json("FirewallGetZones")
+        if isinstance(data, list):
+            return [str(x) for x in data]
         return cls.get_zones_local()
 
     @classmethod
@@ -150,6 +156,17 @@ class FirewallManager:
 
     @classmethod
     def get_active_zones(cls) -> dict:
+        data = daemon_client.call_json("FirewallGetActiveZones")
+        if isinstance(data, dict):
+            parsed: dict[str, list[str]] = {}
+            for zone, values in data.items():
+                if not isinstance(zone, str):
+                    continue
+                if isinstance(values, list):
+                    parsed[zone] = [str(item) for item in values]
+                else:
+                    parsed[zone] = []
+            return parsed
         return cls.get_active_zones_local()
 
     @classmethod
@@ -277,6 +294,13 @@ class FirewallManager:
 
     @classmethod
     def add_service(cls, service: str, zone: str = "", permanent: bool = True) -> FirewallResult:
+        data = daemon_client.call_json("FirewallAddService", service, zone, bool(permanent))
+        if isinstance(data, dict):
+            return FirewallResult(success=bool(data.get("success", False)), message=str(data.get("message", "")))
+        return cls.add_service_local(service, zone, permanent)
+
+    @classmethod
+    def add_service_local(cls, service: str, zone: str = "", permanent: bool = True) -> FirewallResult:
         try:
             cmd = ["pkexec", "firewall-cmd", f"--add-service={service}"]
             if zone:
@@ -294,6 +318,13 @@ class FirewallManager:
 
     @classmethod
     def remove_service(cls, service: str, zone: str = "", permanent: bool = True) -> FirewallResult:
+        data = daemon_client.call_json("FirewallRemoveService", service, zone, bool(permanent))
+        if isinstance(data, dict):
+            return FirewallResult(success=bool(data.get("success", False)), message=str(data.get("message", "")))
+        return cls.remove_service_local(service, zone, permanent)
+
+    @classmethod
+    def remove_service_local(cls, service: str, zone: str = "", permanent: bool = True) -> FirewallResult:
         try:
             cmd = ["pkexec", "firewall-cmd", f"--remove-service={service}"]
             if zone:
@@ -311,6 +342,9 @@ class FirewallManager:
 
     @classmethod
     def list_rich_rules(cls, zone: str = "") -> List[str]:
+        data = daemon_client.call_json("FirewallListRichRules", zone)
+        if isinstance(data, list):
+            return [str(x) for x in data]
         return cls.list_rich_rules_local(zone)
 
     @classmethod
@@ -364,6 +398,13 @@ class FirewallManager:
 
     @classmethod
     def set_default_zone(cls, zone: str) -> FirewallResult:
+        data = daemon_client.call_json("FirewallSetDefaultZone", zone)
+        if isinstance(data, dict):
+            return FirewallResult(success=bool(data.get("success", False)), message=str(data.get("message", "")))
+        return cls.set_default_zone_local(zone)
+
+    @classmethod
+    def set_default_zone_local(cls, zone: str) -> FirewallResult:
         try:
             result = subprocess.run(["pkexec", "firewall-cmd", f"--set-default-zone={zone}"], capture_output=True, text=True, timeout=15)
             if result.returncode == 0:
@@ -374,6 +415,13 @@ class FirewallManager:
 
     @classmethod
     def add_rich_rule(cls, rule: str, zone: str = "", permanent: bool = True) -> FirewallResult:
+        data = daemon_client.call_json("FirewallAddRichRule", rule, zone, bool(permanent))
+        if isinstance(data, dict):
+            return FirewallResult(success=bool(data.get("success", False)), message=str(data.get("message", "")))
+        return cls.add_rich_rule_local(rule, zone, permanent)
+
+    @classmethod
+    def add_rich_rule_local(cls, rule: str, zone: str = "", permanent: bool = True) -> FirewallResult:
         try:
             cmd = ["pkexec", "firewall-cmd", f"--add-rich-rule={rule}"]
             if zone:
@@ -391,6 +439,13 @@ class FirewallManager:
 
     @classmethod
     def remove_rich_rule(cls, rule: str, zone: str = "", permanent: bool = True) -> FirewallResult:
+        data = daemon_client.call_json("FirewallRemoveRichRule", rule, zone, bool(permanent))
+        if isinstance(data, dict):
+            return FirewallResult(success=bool(data.get("success", False)), message=str(data.get("message", "")))
+        return cls.remove_rich_rule_local(rule, zone, permanent)
+
+    @classmethod
+    def remove_rich_rule_local(cls, rule: str, zone: str = "", permanent: bool = True) -> FirewallResult:
         try:
             cmd = ["pkexec", "firewall-cmd", f"--remove-rich-rule={rule}"]
             if zone:

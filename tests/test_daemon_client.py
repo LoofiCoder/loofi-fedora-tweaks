@@ -5,7 +5,7 @@ import unittest
 from unittest.mock import patch
 
 from services.ipc.daemon_client import DaemonClient
-from services.ipc.errors import DaemonExecutionError, DaemonValidationError
+from services.ipc.errors import DaemonExecutionError, DaemonRequiredModeError, DaemonValidationError
 
 
 class TestDaemonClient(unittest.TestCase):
@@ -39,3 +39,31 @@ class TestDaemonClient(unittest.TestCase):
         with self.assertRaises(DaemonExecutionError):
             client.call_json("Ping")
 
+    @patch.dict(os.environ, {"LOOFI_IPC_MODE": "preferred"})
+    @patch("services.ipc.daemon_client.DaemonClient._call_raw")
+    def test_preferred_mode_falls_back_on_non_object_envelope(self, mock_raw):
+        mock_raw.return_value = '["not", "an", "envelope"]'
+        client = DaemonClient()
+        self.assertIsNone(client.call_json("Ping"))
+
+    @patch.dict(os.environ, {"LOOFI_IPC_MODE": "preferred"})
+    @patch("services.ipc.daemon_client.DaemonClient._call_raw")
+    def test_preferred_mode_falls_back_on_non_boolean_ok(self, mock_raw):
+        mock_raw.return_value = '{"ok": "yes", "data": {}, "error": null}'
+        client = DaemonClient()
+        self.assertIsNone(client.call_json("Ping"))
+
+    @patch.dict(os.environ, {"LOOFI_IPC_MODE": "preferred"})
+    @patch("services.ipc.daemon_client.DaemonClient._call_raw")
+    def test_preferred_mode_falls_back_on_invalid_error_shape(self, mock_raw):
+        mock_raw.return_value = '{"ok": false, "data": null, "error": "boom"}'
+        client = DaemonClient()
+        self.assertIsNone(client.call_json("Ping"))
+
+    @patch.dict(os.environ, {"LOOFI_IPC_MODE": "required"})
+    @patch("services.ipc.daemon_client.DaemonClient._call_raw")
+    def test_required_mode_raises_on_non_object_envelope(self, mock_raw):
+        mock_raw.return_value = '["not", "an", "envelope"]'
+        client = DaemonClient()
+        with self.assertRaises(DaemonRequiredModeError):
+            client.call_json("Ping")

@@ -83,6 +83,8 @@ class UpdateManager:
         """Check updates via DNF."""
         updates: List[UpdateEntry] = []
         package_manager = SystemManager.get_package_manager()
+        if not cached_which(package_manager):
+            return updates
         try:
             result = subprocess.run(
                 [package_manager, "check-update", "--quiet"],
@@ -158,6 +160,8 @@ class UpdateManager:
             return UpdateManager._preview_conflicts_ostree(packages)
 
         package_manager = SystemManager.get_package_manager()
+        if not cached_which(package_manager):
+            return conflicts
 
         try:
             cmd = [package_manager, "check-update", "--assumeno"]
@@ -332,6 +336,8 @@ class UpdateManager:
                 logger.error("Failed to get rpm-ostree history: %s", e)
         else:
             package_manager = SystemManager.get_package_manager()
+            if not cached_which(package_manager):
+                return history
             try:
                 result = subprocess.run(
                     [package_manager, "history", "list", f"--last={limit}"],

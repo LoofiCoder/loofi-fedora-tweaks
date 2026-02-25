@@ -60,4 +60,3 @@ def _is_valid_port(value: str) -> bool:
     except (TypeError, ValueError):
         return False
     return 1 <= port <= 65535
-

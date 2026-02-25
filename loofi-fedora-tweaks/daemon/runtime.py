@@ -32,4 +32,3 @@ def run_daemon() -> None:
     DaemonService(bus_name)
     logger.info("Loofi daemon D-Bus service started on %s", BUS_NAME)
     GLib.MainLoop().run()
-

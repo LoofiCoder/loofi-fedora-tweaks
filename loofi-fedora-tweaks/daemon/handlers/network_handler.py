@@ -42,3 +42,20 @@ class NetworkHandler:
         valid_name = validate_connection_name(connection_name)
         return NetworkUtils.reactivate_connection_local(valid_name)
 
+    @staticmethod
+    def connect_wifi(ssid: str) -> bool:
+        return NetworkUtils.connect_wifi_local(str(ssid or "").strip())
+
+    @staticmethod
+    def disconnect_wifi(interface_name: str = "wlan0") -> bool:
+        return NetworkUtils.disconnect_wifi_local(str(interface_name or "wlan0").strip())
+
+    @staticmethod
+    def apply_dns(connection_name: str, dns_servers: str) -> bool:
+        valid_name = validate_connection_name(connection_name)
+        return NetworkUtils.apply_dns_local(valid_name, str(dns_servers or "").strip())
+
+    @staticmethod
+    def set_hostname_privacy(connection_name: str, hide: bool) -> bool:
+        valid_name = validate_connection_name(connection_name)
+        return NetworkUtils.set_hostname_privacy_local(valid_name, bool(hide))

@@ -294,7 +294,7 @@ VS Code tasks are also available:
 
 - `Dev: Run Tests (Linux Auto: Docker→WSL)`
 - `Dev: Run Tests (Linux WSL)`
-- `Dev: Run Tests (Linux Docker, Primary)`
+- `Dev: Run Tests (Linux venv Docker, Primary)`
 
 Lint:
 

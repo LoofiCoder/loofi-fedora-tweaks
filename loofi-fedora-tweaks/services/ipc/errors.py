@@ -21,4 +21,3 @@ class DaemonExecutionError(DaemonClientError):
 
 class DaemonRequiredModeError(DaemonClientError):
     """Raised when IPC mode is required but daemon call cannot complete."""
-

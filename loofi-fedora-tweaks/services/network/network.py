@@ -1,4 +1,4 @@
-"""Network utility functions for nmcli-based operations."""
+"""Network utility functions for daemon-first NetworkManager operations."""
 
 from __future__ import annotations
 
@@ -180,7 +180,14 @@ class NetworkUtils:
 
     @staticmethod
     def connect_wifi(ssid: str) -> bool:
-        """Connect to Wi-Fi SSID using local network manager CLI."""
+        data = daemon_client.call_json("NetworkConnectWifi", ssid)
+        if isinstance(data, bool):
+            return data
+        return NetworkUtils.connect_wifi_local(ssid)
+
+    @staticmethod
+    def connect_wifi_local(ssid: str) -> bool:
+        """Local fallback for connecting to Wi-Fi by SSID."""
         try:
             subprocess.run(["nmcli", "device", "wifi", "connect", ssid], capture_output=True, text=True, timeout=30)
             return True
@@ -190,7 +197,14 @@ class NetworkUtils:
 
     @staticmethod
     def disconnect_wifi(interface_name: str = "wlan0") -> bool:
-        """Disconnect Wi-Fi interface."""
+        data = daemon_client.call_json("NetworkDisconnectWifi", interface_name)
+        if isinstance(data, bool):
+            return data
+        return NetworkUtils.disconnect_wifi_local(interface_name)
+
+    @staticmethod
+    def disconnect_wifi_local(interface_name: str = "wlan0") -> bool:
+        """Local fallback for disconnecting Wi-Fi interface."""
         try:
             subprocess.run(["nmcli", "device", "disconnect", interface_name], capture_output=True, text=True, timeout=20)
             return True
@@ -200,7 +214,14 @@ class NetworkUtils:
 
     @staticmethod
     def apply_dns(connection_name: str, dns_servers: str) -> bool:
-        """Apply DNS profile to a connection."""
+        data = daemon_client.call_json("NetworkApplyDns", connection_name, dns_servers)
+        if isinstance(data, bool):
+            return data
+        return NetworkUtils.apply_dns_local(connection_name, dns_servers)
+
+    @staticmethod
+    def apply_dns_local(connection_name: str, dns_servers: str) -> bool:
+        """Local fallback for applying DNS profile to a connection."""
         try:
             if dns_servers == "auto":
                 cmd = [
@@ -234,7 +255,14 @@ class NetworkUtils:
 
     @staticmethod
     def set_hostname_privacy(connection_name: str, hide: bool) -> bool:
-        """Set hostname privacy for DHCP requests."""
+        data = daemon_client.call_json("NetworkSetHostnamePrivacy", connection_name, bool(hide))
+        if isinstance(data, bool):
+            return data
+        return NetworkUtils.set_hostname_privacy_local(connection_name, hide)
+
+    @staticmethod
+    def set_hostname_privacy_local(connection_name: str, hide: bool) -> bool:
+        """Local fallback for setting DHCP hostname privacy."""
         try:
             value = "no" if hide else "yes"
             subprocess.run(

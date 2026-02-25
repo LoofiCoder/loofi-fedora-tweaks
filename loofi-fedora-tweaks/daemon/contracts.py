@@ -41,4 +41,3 @@ def ok_response(data: Any = None) -> str:
 def error_response(code: str, message: str) -> str:
     """Build an error response envelope."""
     return ResponseEnvelope(ok=False, data=None, error=ErrorPayload(code=code, message=message)).to_json()
-

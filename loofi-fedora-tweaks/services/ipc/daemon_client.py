@@ -98,15 +98,25 @@ class DaemonClient:
         except (TypeError, ValueError, json.JSONDecodeError) as exc:
             raise DaemonClientError(f"Invalid daemon response: {exc}") from exc
 
+        if not isinstance(raw, dict):
+            raise DaemonClientError("Invalid daemon response: envelope must be an object")
+
+        ok_value = raw.get("ok")
+        if not isinstance(ok_value, bool):
+            raise DaemonClientError("Invalid daemon response: 'ok' must be a boolean")
+
         error = raw.get("error")
         parsed_error = None
+        if error is not None and not isinstance(error, dict):
+            raise DaemonClientError("Invalid daemon response: 'error' must be an object or null")
+
         if isinstance(error, dict):
             parsed_error = DaemonError(
                 code=str(error.get("code", "unknown")),
                 message=str(error.get("message", "Unknown daemon error")),
             )
 
-        return DaemonResponse(ok=bool(raw.get("ok")), data=raw.get("data"), error=parsed_error)
+        return DaemonResponse(ok=ok_value, data=raw.get("data"), error=parsed_error)
 
     @staticmethod
     def _raise_domain_error(error: DaemonError | None) -> None:

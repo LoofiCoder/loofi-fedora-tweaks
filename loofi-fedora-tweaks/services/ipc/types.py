@@ -21,4 +21,3 @@ class DaemonResponse:
     ok: bool
     data: Any = None
     error: DaemonError | None = None
-
