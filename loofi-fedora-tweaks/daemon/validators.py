@@ -245,7 +245,8 @@ def _resolve_policy_dir(policy_dir: str | Path | None) -> Path:
 
 def _extract_policy_actions(policy_path: Path) -> list[dict[str, str]]:
     try:
-        root = ET.parse(policy_path).getroot()
+        # Polkit policy files are local project assets under config/.
+        root = ET.parse(policy_path).getroot()  # nosec B314
     except ET.ParseError:
         return []
 

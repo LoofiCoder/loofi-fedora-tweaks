@@ -115,7 +115,7 @@ def test_check_fedora_review_timeout(mock_which, mock_run):
     assert any("timed out" in error for error in errors)
 
 
-@patch.dict(os.environ, {"LOOFI_SKIP_FEDORA_REVIEW_GATE": "1"}, clear=False)
+@patch.dict(os.environ, {"LOOFI_SKIP_FEDORA_REVIEW_GATE": "1"}, clear=True)
 @patch("subprocess.run")
 @patch("shutil.which", return_value=None)
 def test_check_fedora_review_local_override_skips_gate(mock_which, mock_run):
