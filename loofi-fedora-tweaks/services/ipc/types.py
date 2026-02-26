@@ -47,6 +47,9 @@ def is_package_payload(method: str, payload: Any) -> bool:
     if method == "PackageIsInstalled":
         return isinstance(payload, bool)
 
+    if method.startswith("Package"):
+        return False
+
     return True
 
 
@@ -66,5 +69,8 @@ def is_system_payload(method: str, payload: Any) -> bool:
 
     if method in {"SystemGetPackageManager", "SystemGetVariantName"}:
         return isinstance(payload, str)
+
+    if method.startswith("System"):
+        return False
 
     return True

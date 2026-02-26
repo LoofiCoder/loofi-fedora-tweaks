@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from services.network.network import NetworkUtils
 
-from daemon.validators import validate_connection_name
+from daemon.validators import validate_boolean, validate_connection_name, validate_dns_servers, validate_interface_name, validate_ssid
 
 
 class NetworkHandler:
@@ -44,18 +44,22 @@ class NetworkHandler:
 
     @staticmethod
     def connect_wifi(ssid: str) -> bool:
-        return NetworkUtils.connect_wifi_local(str(ssid or "").strip())
+        valid_ssid = validate_ssid(ssid)
+        return NetworkUtils.connect_wifi_local(valid_ssid)
 
     @staticmethod
     def disconnect_wifi(interface_name: str = "wlan0") -> bool:
-        return NetworkUtils.disconnect_wifi_local(str(interface_name or "wlan0").strip())
+        valid_interface_name = validate_interface_name(interface_name)
+        return NetworkUtils.disconnect_wifi_local(valid_interface_name)
 
     @staticmethod
     def apply_dns(connection_name: str, dns_servers: str) -> bool:
         valid_name = validate_connection_name(connection_name)
-        return NetworkUtils.apply_dns_local(valid_name, str(dns_servers or "").strip())
+        valid_dns_servers = validate_dns_servers(dns_servers)
+        return NetworkUtils.apply_dns_local(valid_name, valid_dns_servers)
 
     @staticmethod
     def set_hostname_privacy(connection_name: str, hide: bool) -> bool:
         valid_name = validate_connection_name(connection_name)
-        return NetworkUtils.set_hostname_privacy_local(valid_name, bool(hide))
+        valid_hide = validate_boolean(hide, "hide")
+        return NetworkUtils.set_hostname_privacy_local(valid_name, valid_hide)

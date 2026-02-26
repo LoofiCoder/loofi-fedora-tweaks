@@ -5,6 +5,14 @@ from __future__ import annotations
 from core.executor.action_result import ActionResult
 from services.system.service import SystemService
 from services.system.services import ServiceManager, UnitScope
+from daemon.validators import (
+    validate_delay_seconds,
+    validate_description,
+    validate_hostname,
+    validate_unit_filter,
+    validate_unit_name,
+    validate_unit_scope,
+)
 
 
 class ServiceHandler:
@@ -13,32 +21,39 @@ class ServiceHandler:
     @staticmethod
     def reboot(description: str = "", delay_seconds: int = 0) -> dict:
         service = SystemService()
-        result = service.reboot_local(description=str(description or ""), delay_seconds=int(delay_seconds))
+        valid_description = validate_description(description)
+        valid_delay_seconds = validate_delay_seconds(delay_seconds)
+        result = service.reboot_local(description=valid_description, delay_seconds=valid_delay_seconds)
         return ServiceHandler._serialize_action_result(result)
 
     @staticmethod
     def shutdown(description: str = "", delay_seconds: int = 0) -> dict:
         service = SystemService()
-        result = service.shutdown_local(description=str(description or ""), delay_seconds=int(delay_seconds))
+        valid_description = validate_description(description)
+        valid_delay_seconds = validate_delay_seconds(delay_seconds)
+        result = service.shutdown_local(description=valid_description, delay_seconds=valid_delay_seconds)
         return ServiceHandler._serialize_action_result(result)
 
     @staticmethod
     def suspend(description: str = "") -> dict:
         service = SystemService()
-        result = service.suspend_local(description=str(description or ""))
+        valid_description = validate_description(description)
+        result = service.suspend_local(description=valid_description)
         return ServiceHandler._serialize_action_result(result)
 
     @staticmethod
     def update_grub(description: str = "") -> dict:
         service = SystemService()
-        result = service.update_grub_local(description=str(description or ""))
+        valid_description = validate_description(description)
+        result = service.update_grub_local(description=valid_description)
         return ServiceHandler._serialize_action_result(result)
 
     @staticmethod
     def set_hostname(hostname: str, description: str = "") -> dict:
         service = SystemService()
-        clean_hostname = str(hostname or "").strip()
-        result = service.set_hostname_local(clean_hostname, description=str(description or ""))
+        valid_hostname = validate_hostname(hostname)
+        valid_description = validate_description(description)
+        result = service.set_hostname_local(valid_hostname, description=valid_description)
         return ServiceHandler._serialize_action_result(result)
 
     @staticmethod
@@ -55,8 +70,10 @@ class ServiceHandler:
 
     @staticmethod
     def list_units(scope: str = "user", filter_type: str = "all") -> list[dict[str, str | bool]]:
-        parsed_scope = UnitScope.SYSTEM if str(scope or "").strip().lower() == "system" else UnitScope.USER
-        units = ServiceManager.list_units(parsed_scope, str(filter_type or "all").strip().lower())
+        valid_scope = validate_unit_scope(scope)
+        valid_filter_type = validate_unit_filter(filter_type)
+        parsed_scope = UnitScope.SYSTEM if valid_scope == "system" else UnitScope.USER
+        units = ServiceManager.list_units(parsed_scope, valid_filter_type)
         return [
             {
                 "name": unit.name,
@@ -70,23 +87,26 @@ class ServiceHandler:
 
     @staticmethod
     def start_unit(name: str, scope: str = "user") -> dict[str, str | bool]:
-        clean_name = str(name or "").strip()
-        parsed_scope = UnitScope.SYSTEM if str(scope or "").strip().lower() == "system" else UnitScope.USER
-        result = ServiceManager.start_unit(clean_name, parsed_scope)
+        valid_name = validate_unit_name(name)
+        valid_scope = validate_unit_scope(scope)
+        parsed_scope = UnitScope.SYSTEM if valid_scope == "system" else UnitScope.USER
+        result = ServiceManager.start_unit(valid_name, parsed_scope)
         return {"success": result.success, "message": result.message}
 
     @staticmethod
     def stop_unit(name: str, scope: str = "user") -> dict[str, str | bool]:
-        clean_name = str(name or "").strip()
-        parsed_scope = UnitScope.SYSTEM if str(scope or "").strip().lower() == "system" else UnitScope.USER
-        result = ServiceManager.stop_unit(clean_name, parsed_scope)
+        valid_name = validate_unit_name(name)
+        valid_scope = validate_unit_scope(scope)
+        parsed_scope = UnitScope.SYSTEM if valid_scope == "system" else UnitScope.USER
+        result = ServiceManager.stop_unit(valid_name, parsed_scope)
         return {"success": result.success, "message": result.message}
 
     @staticmethod
     def restart_unit(name: str, scope: str = "user") -> dict[str, str | bool]:
-        clean_name = str(name or "").strip()
-        parsed_scope = UnitScope.SYSTEM if str(scope or "").strip().lower() == "system" else UnitScope.USER
-        result = ServiceManager.restart_unit(clean_name, parsed_scope)
+        valid_name = validate_unit_name(name)
+        valid_scope = validate_unit_scope(scope)
+        parsed_scope = UnitScope.SYSTEM if valid_scope == "system" else UnitScope.USER
+        result = ServiceManager.restart_unit(valid_name, parsed_scope)
         return {"success": result.success, "message": result.message}
 
     @staticmethod

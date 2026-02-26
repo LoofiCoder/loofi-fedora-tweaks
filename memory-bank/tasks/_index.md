@@ -2,7 +2,7 @@
 
 ## In Progress
 
-- [TASK-018] v2.6.0 package API migration slice — TASK001-007 complete; workflow package/release phases pending
+(none)
 
 ## Pending
 
@@ -32,6 +32,8 @@
 - [TASK-021] Package service API migration slice — Completed on 2026-02-25
 - [TASK-022] IPC behavior and compatibility hardening (packages) — Completed on 2026-02-25
 - [TASK-023] Test updates for slice-2 package migration — Completed on 2026-02-25
+- [TASK-024] v2.7.0 system-service API migration slice — Completed on 2026-02-25
+- [TASK-025] v2.8.0 policy inventory + validator hardening slice — Completed on 2026-02-26 (targeted hardening coverage: 91%)
 
 ## Abandoned
 

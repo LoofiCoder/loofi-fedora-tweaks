@@ -50,7 +50,44 @@
 | 2.4.0   | Daemon Foundation               | DONE    | Daemonized network/firewall execution boundary via D-Bus with fallback                      |
 | 2.5.0   | API Migration Slice 1           | DONE    | Network/firewall API-first hardening with strict IPC compatibility and fallback safeguards   |
 | 2.6.0   | API Migration Slice 2           | DONE    | Package API-first migration with strict IPC payload validation and fallback safeguards       |
-| 2.7.0   | API Migration Slice 3           | ACTIVE  | System service API migration + bounded Phase 3 policy-audit preparation                      |
+| 2.7.0   | API Migration Slice 3           | DONE    | System service API migration + bounded Phase 3 policy-audit preparation                      |
+| 2.8.0   | API Migration Slice 4           | ACTIVE  | Policy inventory execution + privileged validator hardening                                   |
+
+---
+
+## [DONE] v2.8.0 "API Migration Slice 4" — Phase 3 Policy Inventory & Validator Hardening
+
+### Scope
+
+Execute the bounded Phase 3 preparation work identified in v2.7.0 by turning
+policy inventory and privileged validator tightening into implementation tasks.
+The slice remains restrictive: no root-capability expansion, no privilege model
+broadening, and no UI feature scope unrelated to hardening.
+
+### Planned Deliverables
+
+- [x] Build a policy inventory map for `config/org.loofi.fedora-tweaks.*.policy`
+- [x] Map daemon-exposed privileged methods to validator coverage and identify gaps
+- [x] Tighten parameter validation for prioritized privileged pathways
+- [x] Add focused tests for new validator edge-cases and deny-by-default behavior
+- [x] Synchronize roadmap/workflow/memory metadata after verification
+
+### Status snapshot (2026-02-26)
+
+- [x] v2.8.0 task chain `TASK001`–`TASK006` completed (plan/design/build/test/document)
+- [x] Targeted hardening suite passed with 98 tests
+- [x] Targeted hardening coverage reached 91% (`daemon.validators`, selected handlers, `services.ipc.types`)
+- [x] `P6 PACKAGE` executed successfully in Fedora container (`loofi-fedora-tweaks-2.7.0-1.fc41.noarch.rpm`, `loofi_fedora_tweaks-2.7.0.tar.gz`)
+- [x] `P7 RELEASE` completed (workflow closure committed and tagged)
+
+### Agent Assignment
+
+| Agent                      | Task                                                               |
+| -------------------------- | ------------------------------------------------------------------ |
+| project-coordinator        | v2.8.0 scope/task contracts                                        |
+| backend-builder            | validator hardening + policy mapping utilities                     |
+| test-writer                | privileged validation regression coverage                          |
+| release-planner            | workflow/roadmap/memory metadata synchronization                   |
 
 ---
 
@@ -82,7 +119,7 @@ fallback semantics.
 
 ---
 
-## [ACTIVE] v2.7.0 "API Migration Slice 3" — Phase 2 System-Service Migration + Phase 3 Prep
+## [DONE] v2.7.0 "API Migration Slice 3" — Phase 2 System-Service Migration + Phase 3 Prep
 
 ### Scope
 
@@ -107,6 +144,7 @@ policy-audit inventory and validator-tightening tasks without expanding privileg
 - [x] Focused daemon/system fallback regression tests passed
 - [x] Phase 3 prep inventory documented in `arch-v2.7.0.md`
 - [x] Workflow phase metadata sync finalized (`run-manifest-v2.7.0.json` + memory-bank progress)
+- [x] Workflow closure phases completed (`P6 package` and `P7 release`)
 
 ### Agent Assignment
 

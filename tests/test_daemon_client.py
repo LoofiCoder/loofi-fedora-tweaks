@@ -104,3 +104,18 @@ class TestDaemonClient(unittest.TestCase):
         mock_raw.return_value = '{"ok": true, "data": "dnf", "error": null}'
         client = DaemonClient()
         self.assertEqual(client.call_json("SystemGetPackageManager"), "dnf")
+
+    @patch.dict(os.environ, {"LOOFI_IPC_MODE": "preferred"})
+    @patch("services.ipc.daemon_client.DaemonClient._call_raw")
+    def test_preferred_mode_falls_back_on_unknown_package_method_payload(self, mock_raw):
+        mock_raw.return_value = '{"ok": true, "data": {}, "error": null}'
+        client = DaemonClient()
+        self.assertIsNone(client.call_json("PackageUnknownMethod"))
+
+    @patch.dict(os.environ, {"LOOFI_IPC_MODE": "required"})
+    @patch("services.ipc.daemon_client.DaemonClient._call_raw")
+    def test_required_mode_raises_on_unknown_system_method_payload(self, mock_raw):
+        mock_raw.return_value = '{"ok": true, "data": {}, "error": null}'
+        client = DaemonClient()
+        with self.assertRaises(DaemonRequiredModeError):
+            client.call_json("SystemUnknownMethod")
