@@ -110,7 +110,10 @@ def test_release_doc_check_require_logs_accepts_patch_tag_artifacts(tmp_path):
     reports = tmp_path / ".workflow" / "reports"
     reports.mkdir(parents=True, exist_ok=True)
     (reports / "test-results-v26.0.1.json").write_text(
-        '{"failed": 0}',
+        (
+            '{"status": "pass", "summary": '
+            '{"total_tests": 12, "passed": 12, "failed": 0, "errors": 0}}'
+        ),
         encoding="utf-8",
     )
     (reports / "run-manifest-v26.0.1.json").write_text(
@@ -120,6 +123,32 @@ def test_release_doc_check_require_logs_accepts_patch_tag_artifacts(tmp_path):
 
     issues = module.validate_release_docs(tmp_path, require_logs=True)
     assert issues == []
+
+
+def test_release_doc_check_require_logs_rejects_zero_test_pass_report(tmp_path):
+    module = _load_module(
+        "check_release_docs_test_logs_zero_total",
+        Path("scripts/check_release_docs.py"),
+    )
+    _write_release_files(tmp_path)
+    _set_module_paths(module, tmp_path)
+
+    reports = tmp_path / ".workflow" / "reports"
+    reports.mkdir(parents=True, exist_ok=True)
+    (reports / "test-results-v26.0.1.json").write_text(
+        (
+            '{"status": "pass", "summary": '
+            '{"total_tests": 0, "passed": 0, "failed": 0, "errors": 0}}'
+        ),
+        encoding="utf-8",
+    )
+    (reports / "run-manifest-v26.0.1.json").write_text(
+        '{"phases": [{"phase": "plan", "status": "success"}]}',
+        encoding="utf-8",
+    )
+
+    issues = module.validate_release_docs(tmp_path, require_logs=True)
+    assert any("zero executed tests" in item for item in issues)
 
 
 def test_release_doc_check_require_logs_rejects_short_tag_only_artifacts(tmp_path):
@@ -133,7 +162,10 @@ def test_release_doc_check_require_logs_rejects_short_tag_only_artifacts(tmp_pat
     reports = tmp_path / ".workflow" / "reports"
     reports.mkdir(parents=True, exist_ok=True)
     (reports / "test-results-v26.0.json").write_text(
-        '{"failed": 0}',
+        (
+            '{"status": "pass", "summary": '
+            '{"total_tests": 4, "passed": 4, "failed": 0, "errors": 0}}'
+        ),
         encoding="utf-8",
     )
     (reports / "run-manifest-v26.0.json").write_text(

@@ -87,13 +87,9 @@ def _resolve_existing(candidates: list[Path]) -> Path | None:
 
 def run_tests() -> dict:
     """Execute pytest and parse the summary line."""
-    env = {
-        "PYTHONPATH": str(ROOT / "loofi-fedora-tweaks"),
-        "QT_QPA_PLATFORM": "offscreen",
-        "PATH": os.environ.get("PATH", ""),
-        "HOME": os.environ.get("HOME", ""),
-        "DISPLAY": os.environ.get("DISPLAY", ""),
-    }
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(ROOT / "loofi-fedora-tweaks")
+    env["QT_QPA_PLATFORM"] = "offscreen"
     start = time.monotonic()
     result = subprocess.run(
         PYTEST_CMD,
@@ -102,9 +98,13 @@ def run_tests() -> dict:
     elapsed = round(time.monotonic() - start, 2)
 
     # Parse last non-empty line for counts: "2322 passed, 20 skipped ..."
-    lines = [l.strip()
-             for l in result.stdout.strip().splitlines() if l.strip()]
+    lines = [line.strip()
+             for line in result.stdout.strip().splitlines() if line.strip()]
     summary_line = lines[-1] if lines else ""
+    stderr_lines = [line.strip()
+                    for line in result.stderr.strip().splitlines() if line.strip()]
+    stdout_tail = lines[-1] if lines else ""
+    stderr_tail = stderr_lines[-1] if stderr_lines else ""
     passed = _extract_count(summary_line, "passed")
     failed = _extract_count(summary_line, "failed")
     skipped = _extract_count(summary_line, "skipped")
@@ -119,6 +119,8 @@ def run_tests() -> dict:
         "total": passed + failed + skipped + errors,
         "duration_seconds": elapsed,
         "summary_line": summary_line,
+        "stdout_tail": stdout_tail,
+        "stderr_tail": stderr_tail,
     }
 
 
@@ -136,7 +138,16 @@ def _extract_count(line: str, keyword: str) -> int:
 def generate_test_results(version: str, test_data: dict) -> dict:
     """Build test-results JSON payload."""
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    status = "pass" if test_data["failed"] == 0 and test_data["errors"] == 0 else "fail"
+    status = (
+        "pass"
+        if (
+            test_data["returncode"] == 0
+            and test_data["failed"] == 0
+            and test_data["errors"] == 0
+            and test_data["total"] > 0
+        )
+        else "fail"
+    )
     total = test_data["total"]
     rate = f"{round(test_data['passed'] / total * 100)}%" if total else "0%"
     return {
@@ -258,10 +269,46 @@ def main() -> int:
     else:
         print("[workflow-reports] running test suite...")
         test_data = run_tests()
+        returncode_raw = test_data.get("returncode")
+        failed_raw = test_data.get("failed")
+        errors_raw = test_data.get("errors")
+        total_raw = test_data.get("total")
+
+        returncode = returncode_raw if isinstance(returncode_raw, int) else 1
+        failed = failed_raw if isinstance(failed_raw, int) else 0
+        errors = errors_raw if isinstance(errors_raw, int) else 0
+        total = total_raw if isinstance(total_raw, int) else 0
+        summary_line_raw = test_data.get("summary_line")
+        summary_line = summary_line_raw if isinstance(
+            summary_line_raw, str) else ""
+        stderr_tail_raw = test_data.get("stderr_tail")
+        stderr_tail = stderr_tail_raw if isinstance(
+            stderr_tail_raw, str) else ""
+        stdout_tail_raw = test_data.get("stdout_tail")
+        stdout_tail = stdout_tail_raw if isinstance(
+            stdout_tail_raw, str) else ""
         print(f"[workflow-reports] {test_data['summary_line']}")
-        if test_data["failed"] > 0 or test_data["errors"] > 0:
+        if returncode != 0:
             print(
-                "[workflow-reports] WARNING: tests have failures — reports still generated")
+                "[workflow-reports] WARNING: pytest exited non-zero "
+                "— report will be marked FAIL"
+            )
+            if not summary_line:
+                root_cause = stderr_tail or stdout_tail or "no output captured"
+                print(
+                    "[workflow-reports] ROOT-CAUSE: pytest failed before "
+                    f"summary output: {root_cause}"
+                )
+        if failed > 0 or errors > 0:
+            print(
+                "[workflow-reports] WARNING: tests have failures "
+                "— reports still generated"
+            )
+        if total == 0:
+            print(
+                "[workflow-reports] WARNING: zero executed tests "
+                "detected — fail-closed applied"
+            )
 
     # Write test results
     test_payload = generate_test_results(version, test_data)

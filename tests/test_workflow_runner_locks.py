@@ -406,6 +406,27 @@ def test_test_report_has_zero_failures_rejects_short_tag_only_report(tmp_path):
     assert "missing or invalid test report" in reason
 
 
+def test_test_report_has_zero_failures_rejects_zero_total_report(tmp_path):
+    module = _load_module(
+        "workflow_runner_test_report_zero_total_test",
+        Path("scripts/workflow_runner.py"),
+    )
+    module.REPORTS_DIR = tmp_path / "reports"
+    module.REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    (module.REPORTS_DIR / "test-results-v28.0.0.json").write_text(
+        (
+            '{"status": "pass", "summary": '
+            '{"total_tests": 0, "passed": 0, "failed": 0, "errors": 0}}'
+        ),
+        encoding="utf-8",
+    )
+
+    ok, reason = module.test_report_has_zero_failures("v28.0.0")
+
+    assert not ok
+    assert "zero executed tests" in reason
+
+
 def test_phase_completed_in_manifest_accepts_normalized_short_input(tmp_path):
     module = _load_module(
         "workflow_runner_manifest_patch_tag_test",

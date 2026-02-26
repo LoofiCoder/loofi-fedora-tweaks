@@ -155,6 +155,26 @@ def _extract_codename() -> str | None:
     return match.group(1) if match else None
 
 
+def _metric_from_report(report: dict, key: str) -> int | None:
+    """Return integer metric from summary first, then top-level fallback."""
+    summary = report.get("summary")
+    if isinstance(summary, dict):
+        value = summary.get(key)
+        if isinstance(value, int):
+            return value
+
+    aliases = {
+        "total_tests": ("total_tests", "total"),
+        "failed": ("failed", "failures", "failed_tests", "tests_failed"),
+        "errors": ("errors",),
+    }
+    for alias in aliases.get(key, (key,)):
+        value = report.get(alias)
+        if isinstance(value, int):
+            return value
+    return None
+
+
 def validate_release_docs(root: Path, *, require_logs: bool) -> List[str]:
     errors: List[str] = []
 
@@ -223,6 +243,54 @@ def validate_release_docs(root: Path, *, require_logs: bool) -> List[str]:
                 if not isinstance(phases, list) or not phases:
                     errors.append(
                         f"run manifest has no phase entries: {run_manifest}")
+
+        if test_report is not None and test_report.exists():
+            try:
+                payload = json.loads(test_report.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                errors.append(f"invalid JSON test report: {test_report}")
+            else:
+                if not isinstance(payload, dict):
+                    errors.append(
+                        f"invalid test report payload: {test_report}")
+                else:
+                    total_tests = _metric_from_report(payload, "total_tests")
+                    failed = _metric_from_report(payload, "failed")
+                    report_errors = _metric_from_report(payload, "errors")
+                    status = payload.get("status")
+
+                    if total_tests is None:
+                        errors.append(
+                            "workflow test report missing total_tests metric"
+                        )
+                    elif total_tests <= 0:
+                        errors.append(
+                            "workflow test report has zero executed tests"
+                        )
+
+                    if failed is None:
+                        errors.append(
+                            "workflow test report missing failed metric"
+                        )
+                    elif failed != 0:
+                        errors.append(
+                            f"workflow test report indicates failed={failed}"
+                        )
+
+                    if report_errors is None:
+                        errors.append(
+                            "workflow test report missing errors metric"
+                        )
+                    elif report_errors != 0:
+                        errors.append(
+                            "workflow test report indicates errors="
+                            f"{report_errors}"
+                        )
+
+                    if status != "pass":
+                        errors.append(
+                            "workflow test report status must be 'pass'"
+                        )
 
     # --- Stale version tests ---
     codename = _extract_codename()

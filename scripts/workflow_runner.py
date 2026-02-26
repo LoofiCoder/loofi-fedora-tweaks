@@ -725,24 +725,54 @@ def phase_completed_in_manifest(version_tag: str, phase: str) -> bool:
 
 
 def test_report_has_zero_failures(version_tag: str) -> tuple[bool, str]:
-    """Validate test report exists and indicates zero failures."""
+    """Validate test report exists and indicates a healthy executed test run."""
     report_path = resolve_artifact_for_read(version_tag, "test_report")
     report = load_json_file(report_path)
     if not report:
         return False, f"missing or invalid test report: {report_path}"
 
-    possible_keys = ("failures", "failed", "failed_tests", "tests_failed")
-    failures = None
-    for key in possible_keys:
+    summary = report.get("summary") if isinstance(report, dict) else None
+    failed_candidates: list[int] = []
+    total_candidates: list[int] = []
+    error_candidates: list[int] = []
+
+    if isinstance(summary, dict):
+        if isinstance(summary.get("failed"), int):
+            failed_candidates.append(summary["failed"])
+        if isinstance(summary.get("total_tests"), int):
+            total_candidates.append(summary["total_tests"])
+        if isinstance(summary.get("errors"), int):
+            error_candidates.append(summary["errors"])
+
+    for key in ("failures", "failed", "failed_tests", "tests_failed"):
         value = report.get(key)
         if isinstance(value, int):
-            failures = value
-            break
+            failed_candidates.append(value)
 
-    if failures is None:
-        return False, f"test report missing failure count fields: {possible_keys}"
-    if failures != 0:
-        return False, f"test report indicates failures={failures}"
+    for key in ("total_tests", "total"):
+        value = report.get(key)
+        if isinstance(value, int):
+            total_candidates.append(value)
+
+    for key in ("errors",):
+        value = report.get(key)
+        if isinstance(value, int):
+            error_candidates.append(value)
+
+    if not failed_candidates:
+        return False, "test report missing failure count metric"
+    if failed_candidates[0] != 0:
+        return False, f"test report indicates failures={failed_candidates[0]}"
+
+    if not error_candidates:
+        return False, "test report missing error count metric"
+    if error_candidates[0] != 0:
+        return False, f"test report indicates errors={error_candidates[0]}"
+
+    if not total_candidates:
+        return False, "test report missing total test count metric"
+    if total_candidates[0] <= 0:
+        return False, "test report has zero executed tests"
 
     return True, "ok"
 
