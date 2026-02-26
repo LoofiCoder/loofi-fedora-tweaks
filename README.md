@@ -1,4 +1,4 @@
-# Loofi Fedora Tweaks v2.8.0 "API Migration Slice 4"
+# Loofi Fedora Tweaks v2.9.0 "API Migration Slice 5"
 
 <!-- markdownlint-configure-file {"MD033": false} -->
 
@@ -12,8 +12,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/loofitheboss/loofi-fedora-tweaks/releases/tag/v2.8.0">
-    <img src="https://img.shields.io/badge/Release-v2.8.0-blue?style=for-the-badge&logo=github" alt="Release v2.8.0"/>
+  <a href="https://github.com/loofitheboss/loofi-fedora-tweaks/releases/tag/v2.9.0">
+    <img src="https://img.shields.io/badge/Release-v2.9.0-blue?style=for-the-badge&logo=github" alt="Release v2.9.0"/>
   </a>
   <img src="https://img.shields.io/badge/Fedora-43-blue?style=for-the-badge&logo=fedora" alt="Fedora 43"/>
   <img src="https://img.shields.io/badge/Python-3.12+-green?style=for-the-badge&logo=python" alt="Python"/>
@@ -41,27 +41,20 @@ It is designed to be practical for both casual users and advanced users:
 
 ---
 
-## What Is New in v2.8.0?
+## What Is New in v2.9.0?
 
-`v2.8.0 "API Migration Slice 4"` closes the policy inventory and validator hardening slice with workflow and release alignment updates.
-
-- **Policy inventory completed** for privileged daemon pathways and validator coverage mapping.
-- **Validator hardening delivered** with deny-by-default parameter validation on prioritized pathways.
-- **Focused regression coverage expanded** for daemon handlers and IPC payload guards (`98 passed` targeted suite).
-- **Workflow metadata synchronized** for completed v2.8.0 release closure.
-
-Full notes: [`docs/releases/RELEASE-NOTES-v2.8.0.md`](docs/releases/RELEASE-NOTES-v2.8.0.md)
-
-## Current Development Cycle: v2.9.0
-
-`v2.9.0 "API Migration Slice 5"` completes the residual privileged-path daemon/API migration slice for selected service, firewall, and ports pathways.
+`v2.9.0 "API Migration Slice 5"` completes the residual privileged-path daemon/API migration for selected service, firewall, and ports pathways.
 
 - **Daemon surface expanded** for selected `Package*`, `System*`, and `Service*` D-Bus methods.
 - **Service pathways migrated** to daemon-first behavior with compatibility-safe preferred fallback.
 - **Ports/firewall hardening completed** with fail-closed validation and recursion-safe local status behavior.
 - **Focused migration verification passed** (`248 passed`) for daemon client, fallback modes, service/system, firewall, and ports suites.
 
-Cycle notes: [`docs/releases/RELEASE-NOTES-v2.9.0.md`](docs/releases/RELEASE-NOTES-v2.9.0.md)
+Full notes: [`docs/releases/RELEASE-NOTES-v2.9.0.md`](docs/releases/RELEASE-NOTES-v2.9.0.md)
+
+## Current Development Cycle
+
+Follow [`ROADMAP.md`](ROADMAP.md) for the active release branch and current implementation slice.
 
 ---
 

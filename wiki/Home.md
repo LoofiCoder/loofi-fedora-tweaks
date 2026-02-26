@@ -2,7 +2,7 @@
 
 Welcome to the official wiki for **Loofi Fedora Tweaks** — a modern Fedora control center for maintenance, diagnostics, security, performance, and automation.
 
-**Current Version**: v2.8.0 "API Migration Slice 4"  
+**Current Version**: v2.9.0 "API Migration Slice 5"  
 **Screenshots Refreshed**: September 2026
 
 ![Loofi Fedora Tweaks Dashboard](images/hero-home.png)
@@ -81,7 +81,7 @@ Welcome to the official wiki for **Loofi Fedora Tweaks** — a modern Fedora con
 ## Quick Links
 
 - GitHub Repository: [loofitheboss/loofi-fedora-tweaks](https://github.com/loofitheboss/loofi-fedora-tweaks)
-- Latest Release: [v2.8.0](https://github.com/loofitheboss/loofi-fedora-tweaks/releases/tag/v2.8.0)
+- Latest Release: [v2.9.0](https://github.com/loofitheboss/loofi-fedora-tweaks/releases/tag/v2.9.0)
 - Issues: [Issue Tracker](https://github.com/loofitheboss/loofi-fedora-tweaks/issues)
 - Main README: [README.md](https://github.com/loofitheboss/loofi-fedora-tweaks/blob/master/README.md)
 - Architecture Doc: [ARCHITECTURE.md](https://github.com/loofitheboss/loofi-fedora-tweaks/blob/master/ARCHITECTURE.md)

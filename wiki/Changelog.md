@@ -267,7 +267,7 @@ For the complete changelog with all changes, see [CHANGELOG.md](https://github.c
 
 ## Statistics
 
-**Current (v2.8.0):**
+**Current (v2.9.0):**
 - **Tests**: Targeted hardening suite (`98 passed`) and focused regression subset (`174 passed, 14 skipped`)
 - **Coverage threshold gate**: 77% (CI/auto-release)
 - **Tabs**: 28

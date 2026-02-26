@@ -22,9 +22,9 @@ jobs:
           path: wiki-repo
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Sync wiki pages
+      - name: Sync wiki content
         run: |
-          cp wiki/*.md wiki-repo/
+          rsync -av --delete wiki/ wiki-repo/
           cd wiki-repo
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
