@@ -50,7 +50,14 @@ def validated_action(schema: Dict[str, Dict[str, Any]]) -> Callable:
     """Decorator to validate PrivilegedCommand method parameters.
 
     Schema format:
-        { "param_name": {"type": str, "required": bool, "min_len": int, "pattern": re} }
+        {
+            "param_name": {
+                "type": str,
+                "required": bool,
+                "min_len": int,
+                "pattern": re,
+            }
+        }
 
     Validates:
     - Required parameters are present and non-empty
@@ -104,15 +111,19 @@ def validated_action(schema: Dict[str, Dict[str, Any]]) -> Callable:
                 # Type check
                 expected_type = constraints.get("type")
                 if expected_type and not isinstance(value, expected_type):
+                    detail = (
+                        f"Expected {expected_type.__name__}, "
+                        f"got {type(value).__name__}"
+                    )
                     audit.log_validation_failure(
                         action=action_name,
                         param=pname,
-                        detail=f"Expected {expected_type.__name__}, got {type(value).__name__}",
+                        detail=detail,
                         params=param_map,
                     )
                     raise ValidationError(
                         param=pname,
-                        detail=f"Expected {expected_type.__name__}, got {type(value).__name__}",
+                        detail=detail,
                     )
 
                 # Path traversal check for strings
@@ -145,15 +156,19 @@ def validated_action(schema: Dict[str, Dict[str, Any]]) -> Callable:
                 # Choices check
                 choices = constraints.get("choices")
                 if choices and value not in choices:
+                    detail = (
+                        f"Invalid choice '{value}', "
+                        f"expected one of {choices}"
+                    )
                     audit.log_validation_failure(
                         action=action_name,
                         param=pname,
-                        detail=f"Invalid choice '{value}', expected one of {choices}",
+                        detail=detail,
                         params=param_map,
                     )
                     raise ValidationError(
                         param=pname,
-                        detail=f"Invalid choice '{value}', expected one of {choices}",
+                        detail=detail,
                     )
 
             return func(*args, **kwargs)
@@ -197,14 +212,23 @@ class PrivilegedCommand:
         params = {"cmd": cmd, "description": desc}
 
         if dry_run:
-            audit.log(action=action_name, params=params, exit_code=None, dry_run=True)
+            audit.log(
+                action=action_name,
+                params=params,
+                exit_code=None,
+                dry_run=True,
+            )
             return subprocess.CompletedProcess(
                 args=cmd, returncode=-1, stdout="", stderr=""
             )
 
         try:
             result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=timeout
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                check=False,
             )
             audit.log(
                 action=action_name,
@@ -213,7 +237,7 @@ class PrivilegedCommand:
                 stderr=result.stderr,
             )
             return result
-        except subprocess.TimeoutExpired:
+        except subprocess.TimeoutExpired as exc:
             from utils.errors import CommandTimeoutError
 
             audit.log(
@@ -222,7 +246,10 @@ class PrivilegedCommand:
                 exit_code=-1,
                 stderr=f"TIMEOUT after {timeout}s",
             )
-            raise CommandTimeoutError(cmd=" ".join(cmd), timeout=timeout)
+            raise CommandTimeoutError(
+                cmd=" ".join(cmd),
+                timeout=timeout,
+            ) from exc
 
     @staticmethod
     def _derive_action_name(binary: str, args: List[str]) -> str:
@@ -269,7 +296,11 @@ class PrivilegedCommand:
             },
         }
     )
-    def dnf(action: str, *packages: str, flags: list | None = None) -> CommandTuple:
+    def dnf(
+        action: str,
+        *packages: str,
+        flags: list | None = None,
+    ) -> CommandTuple:
         """Build a DNF command tuple (cmd, args, description).
 
         On Atomic systems, automatically uses rpm-ostree instead.
@@ -328,7 +359,11 @@ class PrivilegedCommand:
             "service": {"type": str, "required": True, "min_len": 1},
         }
     )
-    def systemctl(action: str, service: str, user: bool = False) -> CommandTuple:
+    def systemctl(
+        action: str,
+        service: str,
+        user: bool = False,
+    ) -> CommandTuple:
         """Build a systemctl command tuple."""
         if user:
             return (
@@ -366,6 +401,7 @@ class PrivilegedCommand:
     )
     def write_file(path: str, content: str) -> CommandTuple:
         """Write content to a file via pkexec tee."""
+        _ = content
         return ("pkexec", ["tee", path], f"Writing to {path}...")
 
     @staticmethod

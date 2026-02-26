@@ -33,7 +33,7 @@ See `.github/instructions/system_hardening_and_stabilization_guide.md` for full 
 - If unsure, default to restrictive behavior
 
 ### Current State
-- **Done**: v2.10.0 "API Migration Slice 5"
+- **Done**: v2.11.0 "API Migration Slice 7"
 - **Active/Next**: See `ROADMAP.md`
 - **Source of truth**: `ROADMAP.md`
 

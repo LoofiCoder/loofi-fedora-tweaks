@@ -1,58 +1,39 @@
-# Release Notes — v2.11.0 "API Migration Slice 7"
-
-## Overview
-
-v2.11.0 completes a focused hardening slice for residual network, firewall, and system service local execution paths identified in the v2.10.0 planning cycle. This release tightens correctness guarantees, normalizes privileged command construction patterns, and locks explicit daemon/local parity decisions across key service boundaries. All changes maintain strict backward compatibility with daemon-first preferred-mode fallback behavior and introduce no privilege model expansion.
+# Release Notes — v2.11.0
 
 ## Highlights
 
-- Hardened network local write paths (`reactivate_connection_local`, `connect_wifi_local`, `disconnect_wifi_local`, `apply_dns_local`, `set_hostname_privacy_local`) to return strict success/failure based on subprocess exit codes instead of unconditional `True`.
-- Tightened active-connection detection in `get_active_connection_local()` with deterministic nmcli output parsing to prevent substring misclassification and handle malformed output safely.
-- Normalized firewall local mutator command construction (`open_port_local`, `close_port_local`, `add_service_local`, `remove_service_local`, `set_default_zone_local`, `add_rich_rule_local`, `reload_local`) to project-standard `pkexec` patterns with explicit timeout enforcement and elimination of `sudo`/`shell=True` anti-patterns.
-- Finalized daemon/local parity classification for `FirewallManager.get_available_services()` and `SystemService` read paths (`has_pending_deployment()`, `get_layered_packages()`) with explicit behavior contracts.
-- Added focused regression coverage for network local write-path return semantics, active-connection parsing determinism, firewall privileged command construction, and system service read-path classification.
+- Network local write paths now enforce strict success/failure semantics based on subprocess exit codes.
+- Active connection detection is hardened to deterministic parsing for wifi/ethernet rows.
+- Firewall local mutators and reload behavior are normalized to centralized `PrivilegedCommand` tuple construction.
+- Privileged firewall actions are aligned with project audit expectations (action, params, exit code).
+- Read-path contracts are explicitly classified for `get_available_services()`, `has_pending_deployment()`, and `get_layered_packages()`.
+- No new UI tabs or CLI commands; improved reliability of network/firewall operation results.
+- `pkexec`-only privilege model is preserved; no `sudo` or `shell=True` usage introduced.
+- Explicit `timeout` remains required on all touched subprocess paths; no package-manager hardcoding.
 
-## Safety Posture
+## Upgrade Notes
 
-- **No privilege expansion**: All changes strictly harden existing privileged paths without introducing new capabilities.
-- **Fail-safe defaults**: Malformed subprocess output and non-zero exit codes return safe null-equivalent or `False` values.
-- **Timeout enforcement**: All subprocess calls retain explicit timeout parameters across all touched code paths.
-- **Audit compliance**: Firewall privileged operations maintain consistency with the centralized audit logging framework.
-- **Daemon compatibility**: Existing daemon-first with local-fallback behavior remains unchanged; no breaking changes to IPC payload contracts.
+- No breaking changes; method signatures and return types remain backward compatible.
+- D-Bus envelope and IPC fallback semantics remain unchanged.
+- Read-path decisions avoid privilege-scope expansion and keep safe defaults (`[]`/`False`/`None`).
 
-## Migration Constraints
+## Validation Commands
 
-- This release does not change user-facing privilege model behavior.
-- Existing daemon preferred-mode fallback semantics remain fully compatible.
-- No UI tab or CLI command surface changes are included in this slice.
-- Runtime version alignment and packaging updates occur in the release phase workflow.
+- `PYTHONPATH=loofi-fedora-tweaks python -m pytest tests/test_network_utils.py -v`
+- `PYTHONPATH=loofi-fedora-tweaks python -m pytest tests/test_service_network.py -v`
+- `PYTHONPATH=loofi-fedora-tweaks python -m pytest tests/test_ipc_fallback_modes.py -v`
+- `PYTHONPATH=loofi-fedora-tweaks python -m pytest tests/test_firewall_manager.py -v`
+- `PYTHONPATH=loofi-fedora-tweaks python -m pytest tests/test_service_security.py -v`
+- `PYTHONPATH=loofi-fedora-tweaks python -m pytest tests/test_system_service.py -v`
 
-## Verification Summary
+## Critical Rules Introduced
 
-Focused regression verification targeted the following test suites with all external system calls mocked:
+- Hardened privilege model: only `pkexec` via `PrivilegedCommand`, never `sudo` or `shell=True`.
+- All subprocess calls must include explicit `timeout` parameter.
+- No package-manager hardcoding; always use `SystemManager.get_package_manager()`.
+- Audit log required for all privileged actions (timestamp, action, params, exit code).
 
-```bash
-# Network hardening regression (strict return semantics, active-connection parsing)
-PYTHONPATH=loofi-fedora-tweaks python -m pytest \
-  tests/test_network_utils.py \
-  tests/test_service_network.py \
-  tests/test_ipc_fallback_modes.py \
-  -v --tb=short
+---
 
-# Firewall and system service hardening regression (privileged command normalization, parity classification)
-PYTHONPATH=loofi-fedora-tweaks python -m pytest \
-  tests/test_firewall_manager.py \
-  tests/test_service_security.py \
-  tests/test_system_service.py \
-  -v --tb=short
-```
+For full details, see the [CHANGELOG.md](../../CHANGELOG.md) and [ROADMAP.md](../../ROADMAP.md).
 
-All tests passed with zero failures, confirming correctness preservation and hardening effectiveness across the implementation slices.
-
-## Known Issues
-
-None. This release is a stability-focused hardening slice with no known regressions.
-
-## Next Steps
-
-Follow the active roadmap target in `ROADMAP.md` for the next planning and implementation cycle. The v2.11.0 slice closes the network/firewall/system residual inventory from v2.10.0 and prepares for future daemon/API migration opportunities identified during the architectural review process.

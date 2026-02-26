@@ -7,22 +7,20 @@ All notable changes to this project will be documented in this file.
 ## [2.11.0] - 2026-02-26 "API Migration Slice 7"
 
 ### Added
-
-- Added v2.11.0 workflow contracts (`tasks-v2.11.0.md`, `arch-v2.11.0.md`) and initialized `run-manifest-v2.11.0.json` for residual hardening slice.
-- Added focused regression coverage for network local write-path return semantics and active-connection parsing determinism.
-- Added firewall and system service regression suites for privileged command construction normalization and local-read classification.
+- Harden network local write paths to enforce strict success/failure based on subprocess exit codes
+- Normalize firewall local mutator commands to project-standard `pkexec` patterns with explicit timeout enforcement
+- Finalize daemon/local parity classification for firewall and system service read paths
+- Add regression coverage for network/firewall/system service hardening
 
 ### Changed
-
-- Hardened network local write paths (`reactivate_connection_local`, `connect_wifi_local`, `disconnect_wifi_local`, `apply_dns_local`, `set_hostname_privacy_local`) to return strict success/failure based on subprocess exit codes.
-- Tightened active-connection detection in `get_active_connection_local()` to avoid substring misclassification with deterministic nmcli output parsing.
-- Normalized firewall local mutator command construction to project standards with consistent `pkexec` usage, explicit timeouts, and elimination of `sudo`/`shell=True` patterns.
-- Finalized daemon/local parity decisions for `FirewallManager.get_available_services()` and classified `SystemService` read paths (`has_pending_deployment()`, `get_layered_packages()`) with explicit behavior contracts.
+- Tighten active-connection detection with deterministic nmcli output parsing
+- Require explicit timeout parameter on all subprocess calls
+- Enforce audit logging for all privileged firewall actions
 
 ### Fixed
-
-- Malformed nmcli output handling in active-connection detection now returns safe null-equivalent instead of raising exceptions.
-- Firewall reload and mutation operations now consistently enforce timeout and privilege-escalation patterns across all local execution paths.
+- Fix unconditional True returns in network local write paths
+- Fix substring misclassification in active-connection detection
+- Fix malformed output handling in nmcli parsing
 
 ## [2.10.0] - 2026-02-26 "API Migration Slice 6"
 

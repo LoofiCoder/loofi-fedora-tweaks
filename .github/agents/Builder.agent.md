@@ -1,7 +1,7 @@
 ---
 name: Builder
 model: claude-sonnet-4
-description: Backend implementation specialist for Loofi Fedora Tweaks v2.10.0. Builds utils/ business logic modules with proper dataclasses, error handling, and system integration.
+description: Backend implementation specialist for Loofi Fedora Tweaks v2.11.0. Builds utils/ business logic modules with proper dataclasses, error handling, and system integration.
 argument-hint: A utils module to implement (e.g., "Build utils/auto_tuner.py" or "Implement SnapshotManager backend detection")
 tools: ['vscode', 'read', 'edit', 'execute', 'search']
 ---
@@ -10,7 +10,7 @@ You are the **Builder** — the backend implementation specialist for Loofi Fedo
 
 ## Context
 
-- **Version**: v2.10.0 "API Migration Slice 5" | **Python**: 3.12+ | **Framework**: PyQt6
+- **Version**: v2.11.0 "API Migration Slice 7" | **Python**: 3.12+ | **Framework**: PyQt6
 - **Scale**: 107 utils modules, 245 test files, 80% coverage (CI-enforced)
 - **Canonical reference**: Read `ARCHITECTURE.md` for layer rules, critical patterns, and coding conventions
 

@@ -1,12 +1,19 @@
 """
 Tests for utils/firewall_manager.py
 """
-from services.security.firewall import FirewallInfo, FirewallManager, FirewallResult
+# pylint: disable=protected-access
+
 import os
 import subprocess
 import sys
 import unittest
 from unittest.mock import MagicMock, patch
+
+from services.security.firewall import (
+    FirewallInfo,
+    FirewallManager,
+    FirewallResult,
+)
 
 sys.path.append(os.path.join(os.path.dirname(
     __file__), '..', 'loofi-fedora-tweaks'))
@@ -82,7 +89,6 @@ class TestFirewallManagerAvailability(unittest.TestCase):
     @patch('services.security.firewall.subprocess.run')
     def test_is_available_timeout(self, mock_run):
         """Returns False on timeout."""
-        import subprocess
         mock_run.side_effect = subprocess.TimeoutExpired(
             cmd="firewall-cmd", timeout=5)
 
@@ -190,7 +196,11 @@ class TestFirewallManagerZones(unittest.TestCase):
     def test_get_zones(self, mock_run):
         """Lists all available zones."""
         mock_run.return_value = MagicMock(
-            returncode=0, stdout="block dmz drop external home internal nm-shared public trusted work\n"
+            returncode=0,
+            stdout=(
+                "block dmz drop external home internal "
+                "nm-shared public trusted work\n"
+            ),
         )
 
         zones = FirewallManager.get_zones()
@@ -211,7 +221,10 @@ class TestFirewallManagerZones(unittest.TestCase):
     @patch('services.security.firewall.subprocess.run')
     def test_get_active_zones(self, mock_run):
         """Parses active zones with interfaces."""
-        output = "public\n  interfaces: eth0 wlan0\ntrusted\n  interfaces: virbr0\n"
+        output = (
+            "public\n  interfaces: eth0 wlan0\n"
+            "trusted\n  interfaces: virbr0\n"
+        )
         mock_run.return_value = MagicMock(returncode=0, stdout=output)
 
         zones = FirewallManager.get_active_zones()
@@ -336,7 +349,6 @@ class TestFirewallManagerPorts(unittest.TestCase):
     @patch('services.security.firewall.subprocess.run')
     def test_open_port_timeout(self, mock_run):
         """Open port returns failure on timeout."""
-        import subprocess
         mock_run.side_effect = subprocess.TimeoutExpired(
             cmd="firewall-cmd", timeout=15)
 
@@ -384,7 +396,11 @@ class TestFirewallManagerServices(unittest.TestCase):
     def test_get_available_services(self, mock_run):
         """Lists all known services."""
         mock_run.return_value = MagicMock(
-            returncode=0, stdout="dhcp dns ftp http https imap imaps nfs ntp pop3 samba ssh\n"
+            returncode=0,
+            stdout=(
+                "dhcp dns ftp http https imap imaps "
+                "nfs ntp pop3 samba ssh\n"
+            ),
         )
 
         services = FirewallManager.get_available_services()
@@ -395,8 +411,12 @@ class TestFirewallManagerServices(unittest.TestCase):
 
     @patch('services.security.firewall.subprocess.run')
     def test_get_available_services_failure(self, mock_run):
-        """Returns empty list on firewall-cmd failure (v2.11.0 TASK-006 contract)."""
-        mock_run.return_value = MagicMock(returncode=1, stdout="", stderr="Error")
+        """Returns empty list on firewall-cmd failure.
+
+        v2.11.0 TASK-006 contract.
+        """
+        mock_run.return_value = MagicMock(
+            returncode=1, stdout="", stderr="Error")
 
         services = FirewallManager.get_available_services()
 
@@ -476,7 +496,10 @@ class TestFirewallManagerRichRules(unittest.TestCase):
         """Lists rich rules."""
         mock_run.return_value = MagicMock(
             returncode=0,
-            stdout='rule family="ipv4" source address="192.168.1.0/24" accept\n'
+            stdout=(
+                'rule family="ipv4" '
+                'source address="192.168.1.0/24" accept\n'
+            ),
         )
 
         rules = FirewallManager.list_rich_rules()
@@ -586,7 +609,6 @@ class TestFirewallManagerToggle(unittest.TestCase):
     @patch('services.security.firewall.subprocess.run')
     def test_start_firewall_timeout(self, mock_run):
         """Start firewall returns failure on timeout."""
-        import subprocess
         mock_run.side_effect = subprocess.TimeoutExpired(
             cmd="systemctl", timeout=15)
 
@@ -616,7 +638,6 @@ class TestFirewallManagerReload(unittest.TestCase):
     @patch('services.security.firewall.subprocess.run')
     def test_reload_timeout(self, mock_run):
         """Reload returns False on timeout."""
-        import subprocess
         mock_run.side_effect = subprocess.TimeoutExpired(
             cmd="firewall-cmd", timeout=15)
 

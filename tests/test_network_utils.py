@@ -3,12 +3,13 @@ Tests for utils/network_utils.py (v34.0).
 Covers scan_wifi, load_vpn_connections, detect_current_dns,
 get_active_connection, check_hostname_privacy, reactivate_connection.
 """
-from services.network.network import NetworkUtils
 import os
 import subprocess
 import sys
 import unittest
 from unittest.mock import MagicMock, patch
+
+from services.network.network import NetworkUtils
 
 sys.path.append(os.path.join(os.path.dirname(
     __file__), '..', 'loofi-fedora-tweaks'))
@@ -161,10 +162,8 @@ class TestDetectCurrentDns(unittest.TestCase):
     def test_no_dns_found(self, mock_run):
         mock_run.return_value = MagicMock(
             stdout="IP4.ADDRESS[1]:192.168.1.2/24\n")
-        NetworkUtils.detect_current_dns()
-        # Line has ':', but value after split is '192.168.1.2/24' — added to set
-        # Since there IS a value, it returns it. Let's test truly empty.
-        pass
+        dns = NetworkUtils.detect_current_dns()
+        self.assertEqual(dns, "192.168.1.2/24")
 
     @patch('services.network.network.subprocess.run')
     def test_empty_output(self, mock_run):
@@ -358,7 +357,11 @@ class TestDaemonFirstNetworkMutations(unittest.TestCase):
 
     @patch('services.network.network.subprocess.run')
     @patch('services.network.network.daemon_client.call_json')
-    def test_connect_wifi_prefers_daemon_result(self, mock_call_json, mock_run):
+    def test_connect_wifi_prefers_daemon_result(
+        self,
+        mock_call_json,
+        mock_run,
+    ):
         mock_call_json.return_value = True
         result = NetworkUtils.connect_wifi("MyWiFi")
         self.assertTrue(result)
@@ -393,7 +396,11 @@ class TestDaemonFirstNetworkMutations(unittest.TestCase):
 
     @patch('services.network.network.subprocess.run')
     @patch('services.network.network.daemon_client.call_json')
-    def test_set_hostname_privacy_prefers_daemon_result(self, mock_call_json, mock_run):
+    def test_set_hostname_privacy_prefers_daemon_result(
+        self,
+        mock_call_json,
+        mock_run,
+    ):
         mock_call_json.return_value = True
         result = NetworkUtils.set_hostname_privacy("Home", True)
         self.assertTrue(result)

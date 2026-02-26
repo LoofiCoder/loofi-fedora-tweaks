@@ -43,13 +43,13 @@ It is designed to be practical for both casual users and advanced users:
 
 ## What Is New in v2.11.0?
 
-`v2.11.0 "API Migration Slice 7"` completes focused hardening for residual network, firewall, and system service local execution paths.
+`v2.11.0 "API Migration Slice 7"` focuses on hardening network, firewall, and system service local execution paths.
 
-- **Network write paths hardened** with strict success/failure return semantics based on subprocess exit codes.
-- **Active-connection detection tightened** with deterministic nmcli output parsing to prevent misclassification.
-- **Firewall command construction normalized** to project-standard `pkexec` patterns with explicit timeout enforcement.
-- **Daemon/local parity finalized** for firewall and system service read paths with explicit behavior contracts.
-- **Focused regression verification passed** for network hardening, firewall normalization, and system service classification.
+- Network write paths now enforce strict success/failure based on subprocess exit codes.
+- Active-connection detection is deterministic, preventing substring misclassification.
+- Firewall mutator commands are normalized to `pkexec` patterns with explicit timeout enforcement.
+- Daemon/local parity is finalized for firewall and system service read paths.
+- All privileged actions require audit logging and explicit timeout; no `sudo` or `shell=True` usage.
 
 Full notes: [`docs/releases/RELEASE-NOTES-v2.11.0.md`](docs/releases/RELEASE-NOTES-v2.11.0.md)
 

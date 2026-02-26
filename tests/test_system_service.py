@@ -12,23 +12,26 @@ Tests cover:
 import os
 import sys
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
-_SKIP_QT = os.environ.get("DISPLAY") is None and os.environ.get("WAYLAND_DISPLAY") is None
+_SKIP_QT = os.environ.get("DISPLAY") is None and os.environ.get(
+    "WAYLAND_DISPLAY") is None
 
 # Add source path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'loofi-fedora-tweaks'))
+sys.path.insert(0, os.path.join(os.path.dirname(
+    __file__), '..', 'loofi-fedora-tweaks'))
 
 try:
-    from PyQt6.QtCore import QCoreApplication
-    from services.system import SystemService, BaseSystemService
     from core.executor.action_result import ActionResult
+    from PyQt6.QtCore import QCoreApplication
+    from services.system import BaseSystemService, SystemService
 except ImportError:
     _SKIP_QT = True
 
-pytestmark = pytest.mark.skipif(_SKIP_QT, reason="Qt/PyQt6 not available in headless environment")
+pytestmark = pytest.mark.skipif(
+    _SKIP_QT, reason="Qt/PyQt6 not available in headless environment")
 
 
 class TestSystemServiceInit(unittest.TestCase):
@@ -48,7 +51,8 @@ class TestSystemServiceReboot(unittest.TestCase):
         """reboot() without delay executes immediately."""
         mock_worker = MagicMock()
         mock_worker_class.return_value = mock_worker
-        mock_worker.get_result.return_value = ActionResult(success=True, message="ok", exit_code=0)
+        mock_worker.get_result.return_value = ActionResult(
+            success=True, message="ok", exit_code=0)
 
         service = SystemService()
         result = service.reboot()
@@ -67,7 +71,8 @@ class TestSystemServiceReboot(unittest.TestCase):
         """reboot() with delay includes --when parameter."""
         mock_worker = MagicMock()
         mock_worker_class.return_value = mock_worker
-        mock_worker.get_result.return_value = ActionResult(success=True, message="ok", exit_code=0)
+        mock_worker.get_result.return_value = ActionResult(
+            success=True, message="ok", exit_code=0)
 
         service = SystemService()
         service.reboot(delay_seconds=60)
@@ -80,7 +85,8 @@ class TestSystemServiceReboot(unittest.TestCase):
         """reboot() uses custom description."""
         mock_worker = MagicMock()
         mock_worker_class.return_value = mock_worker
-        mock_worker.get_result.return_value = ActionResult(success=True, message="ok", exit_code=0)
+        mock_worker.get_result.return_value = ActionResult(
+            success=True, message="ok", exit_code=0)
 
         service = SystemService()
         service.reboot(description="Rebooting for updates")
@@ -93,7 +99,8 @@ class TestSystemServiceReboot(unittest.TestCase):
         """reboot() returns failure ActionResult on error."""
         mock_worker = MagicMock()
         mock_worker_class.return_value = mock_worker
-        mock_worker.get_result.return_value = ActionResult(success=False, message="failed", exit_code=1)
+        mock_worker.get_result.return_value = ActionResult(
+            success=False, message="failed", exit_code=1)
 
         service = SystemService()
         result = service.reboot()
@@ -109,7 +116,8 @@ class TestSystemServiceShutdown(unittest.TestCase):
         """shutdown() without delay executes immediately."""
         mock_worker = MagicMock()
         mock_worker_class.return_value = mock_worker
-        mock_worker.get_result.return_value = ActionResult(success=True, message="ok", exit_code=0)
+        mock_worker.get_result.return_value = ActionResult(
+            success=True, message="ok", exit_code=0)
 
         service = SystemService()
         result = service.shutdown()
@@ -125,7 +133,8 @@ class TestSystemServiceShutdown(unittest.TestCase):
         """shutdown() with delay includes --when parameter."""
         mock_worker = MagicMock()
         mock_worker_class.return_value = mock_worker
-        mock_worker.get_result.return_value = ActionResult(success=True, message="ok", exit_code=0)
+        mock_worker.get_result.return_value = ActionResult(
+            success=True, message="ok", exit_code=0)
 
         service = SystemService()
         service.shutdown(delay_seconds=120)
@@ -143,7 +152,8 @@ class TestSystemServiceSuspend(unittest.TestCase):
         """suspend() executes systemctl suspend."""
         mock_worker = MagicMock()
         mock_worker_class.return_value = mock_worker
-        mock_worker.get_result.return_value = ActionResult(success=True, message="ok", exit_code=0)
+        mock_worker.get_result.return_value = ActionResult(
+            success=True, message="ok", exit_code=0)
 
         service = SystemService()
         result = service.suspend()
@@ -159,7 +169,8 @@ class TestSystemServiceSuspend(unittest.TestCase):
         """suspend() uses custom description."""
         mock_worker = MagicMock()
         mock_worker_class.return_value = mock_worker
-        mock_worker.get_result.return_value = ActionResult(success=True, message="ok", exit_code=0)
+        mock_worker.get_result.return_value = ActionResult(
+            success=True, message="ok", exit_code=0)
 
         service = SystemService()
         service.suspend(description="Going to sleep")
@@ -178,7 +189,8 @@ class TestSystemServiceUpdateGrub(unittest.TestCase):
         mock_exists.return_value = True  # /sys/firmware/efi exists
         mock_worker = MagicMock()
         mock_worker_class.return_value = mock_worker
-        mock_worker.get_result.return_value = ActionResult(success=True, message="ok", exit_code=0)
+        mock_worker.get_result.return_value = ActionResult(
+            success=True, message="ok", exit_code=0)
 
         service = SystemService()
         result = service.update_grub()
@@ -194,7 +206,8 @@ class TestSystemServiceUpdateGrub(unittest.TestCase):
         mock_exists.return_value = False  # /sys/firmware/efi does not exist
         mock_worker = MagicMock()
         mock_worker_class.return_value = mock_worker
-        mock_worker.get_result.return_value = ActionResult(success=True, message="ok", exit_code=0)
+        mock_worker.get_result.return_value = ActionResult(
+            success=True, message="ok", exit_code=0)
 
         service = SystemService()
         result = service.update_grub()
@@ -210,7 +223,8 @@ class TestSystemServiceUpdateGrub(unittest.TestCase):
         mock_exists.return_value = True
         mock_worker = MagicMock()
         mock_worker_class.return_value = mock_worker
-        mock_worker.get_result.return_value = ActionResult(success=False, message="failed", exit_code=1)
+        mock_worker.get_result.return_value = ActionResult(
+            success=False, message="failed", exit_code=1)
 
         service = SystemService()
         result = service.update_grub()
@@ -226,7 +240,8 @@ class TestSystemServiceHostname(unittest.TestCase):
         """set_hostname() updates hostname using hostnamectl."""
         mock_worker = MagicMock()
         mock_worker_class.return_value = mock_worker
-        mock_worker.get_result.return_value = ActionResult(success=True, message="ok", exit_code=0)
+        mock_worker.get_result.return_value = ActionResult(
+            success=True, message="ok", exit_code=0)
 
         service = SystemService()
         result = service.set_hostname("fedora-workstation")
@@ -240,7 +255,7 @@ class TestSystemServiceHostname(unittest.TestCase):
 
         self.assertTrue(result.success)
 
-    def test_set_hostname_empty_string(self, mock_worker_class):
+    def test_set_hostname_empty_string(self, _mock_worker_class):
         """set_hostname() with empty string returns error."""
         service = SystemService()
         result = service.set_hostname("")
@@ -252,7 +267,8 @@ class TestSystemServiceHostname(unittest.TestCase):
         """set_hostname() strips whitespace from hostname."""
         mock_worker = MagicMock()
         mock_worker_class.return_value = mock_worker
-        mock_worker.get_result.return_value = ActionResult(success=True, message="ok", exit_code=0)
+        mock_worker.get_result.return_value = ActionResult(
+            success=True, message="ok", exit_code=0)
 
         service = SystemService()
         service.set_hostname("  fedora-box  ")
@@ -266,7 +282,8 @@ class TestSystemServiceHostname(unittest.TestCase):
         """set_hostname() uses custom description."""
         mock_worker = MagicMock()
         mock_worker_class.return_value = mock_worker
-        mock_worker.get_result.return_value = ActionResult(success=True, message="ok", exit_code=0)
+        mock_worker.get_result.return_value = ActionResult(
+            success=True, message="ok", exit_code=0)
 
         service = SystemService()
         service.set_hostname("newhost", description="Renaming server")
@@ -298,7 +315,9 @@ class TestSystemServiceDelegation(unittest.TestCase):
         self.assertEqual(result, "Silverblue")
 
     def test_get_package_manager_delegates(self, mock_system_manager):
-        """get_package_manager() delegates to SystemManager.get_package_manager()."""
+        """get_package_manager() delegates to
+        SystemManager.get_package_manager().
+        """
         mock_system_manager.get_package_manager.return_value = "rpm-ostree"
 
         result = SystemService.get_package_manager()
@@ -307,7 +326,9 @@ class TestSystemServiceDelegation(unittest.TestCase):
         self.assertEqual(result, "rpm-ostree")
 
     def test_has_pending_reboot_delegates(self, mock_system_manager):
-        """has_pending_reboot() delegates to SystemManager.has_pending_deployment()."""
+        """has_pending_reboot() delegates to
+        SystemManager.has_pending_deployment().
+        """
         mock_system_manager.has_pending_deployment.return_value = True
 
         result = SystemService.has_pending_reboot()
@@ -321,7 +342,11 @@ class TestSystemServiceDelegation(unittest.TestCase):
 class TestSystemServiceDaemonFirst(unittest.TestCase):
     """Tests for daemon-first behavior with local fallback."""
 
-    def test_reboot_uses_daemon_action_result_when_valid(self, mock_worker_class, mock_call_json):
+    def test_reboot_uses_daemon_action_result_when_valid(
+        self,
+        mock_worker_class,
+        mock_call_json,
+    ):
         mock_call_json.return_value = {
             "success": True,
             "message": "daemon reboot",
@@ -342,11 +367,16 @@ class TestSystemServiceDaemonFirst(unittest.TestCase):
         self.assertEqual(result.message, "daemon reboot")
         mock_worker_class.assert_not_called()
 
-    def test_reboot_falls_back_when_daemon_payload_malformed(self, mock_worker_class, mock_call_json):
+    def test_reboot_falls_back_when_daemon_payload_malformed(
+        self,
+        mock_worker_class,
+        mock_call_json,
+    ):
         mock_call_json.return_value = {"value": 42}
         mock_worker = MagicMock()
         mock_worker_class.return_value = mock_worker
-        mock_worker.get_result.return_value = ActionResult(success=True, message="local reboot", exit_code=0)
+        mock_worker.get_result.return_value = ActionResult(
+            success=True, message="local reboot", exit_code=0)
 
         service = SystemService()
         result = service.reboot()
@@ -361,7 +391,11 @@ class TestSystemServiceDaemonFirst(unittest.TestCase):
 class TestSystemServiceDaemonDelegation(unittest.TestCase):
     """Tests for daemon-backed static delegation methods."""
 
-    def test_get_package_manager_uses_daemon_string_when_available(self, mock_call_json, mock_system_manager):
+    def test_get_package_manager_uses_daemon_string_when_available(
+        self,
+        mock_call_json,
+        mock_system_manager,
+    ):
         mock_call_json.return_value = "dnf"
 
         result = SystemService.get_package_manager()
@@ -369,7 +403,11 @@ class TestSystemServiceDaemonDelegation(unittest.TestCase):
         self.assertEqual(result, "dnf")
         mock_system_manager.get_package_manager.assert_not_called()
 
-    def test_get_package_manager_falls_back_when_daemon_payload_invalid(self, mock_call_json, mock_system_manager):
+    def test_get_package_manager_falls_back_when_daemon_payload_invalid(
+        self,
+        mock_call_json,
+        mock_system_manager,
+    ):
         mock_call_json.return_value = {"value": "dnf"}
         mock_system_manager.get_package_manager.return_value = "rpm-ostree"
 
@@ -382,10 +420,18 @@ class TestSystemServiceDaemonDelegation(unittest.TestCase):
 @patch('services.system.system.os.path.exists')
 @patch('services.system.system.subprocess.run')
 class TestSystemManagerAtomicReadPaths(unittest.TestCase):
-    """Tests for SystemManager intentional local-read paths (v2.11.0 TASK-006)."""
+    """Tests for SystemManager intentional local-read paths.
 
-    def test_has_pending_deployment_on_atomic_true(self, mock_run, mock_exists):
-        """has_pending_deployment returns True when unbooted deployment exists."""
+    v2.11.0 TASK-006.
+    """
+
+    def test_has_pending_deployment_on_atomic_true(
+        self,
+        mock_run,
+        mock_exists,
+    ):
+        """has_pending_deployment returns True when unbooted deployment exists.
+        """
         mock_exists.return_value = True  # is_atomic
         mock_run.return_value = MagicMock(
             returncode=0,
@@ -398,8 +444,14 @@ class TestSystemManagerAtomicReadPaths(unittest.TestCase):
         self.assertTrue(result)
         mock_run.assert_called_once()
 
-    def test_has_pending_deployment_on_atomic_false(self, mock_run, mock_exists):
-        """has_pending_deployment returns False when first deployment is booted."""
+    def test_has_pending_deployment_on_atomic_false(
+        self,
+        mock_run,
+        mock_exists,
+    ):
+        """has_pending_deployment returns False when first deployment is
+        booted.
+        """
         mock_exists.return_value = True
         mock_run.return_value = MagicMock(
             returncode=0,
@@ -411,7 +463,11 @@ class TestSystemManagerAtomicReadPaths(unittest.TestCase):
 
         self.assertFalse(result)
 
-    def test_has_pending_deployment_on_traditional(self, mock_run, mock_exists):
+    def test_has_pending_deployment_on_traditional(
+        self,
+        mock_run,
+        mock_exists,
+    ):
         """has_pending_deployment returns False on traditional Fedora."""
         mock_exists.return_value = False  # not atomic
 
@@ -421,7 +477,11 @@ class TestSystemManagerAtomicReadPaths(unittest.TestCase):
         self.assertFalse(result)
         mock_run.assert_not_called()
 
-    def test_has_pending_deployment_handles_failure(self, mock_run, mock_exists):
+    def test_has_pending_deployment_handles_failure(
+        self,
+        mock_run,
+        mock_exists,
+    ):
         """has_pending_deployment returns False on command failure."""
         mock_exists.return_value = True
         mock_run.return_value = MagicMock(returncode=1, stdout="")
@@ -436,7 +496,10 @@ class TestSystemManagerAtomicReadPaths(unittest.TestCase):
         mock_exists.return_value = True
         mock_run.return_value = MagicMock(
             returncode=0,
-            stdout='{"deployments": [{"booted": true, "requested-packages": ["vim", "htop"]}]}'
+            stdout=(
+                '{"deployments": [{"booted": true, '
+                '"requested-packages": ["vim", "htop"]}]}'
+            )
         )
 
         from services.system.system import SystemManager
@@ -468,6 +531,5 @@ class TestSystemManagerAtomicReadPaths(unittest.TestCase):
 
 if __name__ == '__main__':
     if not _SKIP_QT:
-        import sys
         app = QCoreApplication(sys.argv)
     unittest.main()

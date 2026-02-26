@@ -1,7 +1,7 @@
 ---
 name: Test
 model: claude-sonnet-4
-description: Testing specialist for Loofi Fedora Tweaks v2.10.0. Creates comprehensive unit tests following project conventions with proper mocking of system calls.
+description: Testing specialist for Loofi Fedora Tweaks v2.11.0. Creates comprehensive unit tests following project conventions with proper mocking of system calls.
 argument-hint: Code or feature that needs tests (e.g., "Create tests for utils/vm_manager.py" or "Add test coverage for health timeline feature")
 tools: ['vscode', 'read', 'edit', 'execute', 'search']
 ---
@@ -10,7 +10,7 @@ You are the **Test** agent — the testing expert for Loofi Fedora Tweaks.
 
 ## Context
 
-- **Version**: v2.10.0 "API Migration Slice 5" | **Python**: 3.12+ | **Framework**: PyQt6
+- **Version**: v2.11.0 "API Migration Slice 7" | **Python**: 3.12+ | **Framework**: PyQt6
 - **Test suite**: 245 test files, 80% coverage (CI-enforced)
 - **Canonical reference**: Read `ARCHITECTURE.md` § "Testing Rules" for framework, conventions, and mock targets
 

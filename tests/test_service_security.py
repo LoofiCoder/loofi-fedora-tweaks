@@ -4,18 +4,20 @@ Covers:
 - services/security/firewall.py — FirewallManager
 - services/security/secureboot.py — SecureBootManager
 """
+# pylint: disable=protected-access
 
-from services.security.secureboot import (
-    SecureBootManager,
-)
-from services.security.firewall import (
-    FirewallManager,
-)
 import os
 import sys
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+
+from services.security.firewall import (
+    FirewallManager,
+)
+from services.security.secureboot import (
+    SecureBootManager,
+)
 
 # Add source path
 sys.path.insert(0, os.path.join(os.path.dirname(
@@ -108,7 +110,10 @@ class TestFirewallManagerInfo(unittest.TestCase):
     def test_get_active_zones_success(self, mock_run):
         """Get active zones parses interfaces correctly."""
         mock_run.return_value = MagicMock(
-            stdout="public\n  interfaces: eth0 wlan0\nwork\n  interfaces: vpn0\n",
+            stdout=(
+                "public\n  interfaces: eth0 wlan0\n"
+                "work\n  interfaces: vpn0\n"
+            ),
             returncode=0
         )
         result = FirewallManager.get_active_zones()
@@ -299,7 +304,7 @@ class TestSecureBootManagerKeyGeneration(unittest.TestCase):
 
     @patch('services.security.secureboot.subprocess.run')
     @patch('services.security.secureboot.Path.mkdir')
-    def test_generate_key_openssl_failure(self, mock_mkdir, mock_run):
+    def test_generate_key_openssl_failure(self, _mock_mkdir, mock_run):
         """Generate key handles openssl failure."""
         mock_run.return_value = MagicMock(returncode=1, stderr="OpenSSL error")
         result = SecureBootManager.generate_key("password123")
@@ -337,7 +342,13 @@ class TestSecureBootManagerModuleSigning(unittest.TestCase):
     @patch('services.security.secureboot.os.path.exists')
     @patch('services.security.secureboot.Path.exists')
     @patch('glob.glob')
-    def test_sign_module_success(self, mock_glob, mock_path_exists, mock_os_exists, mock_run):
+    def test_sign_module_success(
+        self,
+        mock_glob,
+        mock_path_exists,
+        mock_os_exists,
+        mock_run,
+    ):
         """Sign module succeeds with valid keys and module."""
         mock_path_exists.return_value = True
         mock_os_exists.return_value = True
@@ -369,7 +380,12 @@ class TestSecureBootManagerModuleSigning(unittest.TestCase):
     @patch('services.security.secureboot.Path.exists')
     @patch('services.security.secureboot.os.path.exists')
     @patch('glob.glob')
-    def test_sign_module_no_sign_file_utility(self, mock_glob, mock_os_exists, mock_path_exists):
+    def test_sign_module_no_sign_file_utility(
+        self,
+        mock_glob,
+        mock_os_exists,
+        mock_path_exists,
+    ):
         """Sign module fails when sign-file utility not found."""
         mock_path_exists.return_value = True
         mock_os_exists.return_value = True
