@@ -1,4 +1,4 @@
-# Loofi Fedora Tweaks v2.7.0 "API Migration Slice 3"
+# Loofi Fedora Tweaks v2.8.0 "API Migration Slice 4"
 
 <!-- markdownlint-configure-file {"MD033": false} -->
 
@@ -12,8 +12,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/loofitheboss/loofi-fedora-tweaks/releases/tag/v2.7.0">
-    <img src="https://img.shields.io/badge/Release-v2.7.0-blue?style=for-the-badge&logo=github" alt="Release v2.7.0"/>
+  <a href="https://github.com/loofitheboss/loofi-fedora-tweaks/releases/tag/v2.8.0">
+    <img src="https://img.shields.io/badge/Release-v2.8.0-blue?style=for-the-badge&logo=github" alt="Release v2.8.0"/>
   </a>
   <img src="https://img.shields.io/badge/Fedora-43-blue?style=for-the-badge&logo=fedora" alt="Fedora 43"/>
   <img src="https://img.shields.io/badge/Python-3.12+-green?style=for-the-badge&logo=python" alt="Python"/>
@@ -41,16 +41,16 @@ It is designed to be practical for both casual users and advanced users:
 
 ---
 
-## What Is New in v2.7.0?
+## What Is New in v2.8.0?
 
-`v2.7.0 "API Migration Slice 3"` completes the API migration slice with workflow and release alignment updates.
+`v2.8.0 "API Migration Slice 4"` closes the policy inventory and validator hardening slice with workflow and release alignment updates.
 
-- **Cross-platform packaging hardening** for Flatpak/AppImage/sdist scripts with CRLF-safe version normalization.
-- **Windows compatibility fixes** in monitor/process-related UI paths.
-- **Workflow metadata synchronized** for the active release slice.
-- **Linux validation complete** with `7095 passed, 102 skipped`.
+- **Policy inventory completed** for privileged daemon pathways and validator coverage mapping.
+- **Validator hardening delivered** with deny-by-default parameter validation on prioritized pathways.
+- **Focused regression coverage expanded** for daemon handlers and IPC payload guards (`98 passed` targeted suite).
+- **Workflow metadata synchronized** for completed v2.8.0 release closure.
 
-Full notes: [`docs/releases/RELEASE-NOTES-v2.7.0.md`](docs/releases/RELEASE-NOTES-v2.7.0.md)
+Full notes: [`docs/releases/RELEASE-NOTES-v2.8.0.md`](docs/releases/RELEASE-NOTES-v2.8.0.md)
 
 ---
 
@@ -164,7 +164,7 @@ alias loofi='loofi-fedora-tweaks --cli'
 
 ## Screenshots
 
-Current UI screenshots (v2.7.0) are maintained in:
+Current UI screenshots (v2.8.0) are maintained in:
 
 - [`docs/images/user-guide/README.md`](docs/images/user-guide/README.md)
 

@@ -4,6 +4,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.8.0] - 2026-02-26 "API Migration Slice 4"
+
+### Added
+
+- Policy inventory extraction and coverage mapping helpers in `daemon/validators.py` for privileged action and validator-gap analysis
+- Focused validator hardening regression suites for malformed payloads, deny-by-default handling, and IPC guard behavior
+
+### Changed
+
+- Tightened privileged validator pathways across daemon handlers and IPC payload guards with fail-closed behavior
+- Workflow/state artifacts synchronized for v2.8.0 lifecycle closure (`ROADMAP.md`, race lock, run manifest, memory-bank state)
+- Version alignment advanced to v2.8.0 across runtime and packaging metadata (`version.py`, `.spec`, `pyproject.toml`)
+
+### Fixed
+
+- Fedora review gate regression coverage for local override and CI-blocked override paths in `tests/test_check_fedora_review.py`
+- Documentation/version drift where current-version references still pointed to v2.7.0 in repo-facing docs and wiki home page
+
 ## [2.7.0] - 2026-02-25 "API Migration Slice 3"
 
 ### Added

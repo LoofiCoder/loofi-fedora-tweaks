@@ -10,6 +10,21 @@ For the complete changelog with all changes, see [CHANGELOG.md](https://github.c
 
 ## Latest Release
 
+### v2.8.0 "API Migration Slice 4" (2026-02-26)
+
+**Policy and validator hardening release** focused on privileged pathway validation, fail-closed IPC safety, and workflow/release-state consistency.
+
+**Key Changes:**
+- Completed policy inventory and validator coverage mapping for privileged daemon pathways
+- Tightened validator checks with deny-by-default behavior for malformed privileged payloads
+- Added focused gate regressions for `check_fedora_review` local override and CI-blocked override paths
+- Synchronized release metadata across roadmap, race-lock, run-manifest, memory-bank, and docs
+- Updated runtime/package version alignment to `2.8.0`
+
+**Test Suite**: Targeted hardening suite `98 passed`; focused Windows-safe validation subset `174 passed, 14 skipped`
+
+---
+
 ### v2.7.0 "API Migration Slice 3" (2026-02-25)
 
 **API migration completion release** focused on release-flow alignment, cross-platform packaging reliability, and documentation synchronization.
@@ -252,8 +267,8 @@ For the complete changelog with all changes, see [CHANGELOG.md](https://github.c
 
 ## Statistics
 
-**Current (v2.7.0):**
-- **Tests**: 7k+ exercised in Linux validation (`7095 passed, 102 skipped`)
+**Current (v2.8.0):**
+- **Tests**: Targeted hardening suite (`98 passed`) and focused regression subset (`174 passed, 14 skipped`)
 - **Coverage threshold gate**: 77% (CI/auto-release)
 - **Tabs**: 28
 - **Run modes**: GUI, CLI, daemon, Web API
