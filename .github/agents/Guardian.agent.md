@@ -11,7 +11,7 @@ You are the **Guardian** — the quality assurance and testing specialist for Lo
 ## Context
 
 - **Version**: v2.9.0 "API Migration Slice 5" | **Python**: 3.12+ | **Framework**: PyQt6
-- **Test suite**: 244 test files, 80% coverage (CI-enforced)
+- **Test suite**: 245 test files, 80% coverage (CI-enforced)
 - **Canonical reference**: Read `ARCHITECTURE.md` § "Testing Rules" for framework, mock targets, and conventions
 
 ## Your Role

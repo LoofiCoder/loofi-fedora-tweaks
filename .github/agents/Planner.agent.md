@@ -11,7 +11,7 @@ You are the **Planner** — the release coordination and task decomposition spec
 ## Context
 
 - **Version**: v2.9.0 "API Migration Slice 5" | **Python**: 3.12+ | **Framework**: PyQt6
-- **Scale**: 28 UI tabs, 107 utils modules, 244 test files, 80% coverage (CI-enforced)
+- **Scale**: 28 UI tabs, 107 utils modules, 245 test files, 80% coverage (CI-enforced)
 - **Canonical reference**: Read `ARCHITECTURE.md` for layer structure and patterns
 - **Roadmap**: `ROADMAP.md` is the canonical source of truth for version scope and status
 - **Workflow**: `.workflow/specs/` for task specs, arch specs, race-lock

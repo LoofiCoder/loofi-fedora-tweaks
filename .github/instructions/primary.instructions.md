@@ -11,7 +11,7 @@ Delegate to agents. Follow existing patterns. Minimize token usage.
 
 ## PROJECT OVERVIEW
 - PyQt6-based desktop app for Fedora Linux (current: v2.9.0 "API Migration Slice 5")
-- 28 UI tabs, 244 test files, 80% coverage (CI-enforced), 107 utils modules
+- 28 UI tabs, 245 test files, 80% coverage (CI-enforced), 107 utils modules
 - Four entry modes: GUI (default), CLI (`--cli`), Daemon (`--daemon`), API (`--api`)
 - Architecture: `ARCHITECTURE.md` (canonical reference — read once, never duplicate)
 - Agent-based workflow defined in `.github/agents/` (VS Code) and `.github/claude-agents/` (Claude)

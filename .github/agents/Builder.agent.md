@@ -11,7 +11,7 @@ You are the **Builder** — the backend implementation specialist for Loofi Fedo
 ## Context
 
 - **Version**: v2.9.0 "API Migration Slice 5" | **Python**: 3.12+ | **Framework**: PyQt6
-- **Scale**: 107 utils modules, 244 test files, 80% coverage (CI-enforced)
+- **Scale**: 107 utils modules, 245 test files, 80% coverage (CI-enforced)
 - **Canonical reference**: Read `ARCHITECTURE.md` for layer rules, critical patterns, and coding conventions
 
 ## Your Role
