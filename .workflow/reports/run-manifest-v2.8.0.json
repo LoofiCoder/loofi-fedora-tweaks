@@ -85,11 +85,11 @@
       "artifacts": [
         "scripts/build_rpm.sh",
         "scripts/build_sdist.sh",
-        "rpmbuild/RPMS/noarch/loofi-fedora-tweaks-2.7.0-1.fc41.noarch.rpm",
-        "dist/loofi_fedora_tweaks-2.7.0.tar.gz",
+        "rpmbuild/RPMS/noarch/loofi-fedora-tweaks-2.8.0-1.fc41.noarch.rpm",
+        "dist/loofi_fedora_tweaks-2.8.0.tar.gz",
         ".workflow/reports/",
-        ".workflow/reports/test-results-v2.7.json",
-        ".workflow/reports/run-manifest-v2.7.json",
+        ".workflow/reports/test-results-v2.8.0.json",
+        ".workflow/reports/run-manifest-v2.8.0.json",
         ".project-stats.json"
       ]
     },

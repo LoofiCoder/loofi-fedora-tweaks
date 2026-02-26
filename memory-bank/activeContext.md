@@ -27,9 +27,9 @@ v2.7.0.
 - Expanded focused regression coverage with `tests/test_daemon_handlers_coverage.py` and `tests/test_ipc_types.py` (98 passing in targeted hardening suite)
 - Achieved 91% targeted coverage across `daemon.validators`, selected daemon handlers, and `services.ipc.types`
 - Prepared `P6 PACKAGE` scaffold in `run-manifest-v2.8.0.json` with packaging/build-report artifact targets
-- Executed `P6 PACKAGE` preflight: version alignment (`2.7.0`), lint pass, and full test suite pass (`7152 passed`, `116 skipped`)
+- Executed `P6 PACKAGE` preflight: version alignment (`2.8.0`), lint pass, and full test suite pass (`7152 passed`, `116 skipped`)
 - Completed `P6 PACKAGE` using containerized Fedora build environment (`fedora:41`)
-- Produced package artifacts: `rpmbuild/RPMS/noarch/loofi-fedora-tweaks-2.7.0-1.fc41.noarch.rpm` and `dist/loofi_fedora_tweaks-2.7.0.tar.gz`
+- Produced package artifacts: `rpmbuild/RPMS/noarch/loofi-fedora-tweaks-2.8.0-1.fc41.noarch.rpm` and `dist/loofi_fedora_tweaks-2.8.0.tar.gz`
 - Generated workflow/report outputs via `scripts/generate_workflow_reports.py` and `scripts/project_stats.py`
 - Added explicit P6 unblock metadata in `run-manifest-v2.8.0.json` (`blocking_prereqs`, `rerun_checklist`, `last_attempt`)
 - Marked `P7 RELEASE` complete in `run-manifest-v2.8.0.json` and synchronized roadmap/memory closure state

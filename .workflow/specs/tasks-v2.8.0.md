@@ -1,7 +1,7 @@
 # Tasks — v2.8.0 "API Migration Slice 4 (Policy & Validator Hardening)"
 
 **Date**: 2026-02-25  
-**Status**: In Progress  
+**Status**: Complete  
 **Arch Spec**: `arch-v2.8.0.md`
 
 ## Task List

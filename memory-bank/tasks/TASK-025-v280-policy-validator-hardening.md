@@ -86,11 +86,11 @@ v2.7.0 closed successfully, but roadmap/workflow authority still needed an activ
 
 ### 2026-02-26 (p6 package attempt note)
 
-- Executed package-phase preflight successfully: version alignment (`2.7.0`), lint pass, full test pass (`7152 passed`, `116 skipped`).
+- Executed package-phase preflight successfully: version alignment (`2.8.0`), lint pass, full test pass (`7152 passed`, `116 skipped`).
 - Package build prerequisites missing in current host:
   - `rpmbuild` not available (`scripts/build_rpm.sh` blocked)
   - Python module `build` not installed (`scripts/build_sdist.sh` blocked)
-- Generated reports successfully: `.workflow/reports/test-results-v2.7.json`, `.workflow/reports/run-manifest-v2.7.json`, `.project-stats.json`.
+- Generated reports successfully: `.workflow/reports/test-results-v2.8.0.json`, `.workflow/reports/run-manifest-v2.8.0.json`, `.project-stats.json`.
 
 ## Package Re-run Checklist (when prerequisites are installed)
 
@@ -110,7 +110,7 @@ v2.7.0 closed successfully, but roadmap/workflow authority still needed an activ
 ### 2026-02-26 (p6 package completion in container)
 
 - Executed `P6 PACKAGE` end-to-end in Docker Fedora environment (`fedora:41`) with required build dependencies installed.
-- Built RPM successfully: `rpmbuild/RPMS/noarch/loofi-fedora-tweaks-2.7.0-1.fc41.noarch.rpm`.
-- Built sdist successfully: `dist/loofi_fedora_tweaks-2.7.0.tar.gz`.
-- Regenerated workflow artifacts (`test-results-v2.7.json`, `run-manifest-v2.7.json`) and project stats.
+- Built RPM successfully: `rpmbuild/RPMS/noarch/loofi-fedora-tweaks-2.8.0-1.fc41.noarch.rpm`.
+- Built sdist successfully: `dist/loofi_fedora_tweaks-2.8.0.tar.gz`.
+- Regenerated workflow artifacts (`test-results-v2.8.0.json`, `run-manifest-v2.8.0.json`) and project stats.
 - Advanced workflow state to `P7 RELEASE` pending manual git/tag/push closure.

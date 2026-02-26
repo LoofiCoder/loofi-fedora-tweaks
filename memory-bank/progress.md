@@ -42,13 +42,13 @@
 - SemVer: v2.5.0 "API Slice 1" — network/firewall API migration
 - SemVer: v2.6.0 "API Slice 2" — package API migration
 - SemVer: v2.7.0 "API Slice 3" — system-service API migration + Phase 3 prep
-- SemVer: v2.8.0 "API Slice 4" — policy inventory execution + validator hardening (active)
+- SemVer: v2.8.0 "API Slice 4" — policy inventory execution + validator hardening (released)
 
-Current active semantic cycle: v2.8.0.
+Current active semantic cycle: closed at v2.8.0.
 
 ## What's Left to Build
 
-### Active (v2.8.0 — in progress)
+### Completed (v2.8.0)
 
 - [x] TASK001 Prepare v2.8.0 planning contracts
 - [x] TASK002 Build policy inventory map
@@ -98,13 +98,13 @@ Current active semantic cycle: v2.8.0.
 
 ### v2.8.0 Package Attempt Snapshot (2026-02-26)
 
-- P6 preflight checks passed locally: version alignment (`version.py` and spec both `2.7.0`), lint pass, full test pass (`7152 passed`, `116 skipped`)
+- P6 preflight checks passed locally: version alignment (`version.py` and spec both `2.8.0`), lint pass, full test pass (`7152 passed`, `116 skipped`)
 - Initial host execution was blocked by local prerequisites (`rpmbuild`, Python `build` module)
 - Re-executed packaging in Docker Fedora environment (`fedora:41`) with required build dependencies installed
 - Successful package outputs:
-  - `rpmbuild/RPMS/noarch/loofi-fedora-tweaks-2.7.0-1.fc41.noarch.rpm`
-  - `dist/loofi_fedora_tweaks-2.7.0.tar.gz`
-- Workflow/report outputs generated successfully (`.workflow/reports/test-results-v2.7.json`, `.workflow/reports/run-manifest-v2.7.json`, `.project-stats.json`)
+  - `rpmbuild/RPMS/noarch/loofi-fedora-tweaks-2.8.0-1.fc41.noarch.rpm`
+  - `dist/loofi_fedora_tweaks-2.8.0.tar.gz`
+- Workflow/report outputs generated successfully (`.workflow/reports/test-results-v2.8.0.json`, `.workflow/reports/run-manifest-v2.8.0.json`, `.project-stats.json`)
 
 ### v2.8.0 Release Closure Snapshot (2026-02-26)
 

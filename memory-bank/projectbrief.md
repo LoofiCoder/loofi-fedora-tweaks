@@ -39,4 +39,4 @@
 
 ## Current Version
 
-**v2.0.0 "Evolution"** — Service layer migration and core domain extraction (SemVer)
+**v2.8.0 "API Migration Slice 4"** — Policy inventory execution + validator hardening (SemVer)

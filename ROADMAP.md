@@ -51,7 +51,7 @@
 | 2.5.0   | API Migration Slice 1           | DONE    | Network/firewall API-first hardening with strict IPC compatibility and fallback safeguards   |
 | 2.6.0   | API Migration Slice 2           | DONE    | Package API-first migration with strict IPC payload validation and fallback safeguards       |
 | 2.7.0   | API Migration Slice 3           | DONE    | System service API migration + bounded Phase 3 policy-audit preparation                      |
-| 2.8.0   | API Migration Slice 4           | ACTIVE  | Policy inventory execution + privileged validator hardening                                   |
+| 2.8.0   | API Migration Slice 4           | DONE    | Policy inventory execution + privileged validator hardening                                   |
 
 ---
 
@@ -77,7 +77,7 @@ broadening, and no UI feature scope unrelated to hardening.
 - [x] v2.8.0 task chain `TASK001`–`TASK006` completed (plan/design/build/test/document)
 - [x] Targeted hardening suite passed with 98 tests
 - [x] Targeted hardening coverage reached 91% (`daemon.validators`, selected handlers, `services.ipc.types`)
-- [x] `P6 PACKAGE` executed successfully in Fedora container (`loofi-fedora-tweaks-2.7.0-1.fc41.noarch.rpm`, `loofi_fedora_tweaks-2.7.0.tar.gz`)
+- [x] `P6 PACKAGE` executed successfully in Fedora container (`loofi-fedora-tweaks-2.8.0-1.fc41.noarch.rpm`, `loofi_fedora_tweaks-2.8.0.tar.gz`)
 - [x] `P7 RELEASE` completed (workflow closure committed and tagged)
 
 ### Agent Assignment
