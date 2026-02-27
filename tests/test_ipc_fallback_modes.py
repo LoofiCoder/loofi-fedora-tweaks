@@ -78,6 +78,24 @@ class TestIPCFallbackModes(unittest.TestCase):
         self.assertTrue(result.success)
         mock_worker_class.assert_called_once()
 
+    @patch.dict(os.environ, {"LOOFI_IPC_MODE": "preferred"})
+    @patch("services.package.service.daemon_client.call_json")
+    @patch("services.package.service.CommandWorker")
+    def test_preferred_package_update_falls_back_to_local(
+        self,
+        mock_worker_class,
+        mock_call,
+    ):
+        mock_call.return_value = None
+        mock_worker = mock_worker_class.return_value
+        mock_worker.get_result.return_value.success = True
+        mock_worker.get_result.return_value.message = "ok"
+
+        result = DnfPackageService().update(["vim"])
+
+        self.assertTrue(result.success)
+        mock_worker_class.assert_called_once()
+
     @patch.dict(os.environ, {"LOOFI_IPC_MODE": "disabled"})
     @patch("services.package.service.daemon_client.call_json")
     @patch("services.package.service.CommandWorker")

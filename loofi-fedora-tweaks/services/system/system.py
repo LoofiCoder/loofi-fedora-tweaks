@@ -52,6 +52,10 @@ class SystemManager:
         """
         Get the name of the Fedora variant.
 
+        Behavior contract (v2.12.0 TASK-003):
+        - Intentional local-read helper used by daemon handlers.
+        - Must not depend on daemon IPC to avoid recursion.
+
         Returns:
             String like "Silverblue", "Kinoite", "Workstation", etc.
         """
@@ -74,6 +78,10 @@ class SystemManager:
     def get_package_manager(cls) -> str:
         """
         Get the appropriate package manager for this system.
+
+        Behavior contract (v2.12.0 TASK-003):
+        - Intentional local-read helper used by daemon handlers.
+        - Must not depend on daemon IPC to avoid recursion.
 
         Returns:
             'rpm-ostree' for Atomic systems, 'dnf' for traditional Workstation.

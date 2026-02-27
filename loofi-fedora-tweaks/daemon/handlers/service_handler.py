@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from core.executor.action_result import ActionResult
 from services.system.service import SystemService
+from services.system.system import SystemManager
 from services.system.services import ServiceManager, UnitScope
 
 from daemon.validators import (
@@ -62,15 +63,33 @@ class ServiceHandler:
 
     @staticmethod
     def has_pending_reboot() -> bool:
-        return bool(SystemService.has_pending_reboot())
+        """Return pending-reboot state from local system reads.
+
+        v2.12.0 TASK-003 contract:
+        - Daemon handlers must not re-enter daemon-client IPC methods.
+        - Use local SystemManager read path for deterministic daemon behavior.
+        """
+        return bool(SystemManager.has_pending_deployment())
 
     @staticmethod
     def get_package_manager() -> str:
-        return str(SystemService.get_package_manager())
+        """Return package manager via local system detection.
+
+        v2.12.0 TASK-003 contract:
+        - Use local SystemManager read path inside daemon process.
+        - Avoid recursive daemon-client calls.
+        """
+        return str(SystemManager.get_package_manager())
 
     @staticmethod
     def get_variant_name() -> str:
-        return str(SystemService.get_variant_name())
+        """Return Fedora variant name via local system detection.
+
+        v2.12.0 TASK-003 contract:
+        - Use local SystemManager read path inside daemon process.
+        - Avoid recursive daemon-client calls.
+        """
+        return str(SystemManager.get_variant_name())
 
     @staticmethod
     def list_units(scope: str = "user", filter_type: str = "all") -> list[dict[str, str | bool]]:

@@ -107,6 +107,20 @@ class TestDaemonClient(unittest.TestCase):
 
     @patch.dict(os.environ, {"LOOFI_IPC_MODE": "preferred"})
     @patch("services.ipc.daemon_client.DaemonClient._call_raw")
+    def test_call_json_returns_bool_on_valid_system_reboot_payload(self, mock_raw):
+        mock_raw.return_value = '{"ok": true, "data": true, "error": null}'
+        client = DaemonClient()
+        self.assertTrue(client.call_json("SystemHasPendingReboot"))
+
+    @patch.dict(os.environ, {"LOOFI_IPC_MODE": "preferred"})
+    @patch("services.ipc.daemon_client.DaemonClient._call_raw")
+    def test_preferred_mode_falls_back_on_malformed_package_list_payload(self, mock_raw):
+        mock_raw.return_value = '{"ok": true, "data": true, "error": null}'
+        client = DaemonClient()
+        self.assertIsNone(client.call_json("PackageListInstalled"))
+
+    @patch.dict(os.environ, {"LOOFI_IPC_MODE": "preferred"})
+    @patch("services.ipc.daemon_client.DaemonClient._call_raw")
     def test_preferred_mode_falls_back_on_unknown_package_method_payload(self, mock_raw):
         mock_raw.return_value = '{"ok": true, "data": {}, "error": null}'
         client = DaemonClient()

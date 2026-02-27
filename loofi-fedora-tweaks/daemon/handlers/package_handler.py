@@ -9,36 +9,68 @@ from daemon.validators import validate_package_list, validate_package_name, vali
 
 
 class PackageHandler:
-    """Serve package operations for IPC callers."""
+    """Serve package operations for IPC callers.
+
+    Behavior contract (v2.12.0 TASK-004):
+    - Daemon handlers execute package service local methods first.
+    - Fallback to non-local methods only when a local variant is unavailable.
+    - Results are serialized through ActionResult envelopes only.
+    """
+
+    @staticmethod
+    def _execute_action(
+        service: object,
+        local_method: str,
+        fallback_method: str,
+        *args: object,
+        **kwargs: object,
+    ) -> ActionResult:
+        """Execute local-first package action and return ActionResult."""
+        if hasattr(service, local_method):
+            method = getattr(service, local_method)
+            result = method(*args, **kwargs)
+        else:
+            method = getattr(service, fallback_method)
+            result = method(*args, **kwargs)
+
+        if isinstance(result, ActionResult):
+            return result
+        return ActionResult.fail("Package action returned no result")
 
     @staticmethod
     def install(packages: list[str]) -> dict:
         service = get_package_service()
         clean = validate_package_list(packages)
-        if hasattr(service, "install_local"):
-            result = service.install_local(clean)
-        else:
-            result = service.install(clean)
+        result = PackageHandler._execute_action(
+            service,
+            "install_local",
+            "install",
+            clean,
+        )
         return PackageHandler._serialize_result(result)
 
     @staticmethod
     def remove(packages: list[str]) -> dict:
         service = get_package_service()
         clean = validate_package_list(packages)
-        if hasattr(service, "remove_local"):
-            result = service.remove_local(clean)
-        else:
-            result = service.remove(clean)
+        result = PackageHandler._execute_action(
+            service,
+            "remove_local",
+            "remove",
+            clean,
+        )
         return PackageHandler._serialize_result(result)
 
     @staticmethod
     def update(packages: list[str] | None = None) -> dict:
         service = get_package_service()
         cleaned = validate_package_list(packages) if packages is not None else []
-        if hasattr(service, "update_local"):
-            result = service.update_local(cleaned or None)
-        else:
-            result = service.update(cleaned or None)
+        result = PackageHandler._execute_action(
+            service,
+            "update_local",
+            "update",
+            cleaned or None,
+        )
         return PackageHandler._serialize_result(result)
 
     @staticmethod
@@ -46,29 +78,35 @@ class PackageHandler:
         service = get_package_service()
         clean_query = validate_search_query(query)
         valid_limit = validate_search_limit(limit)
-        if hasattr(service, "search_local"):
-            result = service.search_local(clean_query, limit=valid_limit)
-        else:
-            result = service.search(clean_query, limit=valid_limit)
+        result = PackageHandler._execute_action(
+            service,
+            "search_local",
+            "search",
+            clean_query,
+            limit=valid_limit,
+        )
         return PackageHandler._serialize_result(result)
 
     @staticmethod
     def info(package: str) -> dict:
         service = get_package_service()
         clean_package = validate_package_name(package)
-        if hasattr(service, "info_local"):
-            result = service.info_local(clean_package)
-        else:
-            result = service.info(clean_package)
+        result = PackageHandler._execute_action(
+            service,
+            "info_local",
+            "info",
+            clean_package,
+        )
         return PackageHandler._serialize_result(result)
 
     @staticmethod
     def list_installed() -> dict:
         service = get_package_service()
-        if hasattr(service, "list_installed_local"):
-            result = service.list_installed_local()
-        else:
-            result = service.list_installed()
+        result = PackageHandler._execute_action(
+            service,
+            "list_installed_local",
+            "list_installed",
+        )
         return PackageHandler._serialize_result(result)
 
     @staticmethod

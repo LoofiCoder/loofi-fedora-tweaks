@@ -416,6 +416,30 @@ class TestSystemServiceDaemonDelegation(unittest.TestCase):
         self.assertEqual(result, "rpm-ostree")
         mock_system_manager.get_package_manager.assert_called_once()
 
+    def test_get_variant_name_uses_daemon_string_when_available(
+        self,
+        mock_call_json,
+        mock_system_manager,
+    ):
+        mock_call_json.return_value = "Workstation"
+
+        result = SystemService.get_variant_name()
+
+        self.assertEqual(result, "Workstation")
+        mock_system_manager.get_variant_name.assert_not_called()
+
+    def test_has_pending_reboot_uses_daemon_boolean_when_available(
+        self,
+        mock_call_json,
+        mock_system_manager,
+    ):
+        mock_call_json.return_value = True
+
+        result = SystemService.has_pending_reboot()
+
+        self.assertTrue(result)
+        mock_system_manager.has_pending_deployment.assert_not_called()
+
 
 @patch('services.system.system.os.path.exists')
 @patch('services.system.system.subprocess.run')

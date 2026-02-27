@@ -153,6 +153,17 @@ class TestPackageHandlerCoverage(unittest.TestCase):
         self.assertTrue(PackageHandler.list_installed()["success"])
         self.assertTrue(PackageHandler.is_installed("vim"))
 
+    @patch("daemon.handlers.package_handler.get_package_service")
+    def test_install_falls_back_to_non_local_when_local_missing(self, mock_get_service):
+        service = MagicMock(spec=["install"])
+        service.install.return_value = ActionResult(success=True, message="ok")
+        mock_get_service.return_value = service
+
+        payload = PackageHandler.install(["vim"])
+
+        self.assertTrue(payload["success"])
+        service.install.assert_called_once_with(["vim"])
+
     def test_serialize_result_handles_non_action_result(self):
         payload = PackageHandler._serialize_result(result=object())
         self.assertFalse(payload["success"])
@@ -172,11 +183,11 @@ class TestServiceHandlerCoverage(unittest.TestCase):
         self.assertTrue(ServiceHandler.update_grub("desc")["success"])
         self.assertTrue(ServiceHandler.set_hostname("fedora-workstation", "desc")["success"])
 
-    @patch("daemon.handlers.service_handler.SystemService")
-    def test_static_system_queries(self, mock_system_service):
-        mock_system_service.has_pending_reboot.return_value = True
-        mock_system_service.get_package_manager.return_value = "dnf"
-        mock_system_service.get_variant_name.return_value = "Workstation"
+    @patch("daemon.handlers.service_handler.SystemManager")
+    def test_static_system_queries(self, mock_system_manager):
+        mock_system_manager.has_pending_deployment.return_value = True
+        mock_system_manager.get_package_manager.return_value = "dnf"
+        mock_system_manager.get_variant_name.return_value = "Workstation"
 
         self.assertTrue(ServiceHandler.has_pending_reboot())
         self.assertEqual(ServiceHandler.get_package_manager(), "dnf")
