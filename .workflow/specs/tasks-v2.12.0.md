@@ -30,7 +30,7 @@
   Docs: none
   Tests: `tests/test_package_service.py, tests/test_daemon_dbus.py, tests/test_ipc_fallback_modes.py`
 
-- [ ] ID: TASK-007 | Files: `.workflow/reports/test-results-v2.12.0.json, .workflow/reports/run-manifest-v2.12.0.json` | Dep: TASK-005, TASK-006 | Agent: project-coordinator | Description: Generate canonical workflow report artifacts for v2.12.0 after test validation.
+- [x] ID: TASK-007 | Files: `.workflow/reports/test-results-v2.12.0.json, .workflow/reports/run-manifest-v2.12.0.json` | Dep: TASK-005, TASK-006 | Agent: project-coordinator | Description: Generate canonical workflow report artifacts for v2.12.0 after test validation.
   Acceptance: Both report files exist with canonical `v2.12.0` naming and indicate non-zero executed tests for release gate compatibility.
   Docs: none
   Tests: `scripts/generate_workflow_reports.py, scripts/check_release_docs.py`
