@@ -54,7 +54,7 @@
 | 2.8.0   | API Migration Slice 4           | DONE    | Policy inventory execution + privileged validator hardening                                   |
 | 2.9.0   | API Migration Slice 5           | DONE    | Residual privileged daemon/API migration + compatibility hardening                            |
 | 2.10.0  | API Migration Slice 6           | DONE    | Canonical workflow normalization + next daemon/API migration planning                         |
-| 2.11.0  | API Migration Slice 7           | ACTIVE  | Network/firewall/system residual hardening and daemon/local parity refinement                 |
+| 2.11.0  | API Migration Slice 7           | DONE    | Network/firewall/system residual hardening and daemon/local parity refinement                 |
 
 ---
 
@@ -87,7 +87,7 @@ residual pathways.
 
 ---
 
-## [ACTIVE] v2.11.0 "API Migration Slice 7" — Residual Service Hardening
+## [DONE] v2.11.0 "API Migration Slice 7" — Residual Service Hardening
 
 ### Scope
 
@@ -104,7 +104,7 @@ and explicit daemon/local read-path contracts without expanding privilege scope.
 - [x] Normalize firewall mutator command construction to project standards
 - [x] Define/implement daemon-vs-local classification for targeted system read paths
 - [x] Add focused regression coverage for network/firewall/system parity changes
-- [ ] Publish v2.11 docs and release notes after verification
+- [x] Publish v2.11 docs and release notes after verification
 
 ### Agent Assignment
 
