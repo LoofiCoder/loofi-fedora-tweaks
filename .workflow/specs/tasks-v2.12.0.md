@@ -35,7 +35,7 @@
   Docs: none
   Tests: `scripts/generate_workflow_reports.py, scripts/check_release_docs.py`
 
-- [ ] ID: TASK-008 | Files: `CHANGELOG.md, README.md, docs/releases/RELEASE-NOTES-v2.12.0.md, ROADMAP.md` | Dep: TASK-007 | Agent: release-planner | Description: Document v2.12.0 outcomes and close metadata after verification and packaging.
+- [x] ID: TASK-008 | Files: `CHANGELOG.md, README.md, docs/releases/RELEASE-NOTES-v2.12.0.md, ROADMAP.md` | Dep: TASK-007 | Agent: release-planner | Description: Document v2.12.0 outcomes and close metadata after verification and packaging.
   Acceptance: Documentation reflects implemented behavior, roadmap status transitions to DONE at closure, and release notes summarize verified changes only.
   Docs: CHANGELOG, README, RELEASE-NOTES
   Tests: none

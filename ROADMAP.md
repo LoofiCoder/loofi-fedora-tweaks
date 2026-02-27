@@ -55,11 +55,11 @@
 | 2.9.0   | API Migration Slice 5           | DONE    | Residual privileged daemon/API migration + compatibility hardening                            |
 | 2.10.0  | API Migration Slice 6           | DONE    | Canonical workflow normalization + next daemon/API migration planning                         |
 | 2.11.0  | API Migration Slice 7           | DONE    | Network/firewall/system residual hardening and daemon/local parity refinement                 |
-| 2.12.0  | API Migration Slice 8           | ACTIVE  | API-first parity completion for service-layer residuals and workflow hardening                |
+| 2.12.0  | API Migration Slice 8           | DONE    | API-first parity completion for service-layer residuals and workflow hardening                |
 
 ---
 
-## [ACTIVE] v2.12.0 "API Migration Slice 8" — Service Parity Completion
+## [DONE] v2.12.0 "API Migration Slice 8" — Service Parity Completion
 
 ### Scope
 
@@ -70,10 +70,10 @@ no privilege-scope expansion, no UI feature expansion, and strict fallback compa
 ### Planned Deliverables
 
 - [x] Activate v2.12.0 workflow metadata (`ROADMAP`, race-lock, task/arch specs)
-- [ ] Finalize residual inventory for daemon-first vs intentional-local service paths
-- [ ] Implement bounded migration updates for selected residual service methods
-- [ ] Add focused regression coverage for daemon/local parity and fallback guarantees
-- [ ] Reconcile v2.12 workflow reports and release documentation artifacts
+- [x] Finalize residual inventory for daemon-first vs intentional-local service paths
+- [x] Implement bounded migration updates for selected residual service methods
+- [x] Add focused regression coverage for daemon/local parity and fallback guarantees
+- [x] Reconcile v2.12 workflow reports and release documentation artifacts
 
 ### Agent Assignment
 

@@ -1,4 +1,4 @@
-# Loofi Fedora Tweaks v2.11.0 "API Migration Slice 7"
+# Loofi Fedora Tweaks v2.12.0 "API Migration Slice 8"
 
 <!-- markdownlint-configure-file {"MD033": false} -->
 
@@ -12,8 +12,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/loofitheboss/loofi-fedora-tweaks/releases/tag/v2.11.0">
-    <img src="https://img.shields.io/badge/Release-v2.11.0-blue?style=for-the-badge&logo=github" alt="Release v2.11.0"/>
+  <a href="https://github.com/loofitheboss/loofi-fedora-tweaks/releases/tag/v2.12.0">
+    <img src="https://img.shields.io/badge/Release-v2.12.0-blue?style=for-the-badge&logo=github" alt="Release v2.12.0"/>
   </a>
   <img src="https://img.shields.io/badge/Fedora-43-blue?style=for-the-badge&logo=fedora" alt="Fedora 43"/>
   <img src="https://img.shields.io/badge/Python-3.12+-green?style=for-the-badge&logo=python" alt="Python"/>
@@ -41,25 +41,25 @@ It is designed to be practical for both casual users and advanced users:
 
 ---
 
-## What Is New in v2.11.0?
+## What Is New in v2.12.0?
 
-`v2.11.0 "API Migration Slice 7"` focuses on hardening network, firewall, and system service local execution paths.
+`v2.12.0 "API Migration Slice 8"` completes service-layer residual daemon/local parity migration and closes the workflow slice metadata.
 
-- Network write paths now enforce strict success/failure based on subprocess exit codes.
-- Active-connection detection is deterministic, preventing substring misclassification.
-- Firewall mutator commands are normalized to `pkexec` patterns with explicit timeout enforcement.
-- Daemon/local parity is finalized for firewall and system service read paths.
-- All privileged actions require audit logging and explicit timeout; no `sudo` or `shell=True` usage.
+- Selected system-service residual methods now run daemon-first with bounded local fallback compatibility.
+- Residual package-service pathways now enforce deterministic daemon/local parity and strict payload behavior.
+- Focused regression coverage was expanded across daemon success, fallback, and malformed payload branches.
+- Canonical v2.12 workflow reports were generated with non-zero executed tests for release-gate compatibility.
+- Metadata closure completed for v2.12 roadmap/workflow state after verification.
 
-Full notes: [`docs/releases/RELEASE-NOTES-v2.11.0.md`](docs/releases/RELEASE-NOTES-v2.11.0.md)
+Full notes: [`docs/releases/RELEASE-NOTES-v2.12.0.md`](docs/releases/RELEASE-NOTES-v2.12.0.md)
 
 ## Current Development Cycle
 
 Follow [`ROADMAP.md`](ROADMAP.md) for the active release branch and current implementation slice.
 
-Current release is **v2.11.0 "API Migration Slice 7"**, focused on network/firewall/system residual hardening and daemon/local parity refinement.
+Current release is **v2.12.0 "API Migration Slice 8"**, focused on service-layer residual parity completion and workflow hardening closure.
 
-Slice notes: [`docs/releases/RELEASE-NOTES-v2.11.0.md`](docs/releases/RELEASE-NOTES-v2.11.0.md)
+Slice notes: [`docs/releases/RELEASE-NOTES-v2.12.0.md`](docs/releases/RELEASE-NOTES-v2.12.0.md)
 
 ---
 

@@ -4,20 +4,41 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.12.0] - 2026-02-27 "API Migration Slice 8"
+
+### Added
+
+- Add focused regression coverage for daemon-first system and package residual paths across success, fallback, and malformed payload branches
+- Add canonical v2.12 workflow report artifacts with non-zero executed tests for release-gate compatibility
+
+### Changed
+
+- Migrate selected system-service residual methods to bounded daemon-first execution with safe local fallback parity
+- Normalize residual package-service behavior for deterministic daemon/local parity and strict payload compatibility
+- Close v2.12 workflow metadata and roadmap status after verification and documentation sync
+
+### Fixed
+
+- Fix daemon/client fallback edge handling for residual service pathways by enforcing deterministic local-safe defaults
+- Fix workflow artifact naming and report generation flow for scoped v2.12 reporting
+
 ## [2.11.0] - 2026-02-26 "API Migration Slice 7"
 
 ### Added
+
 - Harden network local write paths to enforce strict success/failure based on subprocess exit codes
 - Normalize firewall local mutator commands to project-standard `pkexec` patterns with explicit timeout enforcement
 - Finalize daemon/local parity classification for firewall and system service read paths
 - Add regression coverage for network/firewall/system service hardening
 
 ### Changed
+
 - Tighten active-connection detection with deterministic nmcli output parsing
 - Require explicit timeout parameter on all subprocess calls
 - Enforce audit logging for all privileged firewall actions
 
 ### Fixed
+
 - Fix unconditional True returns in network local write paths
 - Fix substring misclassification in active-connection detection
 - Fix malformed output handling in nmcli parsing
