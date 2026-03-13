@@ -280,7 +280,7 @@ jobs:
             --fail-under=${{ env.COVERAGE_THRESHOLD }}
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results
           path: test-results.xml
@@ -305,7 +305,7 @@ jobs:
           cache-dependency-path: ${{ env.PIP_CACHE_FILES }}
       - run: pip install bandit
       - run: bandit -r loofi-fedora-tweaks/ -ll -ii --skip B103,B104,B108,B310,B404,B603,B602 -f json -o bandit-report.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: security-report
@@ -333,7 +333,7 @@ jobs:
         run: dnf install -y rpm-build python3 python3-devel desktop-file-utils systemd-rpm-macros
       - name: Build RPM
         run: bash scripts/build_rpm.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: rpm-package
           path: rpmbuild/RPMS/noarch/*.rpm
@@ -391,7 +391,7 @@ jobs:
           sudo flatpak install -y --noninteractive flathub org.kde.Platform//6.6 org.kde.Sdk//6.6
       - name: Build Flatpak
         run: bash scripts/build_flatpak.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: flatpak-package
@@ -417,7 +417,7 @@ jobs:
         run: pip install build setuptools wheel
       - name: Build source distribution
         run: bash scripts/build_sdist.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: sdist-package

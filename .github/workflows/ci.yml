@@ -131,7 +131,7 @@ jobs:
             --fail-under=${{ env.COVERAGE_THRESHOLD }}
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results
           path: test-results.xml
@@ -169,7 +169,7 @@ jobs:
           cache-dependency-path: ${{ env.PIP_CACHE_FILES }}
       - run: pip install bandit
       - run: bandit -r loofi-fedora-tweaks/ -ll -ii --skip B103,B104,B108,B310,B404,B603,B602 -f json -o bandit-report.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: security-report
@@ -202,7 +202,7 @@ jobs:
       - run: sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
       - run: sudo flatpak install -y flathub org.kde.Platform//6.6 org.kde.Sdk//6.6
       - run: bash scripts/build_flatpak.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: flatpak-artifacts
@@ -222,7 +222,7 @@ jobs:
           cache-dependency-path: ${{ env.PIP_CACHE_FILES }}
       - run: pip install build setuptools wheel
       - run: bash scripts/build_sdist.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: sdist-artifacts
