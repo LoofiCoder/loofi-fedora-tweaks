@@ -579,7 +579,7 @@ jobs:
           fi
 
       - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.release_meta.outputs.tag }}
           name: "Loofi Fedora Tweaks ${{ steps.release_meta.outputs.tag }}${{ steps.release_meta.outputs.codename && format(' — {0}', steps.release_meta.outputs.codename) || '' }}"
