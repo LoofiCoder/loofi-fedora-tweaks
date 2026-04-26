@@ -12,8 +12,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/loofitheboss/loofi-fedora-tweaks/releases/tag/v2.11.0">
-    <img src="https://img.shields.io/badge/Release-v2.11.0-blue?style=for-the-badge&logo=github" alt="Release v2.11.0"/>
+  <a href="https://github.com/loofitheboss/loofi-fedora-tweaks/releases/tag/v4.0.0">
+    <img src="https://img.shields.io/badge/Release-v4.0.0-blue?style=for-the-badge&logo=github" alt="Release v4.0.0"/>
   </a>
   <img src="https://img.shields.io/badge/Fedora-43-blue?style=for-the-badge&logo=fedora" alt="Fedora 43"/>
   <img src="https://img.shields.io/badge/Python-3.12+-green?style=for-the-badge&logo=python" alt="Python"/>
@@ -41,27 +41,31 @@ It is designed to be practical for both casual users and advanced users:
 
 ---
 
-## What Was New in v2.11.0?
+## What's New in v4.0.0?
 
-`v2.11.0 "API Migration Slice 7"` focuses on hardening network, firewall, and system service local execution paths.
+`v4.0.0 "Atlas"` transforms the app into a guided Fedora assistant with automated diagnostics and task-based workflows.
 
-- Network write paths now enforce strict success/failure based on subprocess exit codes.
-- Active-connection detection is deterministic, preventing substring misclassification.
-- Firewall mutator commands are normalized to `pkexec` patterns with explicit timeout enforcement.
-- Daemon/local parity is finalized for firewall and system service read paths.
-- All privileged actions require audit logging and explicit timeout; no `sudo` or `shell=True` usage.
+- **Health & Repair Autopilot**: Real-time system health checks (DNF, services, drivers).
+- **Guided Dashboad**: Goal-oriented task cards with step-by-step repair wizards.
+- **Rollback-First Safety**: Risk assessment and command preview for all system changes.
+- **Atomic Parity**: Dedicated support for Fedora Silverblue and Kinoite (`rpm-ostree`).
+- **Support Bundle v2**: Structured diagnostic exports with data privacy masking.
 
-Full notes: [`docs/releases/RELEASE-NOTES-v2.11.0.md`](docs/releases/RELEASE-NOTES-v2.11.0.md)
+Full notes: [`docs/releases/RELEASE-NOTES-v4.0.0.md`](docs/releases/RELEASE-NOTES-v4.0.0.md)
 
 ## Current Development Cycle
 
 Follow [`ROADMAP.md`](ROADMAP.md) for the active release branch and current implementation slice.
 
-- Active target: **v4.0.0 "Atlas"** (see `ROADMAP.md` and `docs/architecture/V4_ATLAS_PLAN.md`)
-- Current stable baseline: **v2.13.0 "Alignment"** (see `CHANGELOG.md`)
-- Packaged runtime/version files baseline: **2.11.0** (see `loofi-fedora-tweaks/version.py`, `pyproject.toml`, and `loofi-fedora-tweaks.spec`)
+- Current release: **v4.0.0 "Atlas"** (see `ROADMAP.md` and `docs/architecture/V4_ATLAS_PLAN.md`)
+- Current stable baseline: **v4.0.0 "Atlas"** (see `CHANGELOG.md`)
+- Packaged runtime/version files baseline: **4.0.0** (see `loofi-fedora-tweaks/version.py`, `pyproject.toml`, and `loofi-fedora-tweaks.spec`)
 
 ---
+
+## What Was New in v2.11.0?
+
+`v2.11.0 "API Migration Slice 7"` focuses on hardening network, firewall, and system service local execution paths.
 
 ## What Was New in v1.0.0?
 
@@ -173,7 +177,7 @@ alias loofi='loofi-fedora-tweaks --cli'
 
 ## Screenshots
 
-Current UI screenshots (v2.8.0) are maintained in:
+Current UI screenshots (v4.0.0) are maintained in:
 
 - [`docs/images/user-guide/README.md`](docs/images/user-guide/README.md)
 
