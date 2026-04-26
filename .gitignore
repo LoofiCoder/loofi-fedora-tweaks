@@ -76,3 +76,17 @@ tmpclaude-*
 
 # Local scratch temp
 .tmp/
+
+# Release artifacts
+release-assets/
+loofi-fedora-tweaks-build/
+
+# Local personal dotfiles (should not be in repo root)
+.bash_profile
+.bashrc
+.profile
+.zprofile
+.zshrc
+.ripgreprc
+.idea/
+*.code-workspace
