@@ -2,18 +2,19 @@
 
 Welcome to the official wiki for **Loofi Fedora Tweaks** — a modern Fedora control center for maintenance, diagnostics, security, performance, and automation.
 
-**Current Version**: v2.9.0 "API Migration Slice 5"  
-**Screenshots Refreshed**: September 2026
+**Current Version**: v4.0.0 "Atlas" — Guided Fedora Control Center  
+**Screenshots Refreshed**: April 2026
 
 ![Loofi Fedora Tweaks Dashboard](images/hero-home.png)
 
 ## At a Glance
 
-- 28 feature tabs across system, packages, hardware, network, security, and automation
-- 4 run modes: GUI, CLI (`--json`), daemon scheduler, and Web API
-- Plugin architecture with marketplace support
-- Atomic-aware behavior (`dnf` vs `rpm-ostree`)
-- Privileged actions through `pkexec` (never `sudo`)
+- **Guided Fedora Assistant**: v4.0 introduces a task-based home dashboard and automated health monitoring.
+- **Health & Repair Autopilot**: 10+ real-time system checks (DNF, Services, Drivers, Security).
+- **Safe Repairs**: Guided repair wizards with risk assessment, command preview, and rollback hints.
+- **First-Class Atomic Support**: Dedicated `rpm-ostree` diagnostics and upgrade checks for Silverblue/Kinoite.
+- 4 run modes: GUI, CLI (`--json`), daemon scheduler, and Web API.
+- Privileged actions through `pkexec` (never `sudo`).
 
 ## Start Here
 
@@ -81,7 +82,7 @@ Welcome to the official wiki for **Loofi Fedora Tweaks** — a modern Fedora con
 ## Quick Links
 
 - GitHub Repository: [loofitheboss/loofi-fedora-tweaks](https://github.com/loofitheboss/loofi-fedora-tweaks)
-- Latest Release: [v2.9.0](https://github.com/loofitheboss/loofi-fedora-tweaks/releases/tag/v2.9.0)
+- Latest Release: [v4.0.0](https://github.com/loofitheboss/loofi-fedora-tweaks/releases/tag/v4.0.0)
 - Issues: [Issue Tracker](https://github.com/loofitheboss/loofi-fedora-tweaks/issues)
 - Main README: [README.md](https://github.com/loofitheboss/loofi-fedora-tweaks/blob/master/README.md)
 - Architecture Doc: [ARCHITECTURE.md](https://github.com/loofitheboss/loofi-fedora-tweaks/blob/master/ARCHITECTURE.md)

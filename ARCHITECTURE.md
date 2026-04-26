@@ -3,7 +3,7 @@
 > **Canonical architecture reference.** All agent and instruction files MUST reference this document
 > instead of duplicating architecture details. This file is updated when structure changes.
 >
-> **Version**: 2.4.0 "Daemon Foundation" | **Python**: 3.12+ | **Framework**: PyQt6 | **Platform**: Fedora Linux
+> **Version**: 4.0.0 "Atlas" | **Python**: 3.12+ | **Framework**: PyQt6 | **Platform**: Fedora Linux
 
 ## Project Structure
 
@@ -11,68 +11,46 @@
 loofi-fedora-tweaks/          # Application root (on PYTHONPATH)
 ├── main.py                   # Entry point — GUI (default), CLI (--cli), Daemon (--daemon)
 ├── version.py                # __version__, __version_codename__, __app_name__
-├── ui/                       # PyQt6 widgets — 28 feature tabs + base class
-│   ├── base_tab.py           # BaseTab ABC — shared CommandRunner wiring, output area
-│   ├── *_tab.py              # Feature tabs (inherit BaseTab for command tabs)
+├── core/                     # Business logic and system services [v4.0 Hub]
+│   ├── diagnostics/          # Health & Repair Autopilot (HRA)
+│   │   ├── health_registry.py# Central registry for system checks
+│   │   ├── health_model.py   # Structured HealthCheck/HealthResult schemas
+│   │   ├── upgrade_checker.py# Fedora version transition assistant
+│   │   ├── task_dashboard.py # Goal-oriented task logic
+│   │   └── gaming_audit.py   # Specialized hardware/gaming diagnostics
+│   ├── executor/             # Action execution and safety
+│   │   ├── action_model.py   # SystemAction with risk/rollback metadata
+│   │   └── action_executor.py# Centralized safe command runner
+│   ├── export/               # Diagnostic export services
+│   │   ├── support_bundle_v2.py# Structured diagnostic bundle generator
+│   │   └── ansible_exporter.py # ANSIBLE export logic
+│   ├── plugins/              # Plugin discovery and loading logic
+│   ├── agents/               # AgentRegistry, AgentPlanner, AgentExecutor
+│   └── ai/                   # AI logic and prompt templates
+├── ui/                       # PyQt6 widgets — Feature tabs + base class
+│   ├── base_tab.py           # BaseTab ABC — shared CommandRunner wiring
+│   ├── atlas_dashboard_tab.py# v4.0 Home - Task-based entry point
+│   ├── task_wizard.py        # v4.0 Guided 4-step repair lifecycle
+│   ├── support_bundle_wizard.py# v4.0 Export UI
 │   ├── main_window.py        # MainWindow with sidebar + lazy-loaded tab stack
 │   ├── icon_pack.py          # Semantic icon resolver + theme-aware tinting
 │   ├── lazy_widget.py        # Lazy tab loader
 │   ├── wizard.py             # First-run wizard
-│   ├── doctor.py             # DependencyDoctor startup check
-│   ├── command_palette.py    # Ctrl+K command palette with quick commands
-│   ├── confirm_dialog.py     # ConfirmActionDialog for dangerous ops
-│   ├── health_detail_dialog.py  # Health score drill-down modal (v47.0)
-│   └── tour_overlay.py       # First-run guided tour spotlight overlay (v47.0)
-├── utils/                    # Business logic — shared ops + backward-compat shims
-│   ├── commands.py           # PrivilegedCommand builder (pkexec, never sudo)
+│   └── ...                   # Feature tabs (maintenance, software, etc.)
+├── utils/                    # Shared utilities
+│   ├── commands.py           # PrivilegedCommand builder (pkexec)
 │   ├── command_runner.py     # CommandRunner (QProcess async wrapper)
-│   ├── system.py             # SystemManager (is_atomic, get_package_manager)
-│   ├── operations.py         # Shared operations layer (API for GUI + CLI)
-│   ├── errors.py             # Error hierarchy (LoofiError, DnfLockedError, etc.)
-│   ├── history.py            # HistoryManager — action logging with undo
-│   ├── experience_level.py   # ExperienceLevelManager — beginner/intermediate/advanced mode
-│   ├── guided_tour.py        # GuidedTourManager — first-run guided tour steps
-│   ├── quick_commands.py     # QuickCommandRegistry — command palette quick actions
-│   ├── hardware_profiles.py  # Auto-detect hardware via /sys/class/dmi/
-│   ├── daemon.py             # Background scheduler (--daemon mode)
-│   ├── remote_config.py      # Remote config fetch with local fallback
-│   └── ...                   # Deprecated shims re-exporting from services/ and core/
-├── cli/
-│   └── main.py               # CLI subcommands with --json output (calls utils/)
-├── core/                     # Core domain modules (v2.0.0)
-│   ├── executor/             # BaseActionExecutor + ActionResult
-│   ├── plugins/              # Plugin engine (LoofiPlugin ABC)
-│   ├── export/               # AnsibleExporter, KickstartGenerator, ReportExporter
-│   ├── diagnostics/          # DiagnosticManager, TroubleshootManager, LogManager
-│   ├── ai/                   # AIAssistant, AISettingsManager, AIFeaturesManager
-│   └── agents/               # AgentRegistry, AgentPlanner, AgentExecutor, AgentScheduler
-├── services/                 # Service layer (v2.0.0)
-│   ├── security/             # FirewallManager, SecureBoot, USBGuard, Sandbox, Safety, Audit, Risk
-│   ├── software/             # FlatpakManager
-│   ├── desktop/              # DesktopUtils, KwinTiling, Tiling, WaylandDisplay
-│   ├── storage/              # CloudSync, StateTeleport
-│   ├── network/              # NetworkUtils, NetworkMonitor, Ports, MeshDiscovery
-│   └── virtualization/       # Virtualization, VMManager, VFIO, DisposableVM
-├── services/ipc/             # Daemon IPC client and mode controls (v2.4.0)
-├── config/                   # apps.json, polkit policy, systemd unit
-├── assets/                   # modern.qss, icon-pack, resources
-├── agents/                   # Agent runtime (in-app AI orchestration)
-├── api/                      # REST API server
-├── web/                      # Web dashboard
-├── plugins/                  # Third-party plugin directory
-└── resources/                # Static resources
-
-tests/                        # 210+ test files, 6383+ tests (80%+ coverage)
-scripts/                      # Build, workflow, CI scripts
-config/                       # Global config templates
-docs/                         # User guide, release notes, checklists
-.github/                      # CI, agents, instructions, workflows
-.workflow/                    # Pipeline specs, reports, race-lock
-.codex/                       # Codex skills (plan, implement, test, release, validate)
-completions/                  # Shell completions (bash, zsh)
+│   ├── system.py             # SystemManager (Atomic detection, etc.)
+│   ├── experience_level.py   # Beginner/Intermediate/Advanced modes
+│   └── ...
+├── services/                 # Legacy/Niche domain services
+├── cli/                      # CLI subcommands
+├── config/                   # Apps and polkit policies
+└── web/                      # Web dashboard logic
 ```
 
 ## Three Entry Modes
+
 
 | Mode       | Flag       | Module                   | Purpose                                    |
 | ---------- | ---------- | ------------------------ | ------------------------------------------ |

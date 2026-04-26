@@ -1,12 +1,12 @@
 # GUI Tabs Reference
 
-Complete reference for all 28 feature tabs in Loofi Fedora Tweaks, organized by the current 8 technical categories.
+Complete reference for all feature tabs in Loofi Fedora Tweaks v4.0 "Atlas".
 
 ---
 
 ## 🖥️ System
 
-1. Dashboard (`dashboard_tab.py`)
+1. **Atlas Home** (`atlas_dashboard_tab.py`) — [v4.0 NEW] Task-based home dashboard with guided assistants.
 2. System Info (`system_info_tab.py`)
 3. System Monitor (`monitor_tab.py`)
 4. Community (`community_tab.py`)
@@ -47,9 +47,9 @@ Complete reference for all 28 feature tabs in Loofi Fedora Tweaks, organized by 
 21. Virtualization (`virtualization_tab.py`)
 22. AI Lab (`ai_enhanced_tab.py`)
 
-## 📋 Maintenance
+## 📋 Diagnostics & Automation
 
-23. Health Timeline (`health_timeline_tab.py`)
+23. **Metrics Dashboard** (`dashboard_tab.py`) — Traditional live overview (moved to Intermediate mode in v4.0).
 24. Logs (`logs_tab.py`)
 25. Diagnostics (`diagnostics_tab.py`)
 26. Agents (`agents_tab.py`)

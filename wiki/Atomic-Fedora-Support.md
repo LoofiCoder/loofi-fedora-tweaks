@@ -27,6 +27,21 @@ pm = SystemManager.get_package_manager()  # "dnf" or "rpm-ostree"
 
 ---
 
+## v4.0 Atlas Health Autopilot
+
+v4.0 "Atlas" introduces specialized health checks and diagnostics for Atomic Fedora variants.
+
+### Specialized Diagnostics
+
+- **Pending Reboot Detection**: Automatically detects if a new deployment is staged and waiting for a reboot.
+- **Layered Package Audit**: Identifies and counts packages layered on top of the base image, providing hints on how to migrate them to Flatpaks or Toolbx/Distrobox.
+- **Rebase Readiness**: The Fedora Upgrade Assistant now checks for rebase-path consistency before major version transitions.
+
+### How to use
+The Atlas Home Dashboard automatically includes these checks when it detects an Atomic system. Click the **"Maintain my system"** or **"Fix problems"** cards to run the autopilot.
+
+---
+
 ## Behavioral Differences
 
 ### Package Operations
