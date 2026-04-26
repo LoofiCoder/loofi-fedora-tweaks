@@ -33,8 +33,8 @@ v4.0.0 "Atlas" transforms Loofi Fedora Tweaks from a comprehensive toolbox into 
 ### Implementation Status: Foundation Phase
 This release establishes the core backend schemas, structured models, and architectural boundaries for the Atlas vision.
 
-- [ ] Health & Repair Autopilot Foundation
-- [ ] Rollback-First Action Metadata
-- [ ] Fedora Upgrade Assistant Foundation
-- [ ] Task-Based Home UX Foundation
-- [ ] Support Bundle v2
+- [x] Health & Repair Autopilot Foundation
+- [x] Rollback-First Action Metadata
+- [x] Fedora Upgrade Assistant Foundation
+- [x] Task-Based Home UX Foundation
+- [x] Support Bundle v2
