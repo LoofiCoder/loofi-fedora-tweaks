@@ -350,7 +350,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Download RPM artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: rpm-package
           path: rpm-install
@@ -501,21 +501,21 @@ jobs:
           fi
 
       - name: Download RPM artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: rpm-package
           path: release-assets
 
       - name: Download Flatpak artifact
         continue-on-error: true
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: flatpak-package
           path: release-assets
 
       - name: Download sdist artifact
         continue-on-error: true
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: sdist-package
           path: release-assets
