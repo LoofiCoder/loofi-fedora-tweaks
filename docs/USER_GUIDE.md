@@ -28,14 +28,14 @@ Core behavior:
 
 ## 2) Install and Launch
 
-Install from [Fedora COPR](https://copr.fedorainfracloud.org/coprs/multidraxter-bit/loofi-fedora-tweaks/):
+Install from [Fedora COPR](https://copr.fedorainfracloud.org/coprs/loofitheboss/loofi-fedora-tweaks/):
 
 ```bash
-sudo dnf copr enable multidraxter-bit/loofi-fedora-tweaks
+sudo dnf copr enable loofitheboss/loofi-fedora-tweaks
 sudo dnf install loofi-fedora-tweaks
 ```
 
-Or download the RPM from the [Releases](https://github.com/multidraxter-bit/loofi-fedora-tweaks/releases) page:
+Or download the RPM from the [Releases](https://github.com/loofitheboss/loofi-fedora-tweaks/releases) page:
 
 ```bash
 sudo dnf install ./loofi-fedora-tweaks-*.noarch.rpm
@@ -270,7 +270,7 @@ If opening an issue, include:
 4. Reproduction steps
 5. Support bundle path
 
-Issue tracker: <https://github.com/multidraxter-bit/loofi-fedora-tweaks/issues>
+Issue tracker: <https://github.com/loofitheboss/loofi-fedora-tweaks/issues>
 
 ---
 

@@ -15,7 +15,7 @@ class AppConfigFetcher(QThread):
     config_ready = pyqtSignal(list)
     config_error = pyqtSignal(str)
 
-    REMOTE_URL = "https://raw.githubusercontent.com/multidraxter-bit/loofi-fedora-tweaks/master/config/apps.json"
+    REMOTE_URL = "https://raw.githubusercontent.com/loofitheboss/loofi-fedora-tweaks/master/config/apps.json"
     CACHE_DIR = os.path.expanduser("~/.cache/loofi-fedora-tweaks")
     CACHE_FILE = os.path.join(CACHE_DIR, "apps.json")
     LOCAL_FALLBACK = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'config', 'apps.json')

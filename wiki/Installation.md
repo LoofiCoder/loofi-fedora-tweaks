@@ -33,11 +33,11 @@ The following packages enable specific features but are not required for basic f
 
 ### Method 1: Fedora COPR (Recommended)
 
-The package is published on [Fedora COPR](https://copr.fedorainfracloud.org/coprs/multidraxter-bit/loofi-fedora-tweaks/). This gives you automatic updates via `dnf`.
+The package is published on [Fedora COPR](https://copr.fedorainfracloud.org/coprs/loofitheboss/loofi-fedora-tweaks/). This gives you automatic updates via `dnf`.
 
 ```bash
 # Enable the COPR repository
-sudo dnf copr enable multidraxter-bit/loofi-fedora-tweaks
+sudo dnf copr enable loofitheboss/loofi-fedora-tweaks
 
 # Install the package
 sudo dnf install loofi-fedora-tweaks
@@ -45,7 +45,7 @@ sudo dnf install loofi-fedora-tweaks
 
 ### Method 2: Release RPM
 
-Download the latest RPM from the [Releases page](https://github.com/multidraxter-bit/loofi-fedora-tweaks/releases):
+Download the latest RPM from the [Releases page](https://github.com/loofitheboss/loofi-fedora-tweaks/releases):
 
 ```bash
 # Install with dnf (Traditional Fedora)
@@ -68,7 +68,7 @@ For development or testing, run directly from the source tree:
 
 ```bash
 # Clone the repository
-git clone https://github.com/multidraxter-bit/loofi-fedora-tweaks.git
+git clone https://github.com/loofitheboss/loofi-fedora-tweaks.git
 cd loofi-fedora-tweaks
 
 # Create a virtual environment
@@ -144,7 +144,7 @@ loofi cleanup all
 
 ```bash
 sudo dnf remove loofi-fedora-tweaks
-sudo dnf copr remove multidraxter-bit/loofi-fedora-tweaks
+sudo dnf copr remove loofitheboss/loofi-fedora-tweaks
 ```
 
 ### Uninstall RPM Package

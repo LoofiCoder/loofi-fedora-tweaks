@@ -512,7 +512,7 @@ When reporting bugs on GitHub, include:
    loofi-fedora-tweaks --cli health
    ```
 
-**Issue tracker**: https://github.com/multidraxter-bit/loofi-fedora-tweaks/issues
+**Issue tracker**: https://github.com/loofitheboss/loofi-fedora-tweaks/issues
 
 ---
 

@@ -21,7 +21,7 @@ class CloudSyncManager:
     """Manages cloud sync operations and community presets."""
 
     # Community presets repository
-    PRESETS_REPO = "https://raw.githubusercontent.com/multidraxter-bit/loofi-fedora-tweaks-presets/main"
+    PRESETS_REPO = "https://raw.githubusercontent.com/loofitheboss/loofi-fedora-tweaks-presets/main"
     PRESETS_INDEX_URL = f"{PRESETS_REPO}/index.json"
 
     # Gist API

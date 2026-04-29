@@ -81,15 +81,15 @@ Welcome to the official wiki for **Loofi Fedora Tweaks** — a modern Fedora con
 
 ## Quick Links
 
-- GitHub Repository: [multidraxter-bit/loofi-fedora-tweaks](https://github.com/multidraxter-bit/loofi-fedora-tweaks)
-- Latest Release: [v4.0.0](https://github.com/multidraxter-bit/loofi-fedora-tweaks/releases/tag/v4.0.0)
-- Issues: [Issue Tracker](https://github.com/multidraxter-bit/loofi-fedora-tweaks/issues)
-- Main README: [README.md](https://github.com/multidraxter-bit/loofi-fedora-tweaks/blob/master/README.md)
-- Architecture Doc: [ARCHITECTURE.md](https://github.com/multidraxter-bit/loofi-fedora-tweaks/blob/master/ARCHITECTURE.md)
+- GitHub Repository: [loofitheboss/loofi-fedora-tweaks](https://github.com/loofitheboss/loofi-fedora-tweaks)
+- Latest Release: [v4.0.0](https://github.com/loofitheboss/loofi-fedora-tweaks/releases/tag/v4.0.0)
+- Issues: [Issue Tracker](https://github.com/loofitheboss/loofi-fedora-tweaks/issues)
+- Main README: [README.md](https://github.com/loofitheboss/loofi-fedora-tweaks/blob/master/README.md)
+- Architecture Doc: [ARCHITECTURE.md](https://github.com/loofitheboss/loofi-fedora-tweaks/blob/master/ARCHITECTURE.md)
 
 ## Support
 
 1. Check [Troubleshooting](Troubleshooting).
-2. Search existing [GitHub Issues](https://github.com/multidraxter-bit/loofi-fedora-tweaks/issues).
+2. Search existing [GitHub Issues](https://github.com/loofitheboss/loofi-fedora-tweaks/issues).
 3. Run `loofi-fedora-tweaks --cli doctor` and `loofi-fedora-tweaks --cli support-bundle`.
 4. Open a new issue with Fedora version, desktop environment, repro steps, and logs.

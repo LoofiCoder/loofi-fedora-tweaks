@@ -364,7 +364,7 @@ class _RepositoriesSubTab(BaseTab):
         self.btn_copr_loofi.setAccessibleName(self.tr("Enable Loofi COPR"))
         self.btn_copr_loofi.clicked.connect(
             lambda: self.run_command(
-                *PrivilegedCommand.dnf("copr enable", "multidraxter-bit/loofi-fedora-tweaks"),
+                *PrivilegedCommand.dnf("copr enable", "loofitheboss/loofi-fedora-tweaks"),
             )
         )
         copr_layout.addWidget(self.btn_copr_loofi)

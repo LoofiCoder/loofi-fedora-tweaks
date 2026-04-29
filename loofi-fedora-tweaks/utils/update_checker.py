@@ -15,7 +15,7 @@ from typing import Any, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
-GITHUB_REPO = "multidraxter-bit/loofi-fedora-tweaks"
+GITHUB_REPO = "loofitheboss/loofi-fedora-tweaks"
 RELEASES_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
 
 ERR_NO_UPDATE = "no_update_available"

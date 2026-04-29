@@ -392,7 +392,7 @@ bash scripts/build_rpm.sh
 
 Releases are published to:
 
-1. **GitHub Releases**: https://github.com/multidraxter-bit/loofi-fedora-tweaks/releases
+1. **GitHub Releases**: https://github.com/loofitheboss/loofi-fedora-tweaks/releases
 2. **Release assets**: RPM (required), optional Flatpak/sdist when available
 3. **Fedora COPR repository**: Published by integrated `copr_publish` job
 

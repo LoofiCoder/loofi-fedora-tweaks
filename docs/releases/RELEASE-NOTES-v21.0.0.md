@@ -19,12 +19,12 @@ v21.0.0 focuses on foundational layout fixes, HiDPI rendering safety, and theme 
 
 **RPM (Fedora 43+)**
 ```bash
-sudo dnf install https://github.com/multidraxter-bit/loofi-fedora-tweaks/releases/download/v21.0.0/loofi-fedora-tweaks-21.0.0-1.noarch.rpm
+sudo dnf install https://github.com/loofitheboss/loofi-fedora-tweaks/releases/download/v21.0.0/loofi-fedora-tweaks-21.0.0-1.noarch.rpm
 ```
 
 **Build from Source**
 ```bash
-git clone https://github.com/multidraxter-bit/loofi-fedora-tweaks.git
+git clone https://github.com/loofitheboss/loofi-fedora-tweaks.git
 cd loofi-fedora-tweaks
 ./build_rpm.sh
 ```
@@ -39,4 +39,4 @@ PYTHONPATH=loofi-fedora-tweaks python3 -m pytest tests/ -v
 
 ---
 
-**Full Changelog**: https://github.com/multidraxter-bit/loofi-fedora-tweaks/blob/master/CHANGELOG.md
+**Full Changelog**: https://github.com/loofitheboss/loofi-fedora-tweaks/blob/master/CHANGELOG.md

@@ -372,7 +372,7 @@ If you encounter issues with MCP setup or automated workflows:
 2. Include workflow logs if applicable
 3. Describe expected vs actual behavior
 
-**Maintainers**: Tag with `@multidraxter-bit` for urgent security issues.
+**Maintainers**: Tag with `@loofitheboss` for urgent security issues.
 
 ---
 

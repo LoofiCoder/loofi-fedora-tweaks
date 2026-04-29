@@ -12,15 +12,15 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/multidraxter-bit/loofi-fedora-tweaks/releases/tag/v4.0.0">
+  <a href="https://github.com/loofitheboss/loofi-fedora-tweaks/releases/tag/v4.0.0">
     <img src="https://img.shields.io/badge/Release-v4.0.0-blue?style=for-the-badge&logo=github" alt="Release v4.0.0"/>
   </a>
   <img src="https://img.shields.io/badge/Fedora-43-blue?style=for-the-badge&logo=fedora" alt="Fedora 43"/>
   <img src="https://img.shields.io/badge/Python-3.12+-green?style=for-the-badge&logo=python" alt="Python"/>
   <img src="https://img.shields.io/badge/Package-RPM-orange?style=for-the-badge&logo=redhat" alt="RPM package"/>
   <img src="https://img.shields.io/badge/Coverage-81%25-brightgreen?style=for-the-badge&logo=pytest" alt="Coverage 81%"/>
-  <a href="https://copr.fedorainfracloud.org/coprs/multidraxter-bit/loofi-fedora-tweaks/">
-    <img src="https://img.shields.io/badge/COPR-multidraxter-bit%2Floofi--fedora--tweaks-blue?style=for-the-badge&logo=fedora" alt="COPR"/>
+  <a href="https://copr.fedorainfracloud.org/coprs/loofitheboss/loofi-fedora-tweaks/">
+    <img src="https://img.shields.io/badge/COPR-loofitheboss%2Floofi--fedora--tweaks-blue?style=for-the-badge&logo=fedora" alt="COPR"/>
   </a>
 </p>
 
@@ -77,10 +77,10 @@ Follow [`ROADMAP.md`](ROADMAP.md) for the active release branch and current impl
 
 ### Install from COPR (Recommended)
 
-The package is published on [Fedora COPR](https://copr.fedorainfracloud.org/coprs/multidraxter-bit/loofi-fedora-tweaks/). This gives you automatic updates via `dnf`.
+The package is published on [Fedora COPR](https://copr.fedorainfracloud.org/coprs/loofitheboss/loofi-fedora-tweaks/). This gives you automatic updates via `dnf`.
 
 ```bash
-sudo dnf copr enable multidraxter-bit/loofi-fedora-tweaks
+sudo dnf copr enable loofitheboss/loofi-fedora-tweaks
 sudo dnf install loofi-fedora-tweaks
 ```
 
@@ -88,12 +88,12 @@ To uninstall:
 
 ```bash
 sudo dnf remove loofi-fedora-tweaks
-sudo dnf copr remove multidraxter-bit/loofi-fedora-tweaks
+sudo dnf copr remove loofitheboss/loofi-fedora-tweaks
 ```
 
 ### Install from a Release RPM
 
-Download the `.noarch.rpm` from the [Releases](https://github.com/multidraxter-bit/loofi-fedora-tweaks/releases) page:
+Download the `.noarch.rpm` from the [Releases](https://github.com/loofitheboss/loofi-fedora-tweaks/releases) page:
 
 ```bash
 sudo dnf install ./loofi-fedora-tweaks-*.noarch.rpm
@@ -102,7 +102,7 @@ sudo dnf install ./loofi-fedora-tweaks-*.noarch.rpm
 ### Run from Source
 
 ```bash
-git clone https://github.com/multidraxter-bit/loofi-fedora-tweaks.git
+git clone https://github.com/loofitheboss/loofi-fedora-tweaks.git
 cd loofi-fedora-tweaks
 python3 -m venv .venv
 source .venv/bin/activate

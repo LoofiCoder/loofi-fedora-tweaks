@@ -7,7 +7,7 @@
 set -euo pipefail
 
 VERSION=$(python3 -c "exec(open('loofi-fedora-tweaks/version.py').read()); print(__version__)")
-REPO_URL="https://github.com/multidraxter-bit/loofi-fedora-tweaks"
+REPO_URL="https://github.com/loofitheboss/loofi-fedora-tweaks"
 
 echo "Building SRPM for loofi-fedora-tweaks v${VERSION}"
 

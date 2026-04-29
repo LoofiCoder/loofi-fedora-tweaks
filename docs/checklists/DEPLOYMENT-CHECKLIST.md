@@ -28,7 +28,7 @@ pkexec dnf install copr-cli
 copr-cli create loofi-fedora-tweaks \
   --chroot fedora-43-x86_64 \
   --description "System tweaks and optimizations for Fedora Linux" \
-  --instructions "pkexec dnf copr enable multidraxter-bit/loofi-fedora-tweaks && pkexec dnf install loofi-fedora-tweaks"
+  --instructions "pkexec dnf copr enable loofitheboss/loofi-fedora-tweaks && pkexec dnf install loofi-fedora-tweaks"
 ```
 
 ### Upload SRPM
@@ -45,7 +45,7 @@ copr-cli watch-build <build-id>
 
 ```bash
 # On a clean Fedora system
-pkexec dnf copr enable multidraxter-bit/loofi-fedora-tweaks
+pkexec dnf copr enable loofitheboss/loofi-fedora-tweaks
 pkexec dnf install loofi-fedora-tweaks
 
 # Test installation
@@ -66,7 +66,7 @@ loofi-fedora-tweaks --version
 ### Step 1: Install Package
 
 ```bash
-pkexec dnf copr enable multidraxter-bit/loofi-fedora-tweaks
+pkexec dnf copr enable loofitheboss/loofi-fedora-tweaks
 pkexec dnf install loofi-fedora-tweaks nginx certbot python3-certbot-nginx
 
 # Create service user
@@ -146,7 +146,7 @@ pkexec firewall-cmd --reload
 
 ### GitHub
 
-- [ ] Publish: https://github.com/multidraxter-bit/loofi-fedora-tweaks/releases/tag/v41.0.0
+- [ ] Publish: https://github.com/loofitheboss/loofi-fedora-tweaks/releases/tag/v41.0.0
 
 ---
 
@@ -198,8 +198,8 @@ pkexec systemctl start loofi-fedora-tweaks
 
 ### Emergency Contact
 
-- **GitHub Issues**: https://github.com/multidraxter-bit/loofi-fedora-tweaks/issues
-- **Maintainer**: @multidraxter-bit
+- **GitHub Issues**: https://github.com/loofitheboss/loofi-fedora-tweaks/issues
+- **Maintainer**: @loofitheboss
 
 ---
 

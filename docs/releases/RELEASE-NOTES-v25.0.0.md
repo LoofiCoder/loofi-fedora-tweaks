@@ -163,7 +163,7 @@ v25.0 is a **foundation release**. Future versions will build on this architectu
 sudo dnf install loofi-fedora-tweaks
 
 # From source
-git clone https://github.com/multidraxter-bit/loofi-fedora-tweaks.git
+git clone https://github.com/loofitheboss/loofi-fedora-tweaks.git
 cd loofi-fedora-tweaks
 bash scripts/build_rpm.sh
 sudo dnf install rpmbuild/RPMS/noarch/loofi-fedora-tweaks-25.0.0-1.fc43.noarch.rpm

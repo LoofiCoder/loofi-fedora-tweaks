@@ -1,6 +1,6 @@
 [Unit]
 Description=Loofi Fedora Tweaks Background Service
-Documentation=https://github.com/multidraxter-bit/loofi-fedora-tweaks
+Documentation=https://github.com/loofitheboss/loofi-fedora-tweaks
 After=graphical-session.target
 PartOf=graphical-session.target
 

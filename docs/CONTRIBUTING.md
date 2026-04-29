@@ -9,7 +9,7 @@ This guide focuses on how to make safe, reviewable changes that match project co
 ## Development Setup
 
 ```bash
-git clone https://github.com/multidraxter-bit/loofi-fedora-tweaks.git
+git clone https://github.com/loofitheboss/loofi-fedora-tweaks.git
 cd loofi-fedora-tweaks
 python3 -m venv .venv
 source .venv/bin/activate
@@ -121,4 +121,4 @@ Use GitHub issues:
 - Bugs: include reproduction steps, expected/actual behavior, logs, environment.
 - Features: include user problem, proposed UX/CLI behavior, and constraints.
 
-Issue tracker: <https://github.com/multidraxter-bit/loofi-fedora-tweaks/issues>
+Issue tracker: <https://github.com/loofitheboss/loofi-fedora-tweaks/issues>

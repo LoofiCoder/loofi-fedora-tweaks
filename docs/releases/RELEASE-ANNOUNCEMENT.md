@@ -7,10 +7,10 @@ Loofi Fedora Tweaks v41.0.0 "Coverage" is now available. This is a pure test and
 **Install now:**
 
 ```bash
-pkexec dnf copr enable multidraxter-bit/loofi-fedora-tweaks && pkexec dnf install loofi-fedora-tweaks
+pkexec dnf copr enable loofitheboss/loofi-fedora-tweaks && pkexec dnf install loofi-fedora-tweaks
 ```
 
-**GitHub Release:** https://github.com/multidraxter-bit/loofi-fedora-tweaks/releases/tag/v41.0.0
+**GitHub Release:** https://github.com/loofitheboss/loofi-fedora-tweaks/releases/tag/v41.0.0
 
 ---
 
@@ -54,7 +54,7 @@ undo button, toast notifications, output toolbar, risk badges.
 **Fedora 43 (via COPR):**
 
 ```bash
-pkexec dnf copr enable multidraxter-bit/loofi-fedora-tweaks
+pkexec dnf copr enable loofitheboss/loofi-fedora-tweaks
 pkexec dnf install loofi-fedora-tweaks
 ```
 
@@ -92,10 +92,10 @@ loofi-fedora-tweaks --web
 
 ## Links
 
-- **GitHub Release**: https://github.com/multidraxter-bit/loofi-fedora-tweaks/releases/tag/v41.0.0
-- **Full Changelog**: https://github.com/multidraxter-bit/loofi-fedora-tweaks/blob/master/CHANGELOG.md
-- **Documentation**: https://github.com/multidraxter-bit/loofi-fedora-tweaks#readme
-- **Report Issues**: https://github.com/multidraxter-bit/loofi-fedora-tweaks/issues
+- **GitHub Release**: https://github.com/loofitheboss/loofi-fedora-tweaks/releases/tag/v41.0.0
+- **Full Changelog**: https://github.com/loofitheboss/loofi-fedora-tweaks/blob/master/CHANGELOG.md
+- **Documentation**: https://github.com/loofitheboss/loofi-fedora-tweaks#readme
+- **Report Issues**: https://github.com/loofitheboss/loofi-fedora-tweaks/issues
 
 ---
 
@@ -104,4 +104,4 @@ loofi-fedora-tweaks --web
 - Built for the Fedora Linux community
 - Open source under MIT License
 
-**Maintainer:** Loofi ([@multidraxter-bit](https://github.com/multidraxter-bit))
+**Maintainer:** Loofi ([@loofitheboss](https://github.com/loofitheboss))

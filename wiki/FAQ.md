@@ -290,7 +290,7 @@ See: [Security Model](Security-Model)
 
 ### Where do I report bugs?
 
-**GitHub Issues**: https://github.com/multidraxter-bit/loofi-fedora-tweaks/issues
+**GitHub Issues**: https://github.com/loofitheboss/loofi-fedora-tweaks/issues
 
 **Before reporting:**
 1. Search existing issues
@@ -325,8 +325,8 @@ See: [Troubleshooting](Troubleshooting)
 
 1. **Wiki**: You're already here! Browse other pages for detailed guides.
 2. **Troubleshooting**: [Troubleshooting](Troubleshooting) page
-3. **GitHub Issues**: https://github.com/multidraxter-bit/loofi-fedora-tweaks/issues
-4. **GitHub Discussions**: https://github.com/multidraxter-bit/loofi-fedora-tweaks/discussions
+3. **GitHub Issues**: https://github.com/loofitheboss/loofi-fedora-tweaks/issues
+4. **GitHub Discussions**: https://github.com/loofitheboss/loofi-fedora-tweaks/discussions
 
 ---
 
@@ -345,7 +345,7 @@ You are free to:
 **Requirements:**
 - Include the original MIT License and copyright notice in copies
 
-**Full license**: https://github.com/multidraxter-bit/loofi-fedora-tweaks/blob/master/LICENSE
+**Full license**: https://github.com/loofitheboss/loofi-fedora-tweaks/blob/master/LICENSE
 
 ---
 
@@ -355,9 +355,9 @@ You are free to:
 
 Loofi Fedora Tweaks is maintained by the Loofi Team and open-source contributors.
 
-**Lead maintainer**: [@multidraxter-bit](https://github.com/multidraxter-bit)
+**Lead maintainer**: [@loofitheboss](https://github.com/loofitheboss)
 
-**Contributors**: See [Contributors](https://github.com/multidraxter-bit/loofi-fedora-tweaks/graphs/contributors)
+**Contributors**: See [Contributors](https://github.com/loofitheboss/loofi-fedora-tweaks/graphs/contributors)
 
 ### How can I contribute?
 
@@ -421,5 +421,5 @@ See: [Changelog](Changelog) for version history
 ## Still Have Questions?
 
 - Browse other wiki pages for detailed guides
-- Search [GitHub Issues](https://github.com/multidraxter-bit/loofi-fedora-tweaks/issues)
-- Ask in [GitHub Discussions](https://github.com/multidraxter-bit/loofi-fedora-tweaks/discussions)
+- Search [GitHub Issues](https://github.com/loofitheboss/loofi-fedora-tweaks/issues)
+- Ask in [GitHub Discussions](https://github.com/loofitheboss/loofi-fedora-tweaks/discussions)

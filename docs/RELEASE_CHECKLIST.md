@@ -107,7 +107,7 @@ push to master
 
 ### If the pipeline fails
 
-1. Check the [Actions page](https://github.com/multidraxter-bit/loofi-fedora-tweaks/actions/workflows/auto-release.yml) for the failing job
+1. Check the [Actions page](https://github.com/loofitheboss/loofi-fedora-tweaks/actions/workflows/auto-release.yml) for the failing job
 2. Fix the issue locally and push again — the pipeline is idempotent
 3. If the tag already exists but release failed, the release job will create it on next push
 
@@ -128,7 +128,7 @@ gh release view vX.Y.Z --json assets -q '.assets[].name'
 git log --oneline -1 vX.Y.Z
 ```
 
-Or check the [releases page](https://github.com/multidraxter-bit/loofi-fedora-tweaks/releases).
+Or check the [releases page](https://github.com/loofitheboss/loofi-fedora-tweaks/releases).
 
 ---
 

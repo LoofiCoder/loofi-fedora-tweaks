@@ -10,7 +10,7 @@ Guide to contributing to Loofi Fedora Tweaks development.
 
 ```bash
 # Clone repository
-git clone https://github.com/multidraxter-bit/loofi-fedora-tweaks.git
+git clone https://github.com/loofitheboss/loofi-fedora-tweaks.git
 cd loofi-fedora-tweaks
 
 # Create virtual environment
@@ -406,7 +406,7 @@ pkexec dnf install ./rpmbuild/RPMS/noarch/loofi-fedora-tweaks-*.rpm
 
 ## Reporting Bugs
 
-Use GitHub Issues: https://github.com/multidraxter-bit/loofi-fedora-tweaks/issues
+Use GitHub Issues: https://github.com/loofitheboss/loofi-fedora-tweaks/issues
 
 Include:
 1. **Fedora version** and desktop environment
@@ -436,9 +436,9 @@ Use GitHub Issues with:
 
 ## Community
 
-- **GitHub Discussions**: https://github.com/multidraxter-bit/loofi-fedora-tweaks/discussions
-- **Issue Tracker**: https://github.com/multidraxter-bit/loofi-fedora-tweaks/issues
-- **Pull Requests**: https://github.com/multidraxter-bit/loofi-fedora-tweaks/pulls
+- **GitHub Discussions**: https://github.com/loofitheboss/loofi-fedora-tweaks/discussions
+- **Issue Tracker**: https://github.com/loofitheboss/loofi-fedora-tweaks/issues
+- **Pull Requests**: https://github.com/loofitheboss/loofi-fedora-tweaks/pulls
 
 ---
 

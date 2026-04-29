@@ -1,6 +1,6 @@
 #!/bin/bash
 # Loofi Fedora Tweaks - Easy Installer
-# Usage: curl -fsSL https://raw.githubusercontent.com/multidraxter-bit/loofi-fedora-tweaks/master/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/loofitheboss/loofi-fedora-tweaks/master/install.sh | bash
 #
 # ⚠️  DEPRECATED: This installation method is not recommended.
 # Preferred methods: RPM/Copr repository or Flatpak.
@@ -17,7 +17,7 @@ echo "║  This method downloads and runs code without verification. ║"
 echo "║  It is kept for backward compatibility but NOT recommended.║"
 echo "║                                                            ║"
 echo "║  Recommended installation method:                            ║"
-echo "║    • sudo dnf copr enable multidraxter-bit/loofi-fedora-tweaks ║"
+echo "║    • sudo dnf copr enable loofitheboss/loofi-fedora-tweaks ║"
 echo "║    • sudo dnf install loofi-fedora-tweaks                  ║"
 echo "║                                                            ║"
 echo "║  To proceed anyway, re-run with:                           ║"
@@ -35,7 +35,7 @@ echo "🚀 Installing Loofi Fedora Tweaks..."
 
 # Add repository
 echo "📦 Adding repository..."
-sudo dnf config-manager --add-repo https://raw.githubusercontent.com/multidraxter-bit/loofi-fedora-tweaks/master/loofi-fedora-tweaks.repo
+sudo dnf config-manager --add-repo https://raw.githubusercontent.com/loofitheboss/loofi-fedora-tweaks/master/loofi-fedora-tweaks.repo
 
 # Install package
 echo "⬇️ Installing package..."

@@ -4,7 +4,7 @@
 
 Version history highlights for Loofi Fedora Tweaks.
 
-For the complete changelog with all changes, see [CHANGELOG.md](https://github.com/multidraxter-bit/loofi-fedora-tweaks/blob/master/CHANGELOG.md) in the repository.
+For the complete changelog with all changes, see [CHANGELOG.md](https://github.com/loofitheboss/loofi-fedora-tweaks/blob/master/CHANGELOG.md) in the repository.
 
 ---
 
@@ -302,7 +302,7 @@ Each major/minor release has a thematic codename:
 
 ## Future Roadmap
 
-See [ROADMAP.md](https://github.com/multidraxter-bit/loofi-fedora-tweaks/blob/master/ROADMAP.md) for:
+See [ROADMAP.md](https://github.com/loofitheboss/loofi-fedora-tweaks/blob/master/ROADMAP.md) for:
 - Planned features
 - Version targets
 - Development phases
@@ -314,9 +314,9 @@ See [ROADMAP.md](https://github.com/multidraxter-bit/loofi-fedora-tweaks/blob/ma
 
 For detailed release notes and complete changelogs:
 
-- **Repository**: [CHANGELOG.md](https://github.com/multidraxter-bit/loofi-fedora-tweaks/blob/master/CHANGELOG.md)
-- **Release Notes**: [docs/releases/](https://github.com/multidraxter-bit/loofi-fedora-tweaks/tree/master/docs/releases)
-- **GitHub Releases**: [Releases page](https://github.com/multidraxter-bit/loofi-fedora-tweaks/releases)
+- **Repository**: [CHANGELOG.md](https://github.com/loofitheboss/loofi-fedora-tweaks/blob/master/CHANGELOG.md)
+- **Release Notes**: [docs/releases/](https://github.com/loofitheboss/loofi-fedora-tweaks/tree/master/docs/releases)
+- **GitHub Releases**: [Releases page](https://github.com/loofitheboss/loofi-fedora-tweaks/releases)
 
 ---
 

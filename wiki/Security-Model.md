@@ -402,7 +402,7 @@ loofi-fedora-tweaks --cli --dry-run cleanup all
 
 ## Security Disclosure
 
-For security vulnerabilities, see [SECURITY.md](https://github.com/multidraxter-bit/loofi-fedora-tweaks/blob/master/SECURITY.md):
+For security vulnerabilities, see [SECURITY.md](https://github.com/loofitheboss/loofi-fedora-tweaks/blob/master/SECURITY.md):
 
 - **Supported versions**: v34.0.0+
 - **Response timeline**: 90 days

@@ -1,6 +1,6 @@
 [loofi-fedora-tweaks]
 name=Loofi Fedora Tweaks
-baseurl=https://raw.githubusercontent.com/multidraxter-bit/loofi-fedora-tweaks/master/repo
+baseurl=https://raw.githubusercontent.com/loofitheboss/loofi-fedora-tweaks/master/repo
 enabled=1
 gpgcheck=0
 type=rpm-md

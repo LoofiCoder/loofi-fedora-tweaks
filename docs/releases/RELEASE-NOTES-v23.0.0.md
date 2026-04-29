@@ -18,7 +18,7 @@ Released: 2026-02-10
 ## Installation
 
 ```bash
-pkexec dnf install https://github.com/multidraxter-bit/loofi-fedora-tweaks/releases/download/v23.0.0/loofi-fedora-tweaks-23.0.0-1.noarch.rpm
+pkexec dnf install https://github.com/loofitheboss/loofi-fedora-tweaks/releases/download/v23.0.0/loofi-fedora-tweaks-23.0.0-1.noarch.rpm
 ```
 
 ## Full Changelog

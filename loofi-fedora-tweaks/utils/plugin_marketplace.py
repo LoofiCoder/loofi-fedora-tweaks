@@ -17,7 +17,7 @@ from utils.plugin_cdn_client import PluginCdnClient
 logger = logging.getLogger(__name__)
 
 # Default marketplace configuration
-DEFAULT_REPO_OWNER = "multidraxter-bit"
+DEFAULT_REPO_OWNER = "loofitheboss"
 DEFAULT_REPO_NAME = "loofi-plugins"
 DEFAULT_BRANCH = "main"
 DEFAULT_MARKETPLACE_API_BASE = "https://api.loofi.software/marketplace/v1"

@@ -192,4 +192,4 @@ Include:
 4. reproduction steps
 5. support bundle path
 
-Issues: <https://github.com/multidraxter-bit/loofi-fedora-tweaks/issues>
+Issues: <https://github.com/loofitheboss/loofi-fedora-tweaks/issues>

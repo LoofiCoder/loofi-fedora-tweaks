@@ -5,7 +5,7 @@ Release:        1%{?dist}
 Summary:        Complete Fedora system management with AI, security, and window management
 
 License:        MIT
-URL:            https://github.com/multidraxter-bit/loofi-fedora-tweaks
+URL:            https://github.com/loofitheboss/loofi-fedora-tweaks
 Source0:        %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
 
 BuildArch:      noarch
